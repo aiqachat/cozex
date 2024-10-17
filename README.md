@@ -1,6 +1,6 @@
 ## CozeX1.0
 Cozex是一款可以开源免费使用的管理coze智能体、知识库的系统。实现私有化部署，多账号统一管理。快速部署配置自己的智能体发布使用自己的智能体。
-![alt text](agents.jpg)
+![alt text](/docs/agents.jpg)
 
 ## 当前开发说明
 cozex系统基于Yii2框架，采用PHP7.0以上版本开发，具有很强的可扩展性，并且完全开放源代码。拥有灵活扩展特性之外更安全、高效、数据过滤，同时采用vue作为页面模板渲染引擎，让系统更简单。
@@ -64,7 +64,7 @@ MySQL扩展库：数据存储
 
 2.上传程序目录中的`/src/`全部文件到网站根目录，输入网址；
 根据提示信息：
-![alt text](installimg.png)
+![alt text](/docs/installimg.png)
 
   重新安装可以直接删除根目录的install.lock文件，
   
@@ -73,5 +73,5 @@ MySQL扩展库：数据存储
 // 为了安全,防止重装建议修改根目录文件:index.php里面仅保留下面代码：
   <?php  header('location: web/index.php');
   ```
-![alt text](index22.png)
+![alt text](/docs/index22.png)
 
