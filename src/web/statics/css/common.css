@@ -1,0 +1,61 @@
+* {
+    box-sizing: border-box;
+}
+
+/* 滚动条背景 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 0 1px 0 rgba(0, 0, 0, 0.15);
+    padding: 0;
+    border: none;
+    overflow-x: visible;
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0;
+    border: none;
+    width: 20px;
+}
+/*分页固定*/
+.fixed-pagination {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    z-index: 1000;
+}
+body {
+    font-size: 14px
+}
+
+[text-sm] {
+    font-size: 12px;
+}
+
+[text-success] {
+    color: #67C23A;
+}
+
+[text-warning] {
+    color: #E6A23C;
+}
+
+[text-danger] {
+    color: #F56C6C;
+}
+
+[text-info] {
+    color: #909399;
+}
+
+.el-pagination[center] {
+    text-align: center;
+    padding: 15px 0;
+}
+
+.edui-default .edui-colorpicker-nocolor {
+    height: 20px !important;
+}

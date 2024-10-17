@@ -1,0 +1,1 @@
+﻿通过访问 https://www.netbcloud.com/license 获取许可协议

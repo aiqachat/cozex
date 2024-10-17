@@ -1,0 +1,18 @@
+.el-table th, .el-table tr {
+    background: inherit;
+}
+
+.el-table thead {
+    background: #F5F7FA;
+    font-size: 14px;
+    color: #303133;
+    font-weight: bold;
+}
+
+.el-table td, .el-table, .el-table th, .el-table .el-table__row {
+    border-color: #E5E7EC;
+}
+
+.el-table .cell, .el-table th div, .el-table--border td:first-child .cell, .el-table--border th:first-child .cell {
+    padding-left: 20px;
+}
