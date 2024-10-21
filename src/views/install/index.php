@@ -31,7 +31,7 @@
     }
 
     .el-message-box {
-        width: 550px;
+        width: 500px;
     }
 
     .form-item-tap {
@@ -63,7 +63,12 @@
                     <el-input v-model="form.db_password"></el-input>
                 </el-form-item>
                 <el-form-item label="数据库名称" prop="db_name">
-                    <el-input v-model="form.db_name"></el-input>
+                    <el-input v-model="form.db_name">
+                        <template slot="append">
+                            <i class="el-icon-check" style="padding-right: 10px;" v-if="is_check"></i>
+                            <el-button size="mini" @click="check" type="primary" :loading="loading">检查</el-button>
+                        </template>
+                    </el-input>
                 </el-form-item>
             </div>
             <div class="container-title">Redis配置</div>
@@ -158,13 +163,59 @@ new Vue({
                 admin_password: [
                     {required: true, message: '不能为空'},
                 ],
-            }
+            },
+            is_check: false
         };
     },
     created() {
     },
     methods: {
-        submit(formName) {
+        check() {
+            this.is_check = false;
+            let is_check = true;
+            this.$refs.form.validateField('db_name', (errorMessage) => {
+                if (errorMessage) {
+                    is_check = false;
+                }
+            });
+            this.$refs.form.validateField('db_username', (errorMessage) => {
+                if (errorMessage) {
+                    is_check = false;
+                }
+            });
+            this.$refs.form.validateField('db_password', (errorMessage) => {
+                if (errorMessage) {
+                    is_check = false;
+                }
+            });
+            if(!is_check){
+                return;
+            }
+            this.loading = true;
+            this.$request({
+                params: {
+                    r: 'install/check',
+                },
+                method: 'post',
+                data: {
+                    db_host: this.form.db_host,
+                    db_port: this.form.db_port,
+                    db_username: this.form.db_username,
+                    db_password: this.form.db_password,
+                    db_name: this.form.db_name,
+                },
+            }).then(response => {
+                this.loading = false;
+                if(response.data.code === 0){
+                    this.is_check = true;
+                }else {
+                    this.$alert(response.data.msg, '提示').then(() => {});
+                }
+            }).catch(e => {
+                this.loading = false;
+            });
+        },
+        submit(formName, is_clear = 0) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
                     this.loading = true;
@@ -173,7 +224,7 @@ new Vue({
                             r: 'install/index',
                         },
                         method: 'post',
-                        data: this.form,
+                        data: Object.assign(this.form, {is_clear: is_clear}),
                     }).then(response => {
                         this.loading = false;
                         if (response.data.code === 0) {
@@ -190,6 +241,23 @@ new Vue({
                                         h('div', { style: 'color: teal' }, '方法一：环境面板配置如BT在PHP配置禁用函数里面删除禁用。'),
                                         h('div', { style: 'color: teal' }, '方法二：php.ini配置文件就行了搜索：disable_functions把后面proc_open删了。')
                                     ])
+                                });
+                            }else if(response.data.data && response.data.data.code === 2){
+                                const h = this.$createElement;
+                                this.$msgbox({
+                                    title: '提示',
+                                    showCancelButton: true,
+                                    confirmButtonText: '确定清空并立即安装',
+                                    message: h('p', null, [
+                                        h('span', null, response.data.msg),
+                                        h('div', { style: 'color: red;font-size: 20px;' }, '是否清空数据库'),
+                                    ]),
+                                    beforeClose: (action, instance, done) => {
+                                        if (action === 'confirm') {
+                                            this.submit(formName, 1);
+                                        }
+                                        done();
+                                    }
                                 });
                             }else {
                                 this.$alert(response.data.msg, '提示').then(() => {});

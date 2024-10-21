@@ -69,9 +69,6 @@ $config = [
                 'charset' => 'UTF-8',
             ],
         ],
-        'plugin' => [
-            'class' => '\app\bootstrap\Plugin',
-        ],
         'mutex' => [
             'class' => \yii\mutex\MysqlMutex::class,
         ],

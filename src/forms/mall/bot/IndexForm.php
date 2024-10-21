@@ -9,6 +9,7 @@ namespace app\forms\mall\bot;
 
 use app\bootstrap\response\ApiCode;
 use app\forms\common\CommonOption;
+use app\models\BotConf;
 use app\models\Model;
 
 class IndexForm extends Model
@@ -29,73 +30,39 @@ class IndexForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $setting = $this->getSetting();
-        $setting['bot_id'] = $this->bot_id;
-        $width = $setting['width'] ?: $setting['custom_width'];
+        $setting = BotConf::findOne(['bot_id' => $this->bot_id, 'is_delete' => 0]);
+        $conf = "{}";
+        if($setting) {
+            $width = $setting->is_width == 2 ? $setting->width : $this->getDefault()['default_width'];
+            $conf = <<<EOF
+{
+          title: '{$setting['title']}',
+          icon: '{$setting['icon']}',
+          lang: '{$setting['lang']}',
+          layout: '{$setting['layout']}',
+          width: {$width},
+        }
+EOF;
+        }else {
+            $setting = $this->getDefault();
+        }
+
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
+                'data' => $setting,
                 'code' => <<<EOF
     <script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/{$setting['version']}/libs/cn/index.js"></script>
     <script>
       new CozeWebSDK.WebChatClient({
         config: {
-          bot_id: '{$setting['bot_id']}',
+          bot_id: '{$this->bot_id}',
         },
-        componentProps: {
-          title: '{$setting['title']}',
-          icon: '{$setting['icon']}',
-          lang: '{$setting['lang']}',
-          layout: '{$setting['layout']}',
-          width: '{$width}',
-        },
+        componentProps: $conf,
       });
     </script>
 EOF,
-                'data' => $setting
             ]
-        ];
-    }
-
-    public function getSetting()
-    {
-        $setting = CommonOption::get(CommonOption::NAME_COZE_WEB_SDK);
-        $setting = $setting ? (array)$setting : [];
-        return CommonOption::checkDefault($setting, $this->getDefault());
-    }
-
-    private function getDefault()
-    {
-        return [
-            'version' => '0.1.0-beta.6',
-            'title' => 'Coze',
-            'icon' => \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/statics/img/mall/poster-big-shop.png',
-            'lang' => 'en',
-            'layout' => '',
-            'width' => 460,
-            'bot_id' => $this->bot_id ?: '',
-            'last_bot_id' => '',
-            'custom_width' => '',
-        ];
-    }
-
-    public function saveUse()
-    {
-        if (!$this->validate()) {
-            return $this->getErrorResponse();
-        }
-        $setting = $this->getSetting();
-        $last_bot_id = $setting['bot_id'];
-        if(!empty($setting['bot_id']) && $setting['bot_id'] == $this->bot_id){
-            $this->bot_id = '';
-        }
-        CommonOption::set(CommonOption::NAME_COZE_WEB_SDK, array_merge($setting, [
-            'bot_id' => $this->bot_id,
-            'last_bot_id' => $last_bot_id
-        ]));
-        return [
-            'code' => ApiCode::CODE_SUCCESS,
-            'msg' => '设置成功'
         ];
     }
 
@@ -104,15 +71,72 @@ EOF,
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $setting = $this->getSetting();
-        $this->data = CommonOption::checkDefault((array)$this->data, $setting);
-        if($this->data['bot_id'] != $setting['bot_id']){
-            $this->data['last_bot_id'] = $setting['bot_id'];
+        $this->bot_id = $this->data['bot_id'];
+        $setting = BotConf::findOne(['bot_id' => $this->bot_id, 'is_delete' => 0]);
+        if(!$setting){
+            $setting = new BotConf();
         }
-        CommonOption::set(CommonOption::NAME_COZE_WEB_SDK, $this->data);
+        $setting->attributes = $this->data;
+        if(!$setting->save()){
+            return $this->getErrorResponse($setting);
+        }
+        $this->saveUse(0);
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'msg' => '配置成功'
         ];
+    }
+
+    private function getDefault()
+    {
+        return [
+            'version' => '0.1.0-beta.6',
+            'title' => '',
+            'icon' => '',
+            'lang' => 'en',
+            'layout' => '',
+            'width' => '',
+            'bot_id' => $this->bot_id ?: '',
+            'is_width' => 1,
+            'default_width' => 460
+        ];
+    }
+
+    public function getSetting()
+    {
+        $setting = CommonOption::get(CommonOption::NAME_COZE_WEB_SDK);
+        $setting = $setting ? (array)$setting : [];
+        return CommonOption::checkDefault($setting, ['bot_id' => '']);
+    }
+
+    public function saveUse($s = 1)
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        }
+        $setting = $this->getSetting();
+        if($s && $setting['bot_id'] == $this->bot_id){
+            $this->bot_id = '';
+        }
+        CommonOption::set(CommonOption::NAME_COZE_WEB_SDK, [
+            'bot_id' => $this->bot_id
+        ]);
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'msg' => '设置成功'
+        ];
+    }
+
+    public function page()
+    {
+        $setting = $this->getSetting();
+        $conf = BotConf::findOne(['bot_id' => $setting['bot_id'], 'is_delete' => 0]);
+        if($conf){
+            $conf->width = $conf->is_width == 2 ? $conf->width : $this->getDefault()['default_width'];
+            $conf = $conf->toArray();
+        }else{
+            $conf = $this->getDefault();
+        }
+        return array_merge($conf, $setting);
     }
 }

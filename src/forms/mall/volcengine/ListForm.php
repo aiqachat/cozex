@@ -27,32 +27,12 @@ class ListForm extends Model
         ];
     }
 
-    public function getList()
+    public function getList($type = 2)
     {
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $query = AvData::find()->where(['type' => 2, 'is_delete' => 0]);
-        if ($this->keyword) {
-            $query->andWhere(['like', 'text', $this->keyword]);
-        }
-        $data = $query->page ($pagination, $this->page_size)->all ();
-
-        return [
-            'code' => ApiCode::CODE_SUCCESS,
-            'data' => [
-                'list' => $data,
-                'pagination' => $pagination,
-            ]
-        ];
-    }
-
-    public function getGenerateList()
-    {
-        if (!$this->validate()) {
-            return $this->getErrorResponse();
-        }
-        $query = AvData::find()->where(['type' => 1, 'is_delete' => 0]);
+        $query = AvData::find()->where(['type' => $type, 'is_delete' => 0]);
         if ($this->keyword) {
             $query->andWhere(['like', 'text', $this->keyword]);
         }

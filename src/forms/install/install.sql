@@ -315,4 +315,23 @@ CREATE TABLE `wstx_av_data` (
     KEY `type` (`type`),
     KEY `status` (`status`),
     KEY `is_delete` (`is_delete`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='音视频处理数据';
+
+DROP TABLE IF EXISTS `wstx_bot_conf`;
+CREATE TABLE `wstx_bot_conf` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `bot_id` varchar(50) NOT NULL DEFAULT '' COMMENT '智能体ID',
+    `version` varchar(50) NOT NULL DEFAULT '' COMMENT '版本号',
+    `title` varchar(250) DEFAULT '' COMMENT '智能体名字',
+    `icon` varchar(250) DEFAULT '' COMMENT '智能体的显示图标',
+    `lang` varchar(50) DEFAULT '' COMMENT '智能体的系统语言',
+    `layout` varchar(50) DEFAULT '' COMMENT '智能体窗口的布局风格',
+    `is_width` tinyint(1) DEFAULT 1 COMMENT '1: 默认，2：自定义',
+    `width` int(10) DEFAULT 0 COMMENT '智能体窗口的宽度',
+    `is_delete` int(11) NOT NULL DEFAULT '0',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `bot_id` (`bot_id`),
+    KEY `is_delete` (`is_delete`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='coze智能体配置';

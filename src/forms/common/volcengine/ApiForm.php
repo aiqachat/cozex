@@ -29,6 +29,7 @@ class ApiForm extends BaseObject
         $setting = (new VolcengineForm())->getSetting ();
         $this->token = $setting['access_token'];
         $this->appid = $setting['app_id'];
+        $this->object->setApi($this);
     }
 
     public static function common($config = [])
@@ -42,8 +43,6 @@ class ApiForm extends BaseObject
             $options = ['headers' => $headers];
             $params = $this->object->getParams();
             $url = $this->apiUrl . $this->object->getMethodName();
-            $char = (strpos ($url, "?") === false ? '?' : '&');
-            $url = $url . $char . "appid={$this->appid}";
             if($this->object->getMethod() == Base::METHOD_POST) {
                 if(is_array($params)){
                     $options['json'] = $params;
@@ -53,14 +52,16 @@ class ApiForm extends BaseObject
                 $res = $this->getClient()
                     ->post($url, $options);
             }else{
+                $char = (strpos ($url, "?") === false ? '?' : '&');
                 $res = $this->getClient()
-                    ->get($url . '&' . http_build_query($params), $options);
+                    ->get($url . $char . http_build_query($params), $options);
             }
             $body = $res->getBody()->getContents();
         }catch (\Exception $e){
             if ($e instanceof RequestException && $e->hasResponse()) {
                 $body = $e->getResponse()->getBody()->getContents();
             }else{
+                \Yii::error($e);
                 throw $e;
             }
         }
@@ -70,5 +71,15 @@ class ApiForm extends BaseObject
     private function getClient(): Client
     {
         return new Client(['verify' => false]);
+    }
+
+    public function getAppId()
+    {
+        return $this->appid;
+    }
+
+    public function getToken()
+    {
+        return $this->token;
     }
 }

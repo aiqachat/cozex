@@ -10,6 +10,8 @@ namespace app\forms\mall\volcengine;
 use app\bootstrap\response\ApiCode;
 use app\forms\common\volcengine\api\AtaQuery;
 use app\forms\common\volcengine\api\AtaSubmit;
+use app\forms\common\volcengine\api\AucBigModelQuery;
+use app\forms\common\volcengine\api\AucBigModelSubmit;
 use app\forms\common\volcengine\api\VcQuery;
 use app\forms\common\volcengine\api\VcSubmit;
 use app\forms\common\volcengine\ApiForm;
@@ -28,6 +30,7 @@ class SubtitleForm extends Model
 
     const TYPE_VC = 1;
     const TYPE_ATA = 2;
+    const TYPE_AUC = 3;
 
     public function rules()
     {
@@ -74,7 +77,10 @@ class SubtitleForm extends Model
             ];
         }
         try{
-            if($model->type == self::TYPE_VC) {
+            if($model->type == self::TYPE_AUC) {
+                $obj = new AucBigModelSubmit();
+                $queryObj = new AucBigModelQuery();
+            }else if($model->type == self::TYPE_VC) {
                 $obj = new VcSubmit();
                 $queryObj = new VcQuery();
             }else{
@@ -82,22 +88,37 @@ class SubtitleForm extends Model
                 $obj->audio_text = $model->text;
                 $queryObj = new AtaQuery();
             }
-            $obj->url = $model->localFile($model->file);
+            if($model->type == self::TYPE_AUC) {
+                $obj->url = $model->file;
+                $extension = pathinfo($obj->url, PATHINFO_EXTENSION);
+                $extension = strtolower($extension);
+                $obj->format = $extension;
+            }else {
+                $obj->url = $model->localFile ($model->file);
+            }
             $res = ApiForm::common (['object' => $obj])->request();
             $model->job_id = $res['id'] ?? '';
-
             $queryObj->id = $model->job_id;
-            $res = ApiForm::common(['object' => $queryObj])->request();
+
+            if($model->type == self::TYPE_AUC) {
+                do{
+                    sleep (1);
+                    $res = ApiForm::common (['object' => $queryObj])->request ();
+                }while(empty($res['result']['text']));
+                $res = ['utterances' => $res['result']['utterances']];
+            }else {
+                $res = ApiForm::common (['object' => $queryObj])->request ();
+            }
             $text = '';
             foreach ($res['utterances'] as $k => $item){
                 $k++;
                 $text .= "{$k}\r\n" . $this->times($item['start_time']) . " --> "
                     . $this->times($item['end_time']) . "\r\n" . $item['text'] . "\r\n\r\n";
             }
-            $res = file_uri('/web/uploads/av_file/');
-            $file = $res['local_uri'] . "{$model->id}.srt";
+            $fileRes = file_uri('/web/uploads/av_file/');
+            $file = $fileRes['local_uri'] . "{$model->id}.srt";
             file_put_contents($file, $text);
-            $model->result = $res['web_uri'] . "{$model->id}.srt";
+            $model->result = $fileRes['web_uri'] . "{$model->id}.srt";
             $model->status = 2;
             $return = [
                 'code' => ApiCode::CODE_SUCCESS,

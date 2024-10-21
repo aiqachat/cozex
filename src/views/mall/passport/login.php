@@ -145,6 +145,10 @@ $indSetting = (new \app\forms\mall\setting\ConfigForm())->config();
         cursor: pointer;
         margin-left: 20px;
     }
+
+    .el-input-group__append{
+        border: none;
+    }
 </style>
 <script src="<?= Yii::$app->request->baseUrl ?>/statics/js/crypto-js.min.js"></script>
 <div id="app" v-cloak>
@@ -167,8 +171,14 @@ $indSetting = (new \app\forms\mall\setting\ConfigForm())->config();
                             </el-form-item>
                             <el-form-item prop="password">
                                 <div class="ws-input2">
-                                    <el-input  class="ws-input2" @keyup.enter.native="login('ruleForm')" type="password" placeholder="请输入密码"
-                                               v-model="ruleForm.password"></el-input>
+                                    <el-input  class="ws-input2" @keyup.enter.native="login('ruleForm')" :type="pwdType" placeholder="请输入密码"
+                                               v-model="ruleForm.password">
+                                        <template slot="append">
+                                            <svg class="icon" style="width: 15px;height: 15px;cursor: pointer;" @click="showPwd">
+                                                <use xlink:href="statics/sprite.svg#icon-eye"></use>
+                                            </svg>
+                                        </template>
+                                    </el-input>
                                 </div>
                             </el-form-item>
                             <el-form-item prop="pic_captcha">
@@ -235,12 +245,20 @@ $indSetting = (new \app\forms\mall\setting\ConfigForm())->config();
                 },
                 pic_captcha_src: null,
                 desKey: '<?= !empty($key) ? $key : "123456"; ?>', // 加密key @czs
+                pwdType: 'password',
             };
         },
         created() {
             this.loadPicCaptcha();
         },
         methods: {
+            showPwd() {
+                if (this.pwdType === 'password') {
+                    this.pwdType = ''
+                } else {
+                    this.pwdType = 'password'
+                }
+            },
             login(formName) {
                 let self = this;
                 self.$refs[formName].validate((valid) => {

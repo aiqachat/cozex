@@ -72,11 +72,11 @@
                         <el-radio v-model="data.layout" label="mobile">手机端风格</el-radio>
                         <el-radio v-model="data.layout" label="pc">PC端风格</el-radio>
                     </el-form-item>
-                    <el-form-item label="窗口宽度" prop="width" size="small">
-                        <el-radio-group v-model="data.width">
-                            <el-radio :label="460">默认460</el-radio>
-                            <el-radio :label="0">
-                                <el-input type="number" v-model.trim="data.custom_width"></el-input>
+                    <el-form-item label="窗口宽度" prop="is_width" size="small">
+                        <el-radio-group v-model="data.is_width">
+                            <el-radio :label="1">默认460</el-radio>
+                            <el-radio :label="2">
+                                <el-input type="number" v-model.trim="data.width"></el-input>
                             </el-radio>
                         </el-radio-group>
                     </el-form-item>

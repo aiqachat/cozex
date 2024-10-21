@@ -59,8 +59,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                         <span style="color: #8E918F">发布时间: {{item.publish_time}}</span>
                         <div>
                             <el-button type="success" size="mini" v-if="set_bot.bot_id == item.bot_id" @click="use(item)" v-loading="btnLoading">使用中</el-button>
-                            <el-button type="warning" size="mini" v-else-if="set_bot.last_bot_id == item.bot_id" @click="use(item)" v-loading="btnLoading">已停用</el-button>
-                            <el-button type="primary" size="mini" @click="use(item)" v-loading="btnLoading" v-else>使用</el-button>
+                            <el-button type="warning" size="mini" v-else @click="use(item)" v-loading="btnLoading">已停用</el-button>
                             <el-button type="primary" size="mini" @click="conf(item)">配置</el-button>
                         </div>
                     </div>
@@ -134,7 +133,6 @@ Yii::$app->loadViewComponent('app-coze-choose')
                 });
             },
             conf(row){
-                //  data: {bot_id: row.bot_id},
                 navigateTo({r: 'mall/bot/set', bot_id: row.bot_id});
             },
             changeAccount(val){

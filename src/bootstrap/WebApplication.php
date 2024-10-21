@@ -46,4 +46,12 @@ class WebApplication extends \yii\web\Application
             ->loadAppLogger()
             ->loadAppHandler();
     }
+
+    public function setDb($db)
+    {
+        if (\Yii::$app->has('db')) {
+            \Yii::$app->db->close();
+        }
+        \Yii::$app->set('db', $db);
+    }
 }

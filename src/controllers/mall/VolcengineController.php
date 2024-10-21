@@ -38,7 +38,7 @@ class VolcengineController extends AdminController
             if(\Yii::$app->request->isGet) {
                 $form = new ListForm();
                 $form->attributes = \Yii::$app->request->get();
-                return $this->asJson ($form->getGenerateList());
+                return $this->asJson ($form->getList(1));
             }else{
                 $form = new SubtitleForm();
                 $form->attributes = \Yii::$app->request->post();
@@ -47,6 +47,24 @@ class VolcengineController extends AdminController
             }
         } else {
             return $this->render('generate');
+        }
+    }
+
+    public function actionAuc()
+    {
+        if (\Yii::$app->request->isAjax) {
+            if(\Yii::$app->request->isGet) {
+                $form = new ListForm();
+                $form->attributes = \Yii::$app->request->get();
+                return $this->asJson ($form->getList(3));
+            }else{
+                $form = new SubtitleForm();
+                $form->attributes = \Yii::$app->request->post();
+                $form->type = SubtitleForm::TYPE_AUC;
+                return $this->asJson ($form->save());
+            }
+        } else {
+            return $this->render('auc');
         }
     }
 

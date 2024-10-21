@@ -58,6 +58,10 @@ class Menus
                         'name' => '字幕打轴',
                         'route' => 'mall/volcengine/titling',
                     ],
+                    [
+                        'name' => '语音识别',
+                        'route' => 'mall/volcengine/auc',
+                    ],
                 ],
             ],
             [

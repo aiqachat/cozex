@@ -15,6 +15,9 @@ class Base extends Model
     const METHOD_POST = 'POST';
     const METHOD_GET = 'GET';
 
+    /** @var ApiForm */
+    protected $api;
+
     function getMethod()
     {
         return self::METHOD_POST;
@@ -28,6 +31,10 @@ class Base extends Model
         return $this->attributes;
     }
 
+    public function setApi(ApiForm $api){
+        $this->api = $api;
+    }
+
     public function getHeaders(){
         return [];
     }
@@ -36,7 +43,7 @@ class Base extends Model
         if(isset($response['code']) && $response['code'] == 0 && $response['message'] == 'Success'){
             return $response;
         }
-        \Yii::error($this->getMethodName() . " = 对接火山引擎接口异常：");
+        \Yii::error(explode("?", $this->getMethodName())[0] . " = 对接火山引擎接口异常：");
         \Yii::error($response);
         $this->errorMsg($response);
     }
@@ -52,6 +59,9 @@ class Base extends Model
             1012 => '音频 header 有误 / 无法进行音频解码。',
             1013 => '音频未识别出任何文本结果。',
         ];
+        if($response['code'] == 1022 && strpos($response['message'], 'resource not granted') !== false){
+            $response['message'] = '无权限，请开通服务';
+        }
         throw new \Exception($res[$response['code'] ?? ''] ?? $response['message']);
     }
 }

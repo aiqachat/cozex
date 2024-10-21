@@ -44,6 +44,7 @@ class InstallForm extends Model
     public $redis_password;
     public $admin_username;
     public $admin_password;
+    public $is_clear;
 
     public function rules()
     {
@@ -53,9 +54,10 @@ class InstallForm extends Model
                 'trim',
             ],
             [['redis_password'], 'string'],
+            [['is_clear'], 'integer'],
             [
                 ['db_host', 'db_port', 'db_username', 'db_password', 'db_name', 'admin_username', 'admin_password', 'redis_host', 'redis_port',],
-                'required',
+                'required', 'on' => 'install'
             ],
         ];
     }
@@ -139,6 +141,25 @@ EOF;
         return $this->db;
     }
 
+    public function check()
+    {
+        if (!$this->validate ()) {
+            return $this->getErrorResponse ();
+        }
+        try {
+            $this->getDb()->createCommand('SHOW TABLES')->execute();
+        }catch (\Exception $exception){
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => $this->dbErrorCode[$exception->getCode()] ?? $exception->getMessage(),
+            ];
+        }
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'msg' => '成功' ,
+        ];
+    }
+
     public function install()
     {
         if (!$this->validate()) {
@@ -150,7 +171,13 @@ EOF;
             $res = $this->getDb()->createCommand('SHOW TABLES LIKE :keyword', [':keyword' => $this->tablePrefix . '%'])
                 ->queryAll();
             if ($res) {
-                throw new \Exception("已存在表前缀为`{$this->tablePrefix}`的数据表，无法安装。");
+                if(!$this->is_clear) {
+                    throw new \Exception("已存在表前缀为`{$this->tablePrefix}`的数据表，无法安装。", 2);
+                }else{
+                    array_map(function ($item) {
+                        $this->getDb()->createCommand("DROP TABLE IF EXISTS `" . array_values($item)[0] . "`;")->execute();
+                    }, $res);
+                }
             }
             $this->testAndSaveRedis();
 
@@ -218,6 +245,9 @@ EOF;
             return [
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => '安装失败，' . $exception->getMessage(),
+                'data' => [
+                    'code' => $exception->getCode(),
+                ],
             ];
         }
         return [
@@ -237,7 +267,7 @@ EOF;
                 'system_type' => '3',
                 'system_name' => 'cozex系统',
                 'system_version' => $versionData['version'],
-                'ip_addr' => $_SERVER['REMOTE_ADDR'],
+                'ip_addr' => gethostbyname($_SERVER['SERVER_NAME']),
                 'system_server' => json_encode($_SERVER),
             ];
             CurlHelper::getInstance(2)->httpPost($url, [], $params);

@@ -23,6 +23,21 @@
     .el-card {
         margin-top: 10px;
     }
+
+    .version-item::after {
+        content: " ";
+        display: block;
+        border-bottom: 1px dashed #c9c9c9;
+        margin: 10px 0;
+    }
+
+    .version-list {
+        max-height: 300px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        margin-left: 10px;
+        margin-top: 10px;
+    }
 </style>
 <div id="app" v-cloak>
     <el-card v-loading="loading" shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
@@ -60,7 +75,24 @@
                 </div>
                 <div class="num-info">
                     <div class="num-info-item">
-                        {{version}}
+                        <span style="color: #9C9FA4;">当前版本：</span>{{version}}
+                    </div>
+                    <div class="num-info-item">
+                        <span style="color: #9C9FA4;">下一个版本：</span>
+                        <span v-if="version_list.next_version">
+                            V{{version_list.next_version.version_number}}
+                            <el-button v-loading="butLoading" type="text" size="mini" @click="update">立即更新</el-button>
+                        </span>
+                        <span v-else>暂无新版本</span>
+                    </div>
+                </div>
+                <div class="version-list" v-if="version_list.list && version_list.list.length > 0">
+                    <div style="color: #9C9FA4;font-size: 20px;">历史版本记录</div>
+                    <div v-for="item in version_list.list" class="version-item">
+                        <div style="margin-left: 40px;">
+                            <div>版本号: {{item.version_number}}</div>
+                            <div v-html="item.content"></div>
+                        </div>
                     </div>
                 </div>
             </el-card>
@@ -74,8 +106,10 @@
         data() {
             return {
                 loading: false,
+                butLoading: false,
                 list: [],
                 version: '',
+                version_list: {},
             };
         },
         methods: {
@@ -92,12 +126,49 @@
                     if (e.data.code === 0) {
                         this.list = Object.assign({}, this.list, e.data.data.info);
                         this.version = e.data.data.version
+                        this.version_list = e.data.data.version_list
                     } else {
                         this.$message.error(e.data.msg);
                     }
                 }).catch(e => {
         			this.loading = false;
-                });        		
+                });
+        	},
+            update() {
+                this.$confirm("确认更新到版本 v" + this.version_list.next_version.version_number + ' ?', "警告", {
+                    type: 'warning',
+                }).then(() => {
+                    this.doUpdate();
+                }).catch(() => {
+                    location.reload();
+                });
+        	},
+            doUpdate() {
+        		this.butLoading = true;
+                request({
+                    params: {
+                        r: 'mall/update/index',
+                    },
+                    method: 'post',
+                    data: {_csrf: this._csrf},
+                }).then(e => {
+        			this.butLoading = false;
+                    if (e.data.code === 0) {
+                        if(e.data.data.reply === 1){
+                            this.doUpdate();
+                        }else {
+                            this.$alert(e.data.msg, "提示").then(() => {
+                                location.reload();
+                            }).catch(() => {
+                                location.reload();
+                            });
+                        }
+                    } else {
+                        this.$message.error(e.data.msg);
+                    }
+                }).catch(e => {
+        			this.butLoading = false;
+                });
         	},
         },
         created() {

@@ -55,7 +55,7 @@ class AdminController extends Controller
                 'system_type' => '3',
                 'system_name' => 'cozex系统',
                 'system_version' => $versionData['version'],
-                'ip_addr' => $_SERVER['REMOTE_ADDR'],
+                'ip_addr' => gethostbyname($_SERVER['SERVER_NAME']),
                 'system_server' => json_encode($_SERVER),
             ];
             CurlHelper::getInstance(2)->httpPost($url, [], $params);

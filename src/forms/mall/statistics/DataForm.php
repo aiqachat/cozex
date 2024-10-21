@@ -5,6 +5,7 @@ namespace app\forms\mall\statistics;
 
 
 use app\bootstrap\response\ApiCode;
+use app\forms\mall\UpdateForm;
 use app\models\Model;
 
 class DataForm extends Model
@@ -57,7 +58,8 @@ class DataForm extends Model
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
                 'info' => $res,
-                'version' => 'V'.app_version()
+                'version' => 'V'.app_version(),
+                'version_list' => (new UpdateForm())->getIndex()['data'] ?? new \stdClass()
             ]
         ];
     }

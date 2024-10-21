@@ -33,7 +33,8 @@ class AtaSubmit extends Base
         $get = [
             'caption_type' => $this->caption_type,
             'audio_text' => $this->audio_text,
-            'sta_punc_mode' => $this->sta_punc_mode ?: 1
+            'sta_punc_mode' => $this->sta_punc_mode ?: 1,
+            'appid' => $this->api->getAppId(),
         ];
         return "/api/v1/vc/ata/submit?" . http_build_query($get);
     }

@@ -8,7 +8,6 @@
 
 namespace app\controllers;
 
-
 use app\forms\install\InstallForm;
 use yii\web\ForbiddenHttpException;
 
@@ -24,11 +23,21 @@ class InstallController extends Controller
         if (\Yii::$app->request->isAjax) {
             if (\Yii::$app->request->isPost) {
                 $form = new InstallForm();
+                $form->scenario = 'install';
                 $form->attributes = \Yii::$app->request->post();
                 return $form->install();
             }
         } else {
             return $this->render('index');
+        }
+    }
+
+    public function actionCheck()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new InstallForm();
+            $form->attributes = \Yii::$app->request->post();
+            return $form->check();
         }
     }
 }

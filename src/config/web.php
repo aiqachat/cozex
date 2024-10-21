@@ -7,7 +7,7 @@ $config['components']['errorHandler'] = [
     'class' => 'app\bootstrap\ErrorHandler',
 ];
 $config['components']['request'] = [
-    'cookieValidationKey' => 'JZVyijtbbpYd-m0OCXCXHsA9mRurIDaI',
+    'cookieValidationKey' => 'JZVyijtbbpYd-m02CXCXHsA9mRurIDaI',
     'parsers' => [
         'application/json' => 'yii\web\JsonParser',
     ], // 解析json数据请求 @czs

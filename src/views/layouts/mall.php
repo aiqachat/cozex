@@ -28,7 +28,7 @@ if (!empty($indSetting['name'])) {
 } else {
     $siteName = 'cozex管理';
 }
-$coze_set = (new IndexForm())->getSetting();
+$coze_set = (new IndexForm())->page();
 ?>
 <?php $this->beginPage(); ?>
     <!DOCTYPE html>
@@ -688,7 +688,7 @@ $coze_set = (new IndexForm())->getSetting();
                     icon: '<?= $coze_set['icon'] ?>',
                     lang: '<?= $coze_set['lang'] ?>',
                     layout: '<?= $coze_set['layout'] ?>',
-                    width: <?= $coze_set['width'] ?: $coze_set['custom_width'] ?>,
+                    width: <?= $coze_set['width'] ?>,
                 },
             });
         </script>
