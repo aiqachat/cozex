@@ -4,6 +4,10 @@
  * copyright: Copyright (c) 2024 深圳网商天下科技有限公司
  * author: chenzs
  */
+
+use app\forms\mall\volcengine\SpeechForm;
+
+$voiceType = (new SpeechForm())->voiceType();
 ?>
 <style type="text/css">
     @import "<?= \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/statics/css/table.css' ?>";
@@ -23,7 +27,7 @@
 <div id="app" v-cloak>
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
         <div slot="header">
-            <span>字幕打轴列表</span>
+            <span>语音合成列表</span>
             <div style="float: right;margin-top: -5px">
                 <el-button type="primary" @click="dialog = true" size="small">添加</el-button>
             </div>
@@ -34,14 +38,27 @@
                     <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
                 </el-input>
             </div>
+            <div class="input-item">
+                <el-select size="small" v-model="searchData.type" @change='search'>
+                    <el-option key="" label="全部" value=""></el-option>
+                    <el-option key="4" label="大模型语音" value="4"></el-option>
+                    <el-option key="5" label="精品长文本语音" value="5"></el-option>
+                </el-select>
+            </div>
             <el-table :data="form" border style="width: 100%" v-loading="listLoading">
                 <el-table-column type="selection" width="55"></el-table-column>
-                <el-table-column prop="file" label="文件"></el-table-column>
-                <el-table-column label="字幕文本">
+                <el-table-column prop="text" label="文本">
                     <template slot-scope="scope">
                         <span style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">
                             {{scope.row.text}}
                         </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="版本" width="110">
+                    <template slot-scope="scope">
+                        <el-tag v-if="scope.row.type == 4" size="mini" type="success">大模型语音</el-tag>
+                        <el-tag v-else-if="scope.row.data.version == 1" size="mini" type="success">普通版</el-tag>
+                        <el-tag v-else-if="scope.row.data.version == 2" size="mini" type="success">情感预测版</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column label="状态" width="90">
@@ -58,8 +75,16 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
-                <el-table-column label="操作" width="150" fixed="right">
+                <el-table-column label="操作" width="220" fixed="right">
                     <template slot-scope="scope">
+                        <audio :ref="'audio' + scope.row.id" >
+                            <source :src="scope.row.result" type="audio/mpeg">
+                        </audio>
+                        <el-tooltip class="item" effect="dark" content="播放" placement="top" v-if="scope.row.status == 2">
+                            <el-button circle type="text" size="mini" @click="playMusic(scope.row)">
+                                <img src="statics/img/mall/music.png" alt="">
+                            </el-button>
+                        </el-tooltip>
                         <el-tooltip class="item" effect="dark" content="下载" placement="top" v-if="scope.row.status == 2">
                             <el-button circle type="text" size="mini" @click="down(scope.row)">
                                 <img src="statics/img/mall/download.png" alt="">
@@ -80,28 +105,45 @@
         </div>
         <el-dialog title="操作" :visible.sync="dialog" width="30%">
             <el-form :model="data" label-width="100px" :rules="rules" ref="data">
-                <el-form-item label="文件" prop="file">
-                    <el-input v-model="data.file">
-                        <template slot="append">
-                            <app-attachment v-model="data.file" :type="'video'">
-                                <el-button>上传文件</el-button>
-                            </app-attachment>
-                        </template>
-                    </el-input>
+                <el-form-item label="app_id" prop="data.app_id">
+                    <el-input size="small" placeholder="请输入APPID" v-model.trim="data.data.app_id"></el-input>
+                    <div style="color: #a4a4a4;">注：空则默认用全局配置</div>
                 </el-form-item>
-                <el-form-item prop="is_del">
-                    <template slot='label'>
-                        <span>文件删除</span>
-                        <el-tooltip effect="dark" content="文件处理完后自动删除"
-                                    placement="top">
-                            <i class="el-icon-info"></i>
-                        </el-tooltip>
-                    </template>
-                    <el-switch v-model="data.is_del" :active-value="1"
-                               :inactive-value="0"></el-switch>
+                <el-form-item label="Access Token" prop="data.access_token">
+                    <el-input size="small" placeholder="请输入TOKEN" v-model.trim="data.data.access_token"></el-input>
+                    <div style="color: #a4a4a4;">注：空则默认用全局配置</div>
                 </el-form-item>
-                <el-form-item label="字幕文本" prop="text">
-                    <el-input type="textarea" v-model.trim="data.text" rows="8" show-word-limit></el-input>
+                <el-form-item label="使用api" prop="type">
+                    <el-radio-group size="small" v-model.trim="data.type" @change="change">
+                        <el-radio :label="4">大模型语音</el-radio>
+                        <el-radio :label="5">精品长文本语音</el-radio>
+                    </el-radio-group>
+                    <div style="color: #a4a4a4;" v-if="data.type == 4">注：目前该能力只对企业客户开放，如需测试或接入须先进行企业认证。</div>
+                </el-form-item>
+                <el-form-item label="使用版本" prop="data.version" v-if="data.type == 5">
+                    <el-radio-group size="small" v-model.trim="data.data.version" @change="change">
+                        <el-radio :label="1">普通版</el-radio>
+                        <el-radio :label="2">情感预测版</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="语音文本" prop="text">
+                    <el-input size="small" type="textarea" v-model.trim="data.text" rows="10" show-word-limit></el-input>
+                </el-form-item>
+                <el-form-item label="音色列表" prop="data.voice_type" v-if="voices.length > 0">
+                    <el-select size="small" v-model="data.data.voice_type" @change="changeVoice" filterable>
+                        <el-option v-for="item in voices" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                    </el-select>
+                    <div style="color: #a4a4a4;">注：音色说明请点击查看<a href="https://www.volcengine.com/docs/6561/97465" target="_blank">官方文档</a></div>
+                </el-form-item>
+                <el-form-item label="感情选择" prop="data.style" v-if="emotion.length > 0">
+                    <el-select size="small" v-model="data.data.style" filterable>
+                        <el-option v-for="item in emotion" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="语言选择" prop="data.language" v-if="language.length > 0">
+                    <el-select size="small" v-model="data.data.language" filterable>
+                        <el-option v-for="item in language" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -118,6 +160,7 @@
             return {
                 searchData: {
                     keyword: '',
+                    type: '',
                 },
                 form: [],
                 pageCount: 0,
@@ -128,36 +171,88 @@
                 btnLoading: false,
 
                 dialog: false,
-                data: {},
+                data: {
+                    type: 5,
+                    data: {
+                        version: 1,
+                        language: '',
+                        style: '',
+                        voice_type: '',
+                    }
+                },
                 rules: {
-                    file: [
-                        {required: true, message: '文件不能为空', trigger: 'blur'},
-                    ],
                     text: [
-                        {required: true, message: '字幕文本不能为空', trigger: 'blur'},
+                        {required: true, message: '文本不能为空', trigger: 'blur'},
+                    ],
+                    'data.voice_type': [
+                        {required: true, message: '请选择音色', trigger: 'blur'},
                     ],
                 },
+                options: <?= $voiceType ?>,
+                voices: [],
+                language: [],
+                emotion: [],
             };
         },
         methods: {
+            playMusic(row) {
+                let text = "audio" + row.id;
+                this.$refs[text].play();
+            },
+            changeVoice() {
+                this.language = [];
+                this.emotion = [];
+                this.voices.forEach(its => {
+                    if(its.id === this.data.data.voice_type){
+                        if(its.language){
+                            this.language = its.language;
+                            this.data.data.language = its.language[0].value;
+                        }
+                        if(its.emotion){
+                            this.emotion = its.emotion;
+                            this.data.data.style = its.emotion[0].value;
+                        }
+                    }
+                });
+            },
+            change() {
+                let list = [];
+                this.voices = [];
+                if (this.data.type === 5 && this.data.data.version === 2) { // 情感预测版
+                    this.options[this.data.type].forEach(item => {
+                        if (item.id === 'yousheng') {
+                            list.push(item)
+                        }
+                    });
+                } else {
+                    list = this.options[this.data.type]
+                }
+                list.forEach(item => {
+                    if(item.children.length > 0){
+                        item.children.forEach(its => {
+                            this.voices.push(its)
+                        });
+                    }
+                });
+            },
             submit() {
                 this.$refs.data.validate((valid) => {
                     if (valid) {
                         this.btnLoading = true;
                         request({
-                            params: {r: 'mall/volcengine/titling'},
+                            params: {r: 'mall/volcengine/tts'},
                             method: 'post',
                             data: this.data,
                         }).then(e => {
                             if (e.data.code === 0) {
-                                this.getList()
-                                this.dialog = false;
+                                setTimeout(function (){
+                                    navigateTo({r:'mall/volcengine/tts'})
+                                }, 500)
                             } else {
                                 this.$message.error(e.data.msg);
+                                this.btnLoading = false;
                             }
-                            this.btnLoading = false;
                         }).catch(e => {
-                            this.btnLoading = false;
                         });
                     }
                 });
@@ -186,7 +281,7 @@
                 if(type === 1) {
                     this.listLoading = true;
                 }
-                let param = Object.assign({r: 'mall/volcengine/titling', page: this.page}, this.searchData);
+                let param = Object.assign({r: 'mall/volcengine/tts', page: this.page}, this.searchData);
                 request({
                     params: param,
                 }).then(e => {
@@ -229,6 +324,7 @@
             this.timer = setInterval(() => {
                 this.getList(0);
             }, 5000)
+            this.change();
         }
     });
 </script>

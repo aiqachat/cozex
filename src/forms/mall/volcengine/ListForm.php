@@ -10,6 +10,7 @@ namespace app\forms\mall\volcengine;
 use app\bootstrap\response\ApiCode;
 use app\models\AvData;
 use app\models\Model;
+use yii\helpers\Json;
 
 class ListForm extends Model
 {
@@ -36,12 +37,24 @@ class ListForm extends Model
         if ($this->keyword) {
             $query->andWhere(['like', 'text', $this->keyword]);
         }
-        $data = $query->page ($pagination, $this->page_size)->all ();
-
+        $data = $query->page($pagination, $this->page_size)
+            ->orderBy(['updated_at' => SORT_DESC])
+            ->all();
+        $list = [];
+        /** @var AvData $item */
+        foreach ($data as $item){
+            $items = $item->toArray();
+            unset($items['data']);
+            if($item->data){
+                $items['data'] = Json::decode($item->data) ?: [];
+                unset($items['data']['app_id'], $items['data']['access_token']);
+            }
+            $list[] = $items;
+        }
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
-                'list' => $data,
+                'list' => $list,
                 'pagination' => $pagination,
             ]
         ];

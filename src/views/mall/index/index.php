@@ -7,7 +7,6 @@
  * @copyright: ©2024 深圳网商天下科技
  * @link: https://www.netbcloud.com
  */
-Yii::$app->loadViewComponent('app-rich-text')
 ?>
 
 <style>

@@ -27,8 +27,8 @@ class AucBigModelQuery extends Base
         return [
             'X-Api-Request-Id' => $this->id,
             'X-Api-Resource-Id' => 'volc.bigasr.auc',
-            'X-Api-App-Key' => $this->api->getAppId (),
-            'X-Api-Access-Key' => $this->api->getToken (),
+            'X-Api-App-Key' => $this->api->appid,
+            'X-Api-Access-Key' => $this->api->token,
         ];
     }
 

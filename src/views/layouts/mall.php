@@ -688,7 +688,7 @@ $coze_set = (new IndexForm())->page();
                     icon: '<?= $coze_set['icon'] ?>',
                     lang: '<?= $coze_set['lang'] ?>',
                     layout: '<?= $coze_set['layout'] ?>',
-                    width: <?= $coze_set['width'] ?>,
+                    width:  <?php if(!$coze_set['width']):?> null <?php else:?><?=$coze_set['width']?><?php endif;?>,
                 },
             });
         </script>

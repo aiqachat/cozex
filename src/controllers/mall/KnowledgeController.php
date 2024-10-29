@@ -18,6 +18,7 @@ class KnowledgeController extends AdminController
     {
         if (\Yii::$app->request->isAjax) {
             $form = new ListForm();
+            $form->scenario = 'list';
             $form->attributes = \Yii::$app->request->get();
             return $this->asJson($form->getList());
         } else {
@@ -72,6 +73,23 @@ class KnowledgeController extends AdminController
             }
         } else {
             return $this->render('add-file');
+        }
+    }
+
+    public function actionAddLocal()
+    {
+        if (\Yii::$app->request->isAjax) {
+            if (\Yii::$app->request->isPost) {
+                $form = new AddFileForm();
+                $form->attributes = \Yii::$app->request->post();
+                return $this->asJson ($form->save());
+            }else {
+                $form = new FileListForm();
+                $form->attributes = \Yii::$app->request->get();
+                return $this->asJson ($form->get());
+            }
+        } else {
+            return $this->render('add-local');
         }
     }
 

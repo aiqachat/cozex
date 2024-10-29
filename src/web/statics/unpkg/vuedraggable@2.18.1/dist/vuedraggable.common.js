@@ -2461,4 +2461,3 @@ if (typeof window !== "undefined" && "Vue" in window) {
 /***/ })
 
 /******/ })["default"];
-//# sourceMappingURL=vuedraggable.common.js.map

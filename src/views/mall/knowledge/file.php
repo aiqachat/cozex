@@ -24,11 +24,20 @@
             </el-breadcrumb>
             <div style="float: right;margin-top: -20px">
                 <el-button type="primary" @click="$navigate({r:'mall/knowledge/add-file', id: id})"
-                           size="small">添加内容(文件)
-                </el-button>
+                           size="small">添加上传内容(文件)</el-button>
+<!--                <el-button type="primary" @click="$navigate({r:'mall/knowledge/add-local', id: id})"-->
+<!--                           size="small">添加本地在线文件</el-button>-->
+            </div>
+        </div>
+        <div slot="header" style="margin-top: 15px">
+            <div style="color: #8E9190">
+                <span v-if="format_type == 0">支持 PDF、TXT、DOC、DOCX、MD，最多可上传 10 个文件，每个文件不超过 100MB，PDF 最多 500 页</span>
+                <span v-if="format_type == 1">上传一份Excel或CSV格式的文档，文件大小限制20MB以内。</span>
+                <span v-if="format_type == 2">支持 JPG，JPEG，PNG，每个文件不超过20 MB</span>
             </div>
         </div>
         <div class="table-body">
+            <div style="padding-bottom: 10px;font-weight: bold;">{{name}}</div>
             <el-table ref="multipleTable" :data="form" border style="width: 100%" v-loading="listLoading">
                 <el-table-column
                   type="selection"
@@ -47,15 +56,27 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="update_time" label="编辑时间" width="180">
-                </el-table-column>
-                <el-table-column label="操作" width="150" fixed="right">
+                <el-table-column prop="hit_count" label="命中次数" width="95"></el-table-column>
+                <el-table-column label="格式" width="80">
                     <template slot-scope="scope">
-<!--                        <el-tooltip class="item" effect="dark" content="编辑" placement="top">-->
-<!--                            <el-button circle type="text" size="mini" @click="edit(scope.row)">-->
-<!--                                <img src="statics/img/mall/edit.png" alt="">-->
-<!--                            </el-button>-->
-<!--                        </el-tooltip>-->
+                        <el-tag v-if="scope.row.format_type == 0" size="mini" type="success">文本</el-tag>
+                        <el-tag v-if="scope.row.format_type == 1" size="mini" type="success">表格</el-tag>
+                        <el-tag v-if="scope.row.format_type == 2" size="mini" type="success">照片</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="type" label="格式后缀" width="95"></el-table-column>
+                <el-table-column prop="size" label="大小" width="90"></el-table-column>
+                <el-table-column label="状态" width="95">
+                    <template slot-scope="scope">
+                        <el-tag v-if="scope.row.status == 0" size="mini">处理中</el-tag>
+                        <el-tag v-else-if="scope.row.status == 1" size="mini" type="success">处理完毕</el-tag>
+                        <el-tag v-else size="mini" type="danger">处理失败</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="create_time" label="创建时间" width="160"></el-table-column>
+                <el-table-column prop="update_time" label="编辑时间" width="160"></el-table-column>
+                <el-table-column label="操作" width="80" fixed="right">
+                    <template slot-scope="scope">
                         <el-tooltip class="item" effect="dark" content="删除" placement="top">
                             <el-button circle type="text" size="mini" @click="destroy(scope.row)">
                                 <img src="statics/img/mall/del.png" alt="">
@@ -79,6 +100,8 @@
                 id: getQuery('id'),
                 searchData: {keyword: ''},
                 form: [],
+                format_type: '',
+                name: '',
                 pageCount: 0,
                 pageSize: 10,
                 page: 1,
@@ -126,6 +149,8 @@
                 }).then(e => {
                     if (e.data.code === 0) {
                         this.form = e.data.data.list;
+                        this.name = e.data.data.name;
+                        this.format_type = e.data.data.format_type;
                         this.pageCount = e.data.data.pagination.total_count;
                         this.pageSize = e.data.data.pagination.pageSize;
                         this.currentPage = e.data.data.pagination.current_page;

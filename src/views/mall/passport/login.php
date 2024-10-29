@@ -223,8 +223,6 @@ $indSetting = (new \app\forms\mall\setting\ConfigForm())->config();
                 login_bg: passportBg ? passportBg : _baseUrl + '/statics/img/admin/BG.png',
                 login_logo: _siteLogo,
                 mainColor: '#0062d9',
-                username: '',
-                password: '',
                 footHeight: '5%',
                 btnLoading: false,
                 dialogFormVisible: false,
@@ -264,18 +262,17 @@ $indSetting = (new \app\forms\mall\setting\ConfigForm())->config();
                 self.$refs[formName].validate((valid) => {
                     if (valid) {
                         self.btnLoading = true;
-                        let orgPwd = self.ruleForm.password;
-                        self.ruleForm.password = self.encrypt(self.ruleForm.password, self.desKey, self.desKey); // 密码加密 @czs
+                        let data = JSON.parse(JSON.stringify(self.ruleForm));
+                        data.password = self.encrypt(self.ruleForm.password, self.desKey, self.desKey); // 密码加密 @czs
                         request({
                             params: {
                                 r: 'mall/passport/login'
                             },
                             method: 'post',
                             data: {
-                                form: self.ruleForm,
+                                form: data,
                             }
                         }).then(e => {
-                            self.ruleForm.password = orgPwd;
                             self.btnLoading = false;
                             if (e.data.code === 0) {
                                 this.$message.success(e.data.msg);

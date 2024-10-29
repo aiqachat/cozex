@@ -6,17 +6,6 @@
  */
 ?>
 <style>
-    /*.app-coze-choose{*/
-    /*    !*background-color: #fff;*!*/
-    /*    padding: 14px 0 0 65px;*/
-    /*}*/
-
-    .app-coze-choose{
-        /*background-color: #fff;*/
-        /*padding: 20px 20px 0 20px;*/
-        /*margin-bottom: 10px;*/
-    }
-
     .space_img{
         width: 32px;
         height: 32px;
@@ -130,6 +119,9 @@ Vue.component('app-coze-choose', {
             });
         },
         getSpace(){
+            if(this.search.space_id === 'all'){
+                this.search.space_id = '';
+            }
             this.space = [];
             this.loading = true;
             request({

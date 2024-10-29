@@ -20,7 +20,7 @@ class AtaQuery extends Base
 
     public function getMethodName()
     {
-        return "/api/v1/vc/ata/query?appid=" . $this->api->getAppId();
+        return "/api/v1/vc/ata/query?appid=" . $this->api->appid;
     }
 
     function getMethod()

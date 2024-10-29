@@ -150,7 +150,16 @@
                 });
             },
             down(row) {
-                window.open(row.result);
+                const url = row.result;//这里替换为实际文件的URL
+                let urlObject = new URL(url);
+                let pathname = urlObject.pathname;
+                let fileName = pathname.split('/').pop();
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             },
             search() {
                 this.page = 1;
@@ -160,8 +169,10 @@
                 this.page = currentPage;
                 this.getList();
             },
-            getList() {
-                this.listLoading = true;
+            getList(type = 1) {
+                if(type === 1) {
+                    this.listLoading = true;
+                }
                 let param = Object.assign({r: 'mall/volcengine/generate', page: this.page}, this.searchData);
                 request({
                     params: param,
@@ -203,7 +214,7 @@
             this.page = getQuery('page') ? getQuery('page') : 1;
             this.getList();
             this.timer = setInterval(() => {
-                this.getList();
+                this.getList(0);
             }, 5000)
         }
     });

@@ -26,12 +26,17 @@ class AddFileForm extends Model
     public $type;
     public $separator;
     public $separator_custom;
+    public $upload_type;
+    public $update_type;
+    public $web_url;
+    public $update_interval;
+    public $name;
 
     public function rules()
     {
         return [
-            [['id', 'max_length'], 'integer'],
-            [['type', 'separator', 'separator_custom'], 'string'],
+            [['id', 'max_length', 'upload_type', 'update_type', 'update_interval'], 'integer'],
+            [['type', 'separator', 'separator_custom', 'web_url', 'name'], 'string'],
             [['files', 'handle_rule'], 'safe'],
         ];
     }
@@ -52,26 +57,31 @@ class AddFileForm extends Model
             $req = new CreateDocument();
             $req->dataset_id = $model->dataset_id;
             $req->document_bases = [];
-            foreach ($this->files as $item) {
-                if (empty($item['id'])) {
-                    continue;
+            if($this->upload_type == 1){
+                $req->document_bases[] = new BasesDocument($this->attributes);
+                $req->document_bases[0]->source_info = $this->web_url;
+            }else {
+                foreach ($this->files as $item) {
+                    if (empty($item['id'])) {
+                        continue;
+                    }
+                    $attachment = Attachment::findOne (['id' => $item['id']]);
+                    if (!$attachment) {
+                        continue;
+                    }
+                    $localFilePath = str_replace (
+                        \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl,
+                        \Yii::$app->basePath . "/web",
+                        $attachment->url
+                    );
+                    $req->document_bases[] = new BasesDocument([
+                        'name' => $attachment->name,
+                        'source_info' => new UploadedFile([
+                            'tempName' => $localFilePath,
+                            'name' => $attachment->name
+                        ]),
+                    ]);
                 }
-                $attachment = Attachment::findOne (['id' => $item['id']]);
-                if (!$attachment) {
-                    continue;
-                }
-                $localFilePath = str_replace (
-                    \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl,
-                    \Yii::$app->basePath . "/web",
-                    $attachment->url
-                );
-                $req->document_bases[] = new BasesDocument([
-                    'name' => $attachment->name,
-                    'source_info' => new UploadedFile([
-                        'tempName' => $localFilePath,
-                        'name' => $attachment->name
-                    ]),
-                ]);
             }
             $strategy = new ChunkStrategy();
             if($this->type == 'custom'){

@@ -391,7 +391,7 @@ if (!function_exists('sql_execute')) {
      * @param bool $continueOnError 遇到错误继续执行
      * @throws Exception
      */
-    function sql_execute($sql, $split = true, $continueOnError = false)
+    function sql_execute($sql, $split = true, $continueOnError = true)
     {
         if ($split) {
             $list = SqlFormatter::splitQuery($sql);

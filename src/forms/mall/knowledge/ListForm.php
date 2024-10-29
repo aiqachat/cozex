@@ -22,7 +22,7 @@ class ListForm extends Model
     public function rules()
     {
         return [
-            [['account_id', 'space_id'], 'required'],
+            [['account_id', 'space_id'], 'required', "on" => 'list'],
             [['id', 'account_id'], 'integer'],
             [['keyword'], 'trim'],
             [['keyword', 'space_id'], 'string', 'max' => 155],

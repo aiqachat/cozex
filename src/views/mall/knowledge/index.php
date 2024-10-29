@@ -64,7 +64,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="dataset_id" label="资源(文件夹)ID" width="190"></el-table-column>
+                <el-table-column prop="dataset_id" label="资源(文件夹)ID" width="180"></el-table-column>
                 <el-table-column prop="format_type" label="类型" width="80">
                     <template slot-scope="scope">
                         <el-tag v-if="scope.row.format_type == 0" size="mini" type="success">文本</el-tag>
@@ -72,7 +72,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                         <el-tag v-else-if="scope.row.format_type == 2" size="mini" type="success">照片</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="size" label="文件大小" width="110"></el-table-column>
+                <el-table-column prop="size" label="文件大小" width="100"></el-table-column>
                 <el-table-column prop="updated_at" label="编辑时间" width="180" sortable="false"></el-table-column>
                 <el-table-column label="操作" width="150" fixed="right">
                     <template slot-scope="scope">
@@ -195,7 +195,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                     space_id: this.searchData.space_id,
                 };
                 if(row){
-                    this.libraryForm = Object.assign(this.libraryForm, row);
+                    this.libraryForm = Object.assign({}, this.libraryForm, row);
                 }
                 this.dialogLibrary = true;
             },

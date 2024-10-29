@@ -12,6 +12,7 @@ namespace app\controllers\mall;
 use app\bootstrap\response\ApiCode;
 use app\forms\mall\setting\ConfigForm;
 use app\forms\mall\setting\CozeForm;
+use app\forms\mall\setting\QueueForm;
 
 class IndexController extends AdminController
 {
@@ -27,6 +28,17 @@ class IndexController extends AdminController
             }
         } else {
             return $this->render('index');
+        }
+    }
+
+    public function actionQueue()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new QueueForm();
+            $form->attributes = \Yii::$app->request->get();
+            return $this->asJson($form->get());
+        } else {
+            return $this->render('queue');
         }
     }
 

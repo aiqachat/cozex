@@ -30,6 +30,7 @@
                     <span>第三方平台安装部署代码</span>
                     <span style="color: #a4a4a4;">（直接将代码粘贴到网页的 &lt;body&gt; 区域中即可。你也可以按需修改各种属性配置）</span>
                 </div>
+                <span style="color: red;">注：*图标显示不正常请把站点配置SSL证书，需要https访问</span>
                 <div flex>
                     <pre class="code-block" id="target">{{ code }}</pre>
                 </div>

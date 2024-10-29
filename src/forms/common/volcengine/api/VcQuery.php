@@ -12,6 +12,6 @@ class VcQuery extends AtaQuery
 {
     public function getMethodName()
     {
-        return "/api/v1/vc/query?appid=" . $this->api->getAppId();
+        return "/api/v1/vc/query?appid=" . $this->api->appid;
     }
 }

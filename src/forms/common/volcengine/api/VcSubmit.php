@@ -51,14 +51,9 @@ class VcSubmit extends Base
     public function getMethodName()
     {
         $get = parent::getParams();
-        $get['appid'] = $this->api->getAppId();
+        $get['appid'] = $this->api->appid;
         unset($get['url']);
         return "/api/v1/vc/submit?" . http_build_query($get);
-    }
-
-    function getMethod()
-    {
-        return self::METHOD_POST;
     }
 
     public function getHeaders(){

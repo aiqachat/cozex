@@ -10,6 +10,7 @@ namespace app\forms\install;
 
 
 use app\bootstrap\response\ApiCode;
+use app\forms\common\CommonOption;
 use app\helpers\CurlHelper;
 use app\models\Model;
 use yii\db\Connection;
@@ -184,6 +185,17 @@ EOF;
             $installSql = file_get_contents(__DIR__ . '/install.sql');
             $this->getDb()->createCommand($installSql)->execute();
 
+            // 运行各个版本的升级脚本
+            \Yii::$app->setDb($this->getDb());
+            $versions = require \Yii::$app->basePath . '/versions.php';
+            foreach ($versions as $v => $f) {
+                if (version_compare($v, '1.0.0') > 0) {
+                    if ($f instanceof \Closure) {
+                        $f();
+                    }
+                }
+            }
+
             $password = \Yii::$app->security->generatePasswordHash($this->admin_password);
             $authKey = \Yii::$app->security->generateRandomString();
             $accessToken = \Yii::$app->security->generateRandomString();
@@ -225,6 +237,19 @@ VALUES (
 );
 EOF;
             $this->getDb()->createCommand($adminInfoSql)->execute();
+
+            $versionData = json_decode(file_get_contents(\Yii::$app->basePath . '/version.json'), true);
+            $optionVersionValue = \Yii::$app->serializer->encode($versionData['version']);
+            $optionVersionKey = CommonOption::NAME_VERSION;
+            $versionInfoSql = <<<EOF
+INSERT INTO `{$this->tablePrefix}option`
+ (`name`,`value`)
+VALUES (
+'{$optionVersionKey}',
+'{$optionVersionValue}'
+);
+EOF;
+            $this->getDb()->createCommand($versionInfoSql)->execute();
 
             $this->saveConfig();
             $this->installLock();

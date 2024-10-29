@@ -12,7 +12,8 @@
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
-    <title>cozex管理</title>
+    <title>Cozex安装-Netbcloud开发免费开源</title>
+    <link href="<?= Yii::$app->request->baseUrl ?>/../favicon.ico" mce_href="<?= Yii::$app->request->baseUrl ?>/../favicon.ico" rel="shortcut icon"/>
     <link rel="stylesheet" href="<?= Yii::$app->request->baseUrl ?>/statics/unpkg/element-ui@2.12.0/lib/theme-chalk/index.css">
     <link rel="stylesheet" href="<?= Yii::$app->request->baseUrl ?>/statics/css/flex.css">
     <link rel="stylesheet" href="<?= Yii::$app->request->baseUrl ?>/statics/css/common.css">
@@ -44,7 +45,6 @@
             display: none!important;
         }
     </style>
-
 </head>
 <body>
 <?= $content ?>

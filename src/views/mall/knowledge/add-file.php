@@ -43,32 +43,58 @@ Yii::$app->loadViewComponent('app-attachment-dragging')
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
                     <span style="color: #409EFF;cursor: pointer" @click="$navigate({r:'mall/knowledge/file-list', id: id})">文件列表</span></el-breadcrumb-item>
-                <el-breadcrumb-item>添加内容(文件)</el-breadcrumb-item>
+                <el-breadcrumb-item>添加上传内容(文件)</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="table-body">
-            <el-form :model="form" label-width="120px" :rules="rules" ref="form" v-loading="listLoading">
+            <el-form :model="form" label-width="100px" :rules="rules" ref="form" v-loading="listLoading">
                 <el-steps :active="active" :space="500" finish-status="success" simple v-if="is_set">
                     <el-step title="上传文件" icon="el-icon-upload"></el-step>
                     <el-step title="分段设置" icon="el-icon-set-up"></el-step>
-                    <el-step title="数据处理" icon="el-icon-loading"></el-step>
+                    <el-step title="数据处理" icon="el-icon-s-help"></el-step>
                 </el-steps>
                 <el-steps :active="active" :space="500" finish-status="success" simple v-else>
                     <el-step title="上传文件" icon="el-icon-upload"></el-step>
-                    <el-step title="数据处理" icon="el-icon-loading"></el-step>
+                    <el-step title="数据处理" icon="el-icon-s-help"></el-step>
                 </el-steps>
                 <template v-if="active == 0">
-                    <app-attachment-dragging :notice="notice" :max="max" :type="data.format_type" @success="success"></app-attachment-dragging>
-
-                    <el-card style="margin-top: 10px" v-for="(item, index) in form.files">
-                        <div>{{item.name}}</div>
-                        <div style="color: #CCCCCC; font-size: 12px">{{item.size}}</div>
-                        <div style="float: right; margin-top: -40px;">
-                            <el-button circle type="text" size="mini" @click="destroy(index)">
-                                <img src="statics/img/mall/del.png" alt="">
-                            </el-button>
-                        </div>
-                    </el-card>
+                    <el-form-item label="上传方式" prop="upload_type" style="margin-top: 10px;">
+                        <el-radio-group size="small" v-model="form.upload_type">
+                            <el-radio :label="1">在线网页</el-radio>
+                            <el-radio :label="2">离线文件</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <template v-if="form.upload_type == 2">
+                        <app-attachment-dragging :notice="notice" :max="max" :type="data.format_type" @success="success"></app-attachment-dragging>
+                        <el-card style="margin-top: 10px" v-for="(item, index) in form.files">
+                            <div>{{item.name}}</div>
+                            <div style="color: #CCCCCC; font-size: 12px">{{item.size}}</div>
+                            <div style="float: right; margin-top: -40px;">
+                                <el-button circle type="text" size="mini" @click="destroy(index)">
+                                    <img src="statics/img/mall/del.png" alt="">
+                                </el-button>
+                            </div>
+                        </el-card>
+                    </template>
+                    <template v-if="form.upload_type == 1">
+                        <el-form-item label="文件名称" prop="name">
+                            <el-input size="small" placeholder="请输入名称" v-model.trim="form.name"></el-input>
+                        </el-form-item>
+                        <el-form-item label="网页URL" prop="web_url">
+                            <el-input size="small" placeholder="请输入url" v-model.trim="form.web_url"></el-input>
+                        </el-form-item>
+                        <el-form-item label="是否自动更新" prop="update_type">
+                            <el-radio-group size="small" v-model="form.update_type">
+                                <el-radio :label="0">不自动更新</el-radio>
+                                <el-radio :label="1">自动更新</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="更新频率" prop="update_interval" v-if="form.update_type == 1">
+                            <el-input size="small" type="number" min="24" v-model.trim="form.update_interval">
+                                <template slot="append">小时</template>
+                            </el-input>
+                        </el-form-item>
+                    </template>
                 </template>
                 <template v-if="active == 1 && is_set">
                     <div class="rsd" @click="choose('auto')" :class="{'que': form.type == 'auto'}">
@@ -123,8 +149,13 @@ Yii::$app->loadViewComponent('app-attachment-dragging')
                 form: {
                     files: [],
                     handle_rule: [],
+                    upload_type: 2,
+                    update_type: 0,
+                    update_interval: 24,
                     max_length: 800,
+                    name: '',
                     type: '',
+                    web_url: '',
                     separator: '\\n',
                     separator_custom: '###',
                 },
@@ -132,7 +163,14 @@ Yii::$app->loadViewComponent('app-attachment-dragging')
                 btnLoading: false,
                 listLoading: false,
                 uploading: false,
-                rules: {},
+                rules: {
+                    name: [
+                        {required: true, message: '文件名称不能为空', trigger: 'blur'},
+                    ],
+                    web_url: [
+                        {required: true, message: '网页url不能为空', trigger: 'blur'},
+                    ],
+                },
 
                 active: 0,
                 buttonText: '下一步',
@@ -164,14 +202,14 @@ Yii::$app->loadViewComponent('app-attachment-dragging')
                         this.data = e.data.data.data;
                         this.is_set = e.data.data.is_set;
                         if(this.data.format_type === 0){
-                            this.notice = '支持 PDF、TXT、DOC、DOCX、MD，最多可上传 20 个文件，每个文件不超过 100MB，PDF 最多 500 页';
-                            this.max = 20;
+                            this.notice = '支持 PDF、TXT、DOC、DOCX、MD，最多可上传 10 个文件，每个文件不超过 100MB，PDF 最多 500 页';
+                            this.max = 10;
                         }else if(this.data.format_type === 1){
                             this.notice = '上传一份Excel或CSV格式的文档，文件大小限制20MB以内。';
                             this.max = 1;
                         }else if(this.data.format_type === 2){
                             this.notice = '支持 JPG，JPEG，PNG，每个文件不超过20 MB';
-                            this.max = 20;
+                            this.max = 10;
                         }
                     } else {
                         this.$message.error(e.data.msg);
@@ -196,8 +234,17 @@ Yii::$app->loadViewComponent('app-attachment-dragging')
             },
             onSubmit(){
                 let self = this;
-                if(self.form.files.length === 0){
+                if(self.form.files.length === 0 && self.form.upload_type === 2){
                     self.$message.error('请先上传文件');
+                    return;
+                }
+                let con = true;
+                if(self.form.upload_type === 1){
+                    self.$refs.form.validate((valid) => {
+                        con = valid;
+                    });
+                }
+                if(!con){
                     return;
                 }
                 if(self.buttonText === '提交'){

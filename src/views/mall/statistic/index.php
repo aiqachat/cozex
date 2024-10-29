@@ -47,7 +47,7 @@
         <div class="table-area">
             <el-card shadow="never">
                 <div slot="header">
-                    <i class="el-icon-s-platform"></i>
+                    <i class="el-icon-s-data"></i>
                     <span>基本信息</span>
                 </div>
                 <div class="num-info">

@@ -8,6 +8,9 @@
 namespace app\forms\mall\knowledge;
 
 use app\bootstrap\response\ApiCode;
+use app\forms\common\coze\api\Workspaces;
+use app\forms\common\coze\ApiForm;
+use app\helpers\ArrayHelper;
 use app\models\Knowledge;
 use app\models\Model;
 
@@ -56,19 +59,25 @@ class ListEditForm extends Model
             $model->attributes = $this->attributes;
             $where = [
                 'and',
-                ['dataset_id' => $this->dataset_id, 'space_id' => $this->space_id],
+                ['dataset_id' => $this->dataset_id],
                 ['not', ['id' => $this->id]]
             ];
         }else{
             $model = new Knowledge();
             $model->attributes = $this->attributes;
-            $where = ['dataset_id' => $this->dataset_id, 'space_id' => $this->space_id];
+            $where = ['dataset_id' => $this->dataset_id];
         }
-        $exist = Knowledge::find()->where(['is_delete' => 0])->andWhere($where)->exists();
-        if($exist){
+        /** @var Knowledge $knowledge */
+        $knowledge = Knowledge::find()->where(['is_delete' => 0])->andWhere($where)->one();
+        if($knowledge){
+            $res = ApiForm::common([
+                'object' => new Workspaces(),
+                'account' => $knowledge->account
+            ])->request();
+            $return = ArrayHelper::index($res['data']['workspaces'], "id");
             return [
                 'code' => ApiCode::CODE_ERROR,
-                'msg' => '资源库ID已存在'
+                'msg' => "资源ID已经在空间名为'{$return[$knowledge->space_id]['name']}'下面添加",
             ];
         }
         if(!$model->save()){

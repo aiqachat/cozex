@@ -52,6 +52,8 @@ class FileListForm extends Model
         $document = [];
         foreach ($res['document_infos'] as $item){
             $item['update_time'] = mysql_timestamp ($item['update_time']);
+            $item['create_time'] = mysql_timestamp ($item['create_time']);
+            $item['size'] = space_unit($item['size']);
             $document[] = $item;
             $model->format_type = $item['format_type'];
         }
@@ -61,6 +63,8 @@ class FileListForm extends Model
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
                 'list' => $document,
+                'name' => $model->name,
+                'format_type' => $model->format_type,
                 'pagination' => $pagination
             ]
         ];
@@ -83,6 +87,10 @@ class FileListForm extends Model
         $req->page = 1;
         $req->size = 1;
         $res = ApiForm::common(['object' => $req, 'account' => $model->account])->request();
+        if(!empty($res['document_infos'][0])) {
+            $model->format_type = $res['document_infos'][0]['format_type'];
+            $model->save();
+        }
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'msg' => '成功',

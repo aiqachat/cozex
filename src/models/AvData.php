@@ -11,6 +11,7 @@ namespace app\models;
  * @property string $job_id  任务id
  * @property string $result  最终结果
  * @property string $err_msg
+ * @property string $data
  * @property int $type  1:转字幕；2：字幕打轴
  * @property int $status 1:处理中；2：处理完成；3：失败
  * @property int $is_delete
@@ -33,10 +34,10 @@ class AvData extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['created_at', 'updated_at', 'file'], 'required'],
+            [['created_at', 'updated_at'], 'required'],
             [['is_delete', 'status', 'type'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
-            [['job_id', 'result', 'err_msg', 'text', 'file', 'job_id'], 'string'],
+            [['job_id', 'result', 'err_msg', 'text', 'file', 'job_id', 'data', 'file'], 'string'],
         ];
     }
 

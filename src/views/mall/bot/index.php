@@ -34,7 +34,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
         text-overflow: ellipsis;
         display: inline-block;
         max-width: 220px;
-        height: 65px;
+        height: 68px;
     }
 </style>
 <div id="app" v-cloak>
@@ -43,7 +43,12 @@ Yii::$app->loadViewComponent('app-coze-choose')
         <div slot="header">
             <span>
                 智能体管理
-                <span style="color: #a4a4a4;">（注：需要在coze平台发布智能体时选择开通Agent as API 和 Web SDK）</span>
+                <span style="color: #a4a4a4;">
+                    （注：需要在coze平台发布智能体时选择开通Agent as API 和 Web SDK）
+                    <el-tooltip class="item" effect="dark" content="点击图片显示提示图片" placement="top">
+                      <el-button type="text" icon="el-icon-warning" @click="dialog = true"></el-button>
+                    </el-tooltip>
+                </span>
             </span>
         </div>
         <div class="table-body">
@@ -59,7 +64,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                         <span style="color: #8E918F">发布时间: {{item.publish_time}}</span>
                         <div>
                             <el-button type="success" size="mini" v-if="set_bot.bot_id == item.bot_id" @click="use(item)" v-loading="btnLoading">使用中</el-button>
-                            <el-button type="warning" size="mini" v-else @click="use(item)" v-loading="btnLoading">已停用</el-button>
+                            <el-button type="warning" size="mini" v-else @click="use(item)" v-loading="btnLoading">可开启</el-button>
                             <el-button type="primary" size="mini" @click="conf(item)">配置</el-button>
                         </div>
                     </div>
@@ -74,6 +79,14 @@ Yii::$app->loadViewComponent('app-coze-choose')
             </div>
         </div>
     </el-card>
+    <el-dialog title="查看图片" :visible.sync="dialog" width="30%">
+        <div flex="dir:left main:center">
+            <img :src="img" width="580"/>
+        </div>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialog = false" type="primary">我知道了</el-button>
+        </div>
+    </el-dialog>
 </div>
 <script>
     const app = new Vue({
@@ -91,7 +104,9 @@ Yii::$app->loadViewComponent('app-coze-choose')
                 currentPage: null,
                 listLoading: false,
                 btnLoading: false,
+                dialog: false,
                 set_bot: {},
+                img: 'statics/img/source/apiopen.jpg'
             };
         },
         watch: {
@@ -116,7 +131,6 @@ Yii::$app->loadViewComponent('app-coze-choose')
                         data: {bot_id: row.bot_id},
                         method: 'post'
                     }).then(e => {
-                        this.btnLoading = false;
                         if (e.data.code === 0) {
                             this.$message.success(e.data.msg);
                             setTimeout(() => {
@@ -124,12 +138,11 @@ Yii::$app->loadViewComponent('app-coze-choose')
                             }, 1000);
                         } else {
                             this.$message.error(e.data.msg);
+                            this.btnLoading = false;
                         }
                     }).catch(e => {
-                        this.btnLoading = false;
                     });
                 }).catch(e => {
-                    this.btnLoading = false;
                 });
             },
             conf(row){
@@ -150,6 +163,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                     return;
                 }
                 this.listLoading = true;
+                this.form = [];
                 let param = Object.assign({r: 'mall/bot/index', page: this.page}, this.searchData);
                 request({
                     params: param,

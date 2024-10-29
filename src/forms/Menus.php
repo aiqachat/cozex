@@ -62,6 +62,10 @@ class Menus
                         'name' => '语音识别',
                         'route' => 'mall/volcengine/auc',
                     ],
+                    [
+                        'name' => '合成语音',
+                        'route' => 'mall/volcengine/tts',
+                    ],
                 ],
             ],
             [
@@ -92,6 +96,10 @@ class Menus
                     [
                         'name' => '系统概况',
                         'route' => 'mall/statistic/index',
+                    ],
+                    [
+                        'name' => '队列服务',
+                        'route' => 'mall/index/queue',
                     ],
                     [
                         'name' => '基础设置',

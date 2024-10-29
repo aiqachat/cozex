@@ -35,6 +35,10 @@ class Base extends Model
         $this->api = $api;
     }
 
+    public function getApi(){
+        return $this->api;
+    }
+
     public function getHeaders(){
         return [];
     }
@@ -58,9 +62,15 @@ class Base extends Model
             1011 => '音频数据大小超出阈值。',
             1012 => '音频 header 有误 / 无法进行音频解码。',
             1013 => '音频未识别出任何文本结果。',
+            3001 => '一些参数的值非法，比如operation配置错误',
+            3005 => '后端服务器负载高',
+            3010 => '单次请求超过设置的文本长度阈值',
+            3011 => '参数有误或者文本为空、文本与语种不匹配、文本只含标点',
+            3030 => '单次请求超过服务最长时间限制',
+            3050 => '音色不存在，检查使用的voice_type代号',
         ];
-        if($response['code'] == 1022 && strpos($response['message'], 'resource not granted') !== false){
-            $response['message'] = '无权限，请开通服务';
+        if(strpos($response['message'], 'resource not granted') !== false){
+            throw new \Exception('无权限，请开通服务');
         }
         throw new \Exception($res[$response['code'] ?? ''] ?? $response['message']);
     }

@@ -87,7 +87,16 @@ class CozeForm extends Model
                 'object' => new Workspaces(),
                 'account' => $data
             ])->request();
-            $return = $res['data']['workspaces'];
+            $return = array_map(function ($var){
+                $var['role_type'] = $var['role_type'] == 'owner' ? '所有者' :
+                    ($var['role_type'] == 'admin' ? '管理员' :
+                        ($var['role_type'] == 'member' ? '成员' : ''));
+                $var['workspace_type'] = $var['workspace_type'] == 'personal' ? '个人空间' :
+                    ($var['workspace_type'] == 'team' ? '团队空间' : '');
+                $var['name'] = "{$var['name']}（{$var['id']} {$var['role_type']} {$var['workspace_type']}）";
+                return $var;
+            }, $res['data']['workspaces']);
+
         }
         return [
             'code' => ApiCode::CODE_SUCCESS,

@@ -18,19 +18,34 @@ class BasesDocument extends Base
     /** @var object 文件的元数据信息 */
     public $source_info;
 
-    /** @var object 在线网页的更新策略。默认不自动更新 */
-    public $update_rule;
+    /** @var int 在线网页是否自动更新 */
+    public $update_type = 0;
+
+    /** @var int 在线网页自动更新的频率 */
+    public $update_interval;
 
     public function getAttribute(): array
     {
+        $params = get_object_vars($this);
         if($this->source_info instanceof UploadedFile){
-            $this->source_info = [
+            $params['source_info'] = [
                 'file_base64' => base64_encode(file_get_contents($this->source_info->tempName)),
                 'file_type' => $this->source_info->extension
             ];
         }else{
-            throw new \Exception('文件错误');
+            $params['source_info'] = [
+                'web_url' => $this->source_info,
+                'document_source' => 1
+            ];
+            $update_rule = [
+                'update_type' => intval($this->update_type),
+                'update_interval' => $this->update_interval ? intval($this->update_interval) : null,
+            ];
         }
-        return get_object_vars($this);
+        unset($params['update_interval'], $params['update_type']);
+        if(!empty($update_rule)){
+            $params['update_rule'] = $update_rule;
+        }
+        return $params;
     }
 }

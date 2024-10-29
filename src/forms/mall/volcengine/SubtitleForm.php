@@ -28,9 +28,9 @@ class SubtitleForm extends Model
     public $type;
     public $is_del;
 
-    const TYPE_VC = 1;
-    const TYPE_ATA = 2;
-    const TYPE_AUC = 3;
+    const TYPE_VC = 1; // 音视频转字幕
+    const TYPE_ATA = 2; // 音频打轴
+    const TYPE_AUC = 3; // 大模型录音文件转字幕
 
     public function rules()
     {

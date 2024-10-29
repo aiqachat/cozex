@@ -1,0 +1,12 @@
+stages:
+  - deploy
+
+deploy_production:
+  stage: deploy
+  script:
+    - DATE=$(date +%Y-%m-%d)
+    - sudo ssh root@192.128.28.172 "cd /www/docker/codex-compose/ && git pull"
+    - sudo rsync -avz --delete --exclude 'yii.bat' --exclude 'queue.bat' --exclude 'queue.sh' --exclude '/.user.ini' --exclude '/.git' --exclude '/.gitlab-ci.yml' ./ root@192.128.28.172:/www/docker/codex-compose/web/
+    - sudo ssh root@192.128.28.172 "cd /www/docker/codex-compose/ && git add --all && git commit -m 'Deploy on $DATE' && git push"
+  only:
+    - main

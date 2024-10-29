@@ -10,6 +10,7 @@
 namespace app\controllers\mall;
 
 use app\forms\mall\volcengine\ListForm;
+use app\forms\mall\volcengine\SpeechForm;
 use app\forms\mall\volcengine\SubtitleForm;
 
 class VolcengineController extends AdminController
@@ -20,7 +21,7 @@ class VolcengineController extends AdminController
             if(\Yii::$app->request->isGet) {
                 $form = new ListForm();
                 $form->attributes = \Yii::$app->request->get ();
-                return $this->asJson ($form->getList ());
+                return $this->asJson ($form->getList (SubtitleForm::TYPE_ATA));
             }else{
                 $form = new SubtitleForm();
                 $form->attributes = \Yii::$app->request->post();
@@ -38,7 +39,7 @@ class VolcengineController extends AdminController
             if(\Yii::$app->request->isGet) {
                 $form = new ListForm();
                 $form->attributes = \Yii::$app->request->get();
-                return $this->asJson ($form->getList(1));
+                return $this->asJson ($form->getList(SubtitleForm::TYPE_VC));
             }else{
                 $form = new SubtitleForm();
                 $form->attributes = \Yii::$app->request->post();
@@ -56,7 +57,7 @@ class VolcengineController extends AdminController
             if(\Yii::$app->request->isGet) {
                 $form = new ListForm();
                 $form->attributes = \Yii::$app->request->get();
-                return $this->asJson ($form->getList(3));
+                return $this->asJson ($form->getList(SubtitleForm::TYPE_AUC));
             }else{
                 $form = new SubtitleForm();
                 $form->attributes = \Yii::$app->request->post();
@@ -65,6 +66,24 @@ class VolcengineController extends AdminController
             }
         } else {
             return $this->render('auc');
+        }
+    }
+
+    public function actionTts()
+    {
+        if (\Yii::$app->request->isAjax) {
+            if(\Yii::$app->request->isGet) {
+                $form = new ListForm();
+                $form->attributes = \Yii::$app->request->get();
+                $type = \Yii::$app->request->get('type');
+                return $this->asJson ($form->getList($type ?: [SpeechForm::TYPE_TTS_1, SpeechForm::TYPE_TTS_2]));
+            }else{
+                $form = new SpeechForm();
+                $form->attributes = \Yii::$app->request->post();
+                return $this->asJson ($form->save());
+            }
+        } else {
+            return $this->render('tts');
         }
     }
 
