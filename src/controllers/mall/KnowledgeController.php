@@ -11,6 +11,7 @@ use app\forms\mall\knowledge\AddFileForm;
 use app\forms\mall\knowledge\FileListForm;
 use app\forms\mall\knowledge\ListEditForm;
 use app\forms\mall\knowledge\ListForm;
+use app\forms\mall\knowledge\LocalFileForm;
 
 class KnowledgeController extends AdminController
 {
@@ -76,15 +77,24 @@ class KnowledgeController extends AdminController
         }
     }
 
+    public function actionUpdateFile()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new AddFileForm();
+            $form->attributes = \Yii::$app->request->post();
+            return $this->asJson ($form->update());
+        }
+    }
+
     public function actionAddLocal()
     {
         if (\Yii::$app->request->isAjax) {
             if (\Yii::$app->request->isPost) {
-                $form = new AddFileForm();
+                $form = new LocalFileForm();
                 $form->attributes = \Yii::$app->request->post();
-                return $this->asJson ($form->save());
+                return $this->asJson ($form->saveLocal());
             }else {
-                $form = new FileListForm();
+                $form = new LocalFileForm();
                 $form->attributes = \Yii::$app->request->get();
                 return $this->asJson ($form->get());
             }

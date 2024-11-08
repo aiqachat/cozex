@@ -168,6 +168,9 @@ EOF;
         }
 
         try {
+            if(!extension_loaded ('fileinfo')){
+                throw new \Exception('请开启PHP扩展fileinfo', 220099322);
+            }
             cmd_exe("chown -R www:www ".\Yii::$app->basePath." & chmod -R 755 ".\Yii::$app->basePath);
             $res = $this->getDb()->createCommand('SHOW TABLES LIKE :keyword', [':keyword' => $this->tablePrefix . '%'])
                 ->queryAll();
@@ -254,6 +257,10 @@ EOF;
             $this->saveConfig();
             $this->installLock();
             $this->getSystemInfo();
+            return [
+                'code' => ApiCode::CODE_SUCCESS,
+                'msg' => '安装完成。',
+            ];
         } catch (\Exception $exception) {
             if (isset($this->dbErrorCode[$exception->getCode()])) {
                 return [
@@ -275,10 +282,6 @@ EOF;
                 ],
             ];
         }
-        return [
-            'code' => ApiCode::CODE_SUCCESS,
-            'msg' => '安装完成。',
-        ];
     }
 
     /**

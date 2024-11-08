@@ -135,8 +135,9 @@
                             data: this.data,
                         }).then(e => {
                             if (e.data.code === 0) {
-                                this.getList()
+                                this.$message.success(e.data.msg);
                                 this.dialog = false;
+                                this.getList()
                             } else {
                                 this.$message.error(e.data.msg);
                             }

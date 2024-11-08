@@ -31,10 +31,8 @@ class ExecutableFinder
 
     /**
      * Adds new possible suffix to check for executable.
-     *
-     * @param string $suffix
      */
-    public function addSuffix($suffix)
+    public function addSuffix(string $suffix)
     {
         $this->suffixes[] = $suffix;
     }
@@ -46,29 +44,14 @@ class ExecutableFinder
      * @param string|null $default   The default to return if no executable is found
      * @param array       $extraDirs Additional dirs to check into
      *
-     * @return string|null The executable path or default value
+     * @return string|null
      */
-    public function find($name, $default = null, array $extraDirs = [])
+    public function find(string $name, ?string $default = null, array $extraDirs = [])
     {
-        if (ini_get('open_basedir')) {
-            $searchPath = array_merge(explode(\PATH_SEPARATOR, ini_get('open_basedir')), $extraDirs);
-            $dirs = [];
-            foreach ($searchPath as $path) {
-                // Silencing against https://bugs.php.net/69240
-                if (@is_dir($path)) {
-                    $dirs[] = $path;
-                } else {
-                    if (basename($path) == $name && @is_executable($path)) {
-                        return $path;
-                    }
-                }
-            }
-        } else {
-            $dirs = array_merge(
-                explode(\PATH_SEPARATOR, getenv('PATH') ?: getenv('Path')),
-                $extraDirs
-            );
-        }
+        $dirs = array_merge(
+            explode(\PATH_SEPARATOR, getenv('PATH') ?: getenv('Path')),
+            $extraDirs
+        );
 
         $suffixes = [''];
         if ('\\' === \DIRECTORY_SEPARATOR) {
@@ -80,7 +63,16 @@ class ExecutableFinder
                 if (@is_file($file = $dir.\DIRECTORY_SEPARATOR.$name.$suffix) && ('\\' === \DIRECTORY_SEPARATOR || @is_executable($file))) {
                     return $file;
                 }
+
+                if (!@is_dir($dir) && basename($dir) === $name.$suffix && @is_executable($dir)) {
+                    return $dir;
+                }
             }
+        }
+
+        $command = '\\' === \DIRECTORY_SEPARATOR ? 'where' : 'command -v --';
+        if (\function_exists('exec') && ($executablePath = strtok(@exec($command.' '.escapeshellarg($name)), \PHP_EOL)) && @is_executable($executablePath)) {
+            return $executablePath;
         }
 
         return $default;

@@ -14,6 +14,7 @@ use yii\console\Request;
 class ConsoleRequest extends Request
 {
     public $enableCsrfCookie;
+    public $isSecureConnection = false;
 
     public function getUserIp()
     {

@@ -4,6 +4,7 @@
  * copyright: Copyright (c) 2024 深圳网商天下科技有限公司
  * author: chenzs
  */
+Yii::$app->loadViewComponent('app-volcengine-choose')
 ?>
 <style type="text/css">
     @import "<?= \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/statics/css/table.css' ?>";
@@ -21,11 +22,16 @@
     }
 </style>
 <div id="app" v-cloak>
+    <app-volcengine-choose @account="changeAccount" :dialog="newDialog" @close="closeDialog"></app-volcengine-choose>
+    <el-alert style="margin-bottom: 10px;" :closable="false"
+              type="success">
+        针对已有对应文本的视频剪辑场景，可以实现自动将文本分句，并与视频时间线完美对齐。
+    </el-alert>
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
         <div slot="header">
             <span>字幕打轴列表</span>
             <div style="float: right;margin-top: -5px">
-                <el-button type="primary" @click="dialog = true" size="small">添加</el-button>
+                <el-button type="primary" @click="open" size="small">添加</el-button>
             </div>
         </div>
         <div class="table-body">
@@ -46,15 +52,14 @@
                 </el-table-column>
                 <el-table-column label="状态" width="90">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.status == 1">
-                            <i class="el-icon-loading"></i>处理中
-                        </span>
-                        <span v-if="scope.row.status == 2">
-                            <i class="el-icon-check"></i>成功
-                        </span>
-                        <span v-if="scope.row.status == 3">
-                            <i class="el-icon-close"></i>失败
-                        </span>
+                        <span v-if="scope.row.status == 1">处理中</span>
+                        <span v-if="scope.row.status == 2">成功</span>
+                        <span v-if="scope.row.status == 3"
+                              @mouseenter="scope.row.showPopover = true"
+                              @mouseleave="scope.row.showPopover = false">失败</span>
+                        <el-popover v-model="scope.row.showPopover">
+                            {{scope.row.err_msg}}
+                        </el-popover>
                     </template>
                 </el-table-column>
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
@@ -118,6 +123,7 @@
             return {
                 searchData: {
                     keyword: '',
+                    account_id: '',
                 },
                 form: [],
                 pageCount: 0,
@@ -127,6 +133,7 @@
                 listLoading: false,
                 btnLoading: false,
 
+                newDialog: false,
                 dialog: false,
                 data: {},
                 rules: {
@@ -139,7 +146,25 @@
                 },
             };
         },
+        watch: {
+            'searchData.account_id': function (val, oldValue){
+                this.getList();
+            },
+        },
         methods: {
+            closeDialog() {
+                this.newDialog = false;
+            },
+            open(){
+                if(!this.searchData.account_id){
+                    this.newDialog = true;
+                    return;
+                }
+                this.dialog = true
+            },
+            changeAccount(val){
+                this.searchData.account_id = val;
+            },
             submit() {
                 this.$refs.data.validate((valid) => {
                     if (valid) {
@@ -147,7 +172,7 @@
                         request({
                             params: {r: 'mall/volcengine/titling'},
                             method: 'post',
-                            data: this.data,
+                            data: Object.assign(this.data, {account_id: this.searchData.account_id}),
                         }).then(e => {
                             if (e.data.code === 0) {
                                 this.getList()
@@ -183,6 +208,9 @@
                 this.getList();
             },
             getList(type = 1) {
+                if(!this.searchData.account_id){
+                    return;
+                }
                 if(type === 1) {
                     this.listLoading = true;
                 }
@@ -210,7 +238,7 @@
                     this.listLoading = true;
                     request({
                         params: {r: 'mall/volcengine/destroy'},
-                        data: {id: column.id},
+                        data: {id: column.id, account_id: this.searchData.account_id},
                         method: 'post'
                     }).then(e => {
                         if (e.data.code !== 0) {

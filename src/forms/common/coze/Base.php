@@ -9,7 +9,7 @@
 namespace app\forms\common\coze;
 
 /**
- * @property string $attribute
+ * @property array $attribute
  */
 class Base
 {

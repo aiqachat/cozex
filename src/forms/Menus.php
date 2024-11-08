@@ -32,6 +32,10 @@ class Menus
                                 'name' => '添加文件',
                                 'route' => 'mall/knowledge/add-file',
                             ],
+                            [
+                                'name' => '添加文件',
+                                'route' => 'mall/knowledge/add-local',
+                            ],
                         ],
                     ],
                     [
@@ -44,15 +48,25 @@ class Menus
                             ],
                         ],
                     ],
+                    [
+                        'name' => 'coze扣子配置',
+                        'route' => 'mall/setting/coze',
+                    ],
                 ],
             ],
             [
-                'name' => '火山引擎',
+                'name' => '语音技术',
                 'icon' => 'statics/img/mall/nav/plugins.png',
                 'children' => [
                     [
                         'name' => '字幕生成',
-                        'route' => 'mall/volcengine/generate',
+                        'route' => 'mall/volcengine/vc',
+                        'action' => [
+                            [
+                                'name' => '更多',
+                                'route' => 'mall/volcengine/generate',
+                            ],
+                        ],
                     ],
                     [
                         'name' => '字幕打轴',
@@ -63,8 +77,16 @@ class Menus
                         'route' => 'mall/volcengine/auc',
                     ],
                     [
+                        'name' => '大模型语音合成',
+                        'route' => 'mall/volcengine/tts-model',
+                    ],
+                    [
                         'name' => '合成语音',
                         'route' => 'mall/volcengine/tts',
+                    ],
+                    [
+                        'name' => '语音技术配置',
+                        'route' => 'mall/setting/volcengine',
                     ],
                 ],
             ],
@@ -74,12 +96,8 @@ class Menus
                 'icon' => 'statics/img/mall/nav/setting.png',
                 'children' => [
                     [
-                        'name' => 'coze授权',
-                        'route' => 'mall/setting/coze',
-                    ],
-                    [
-                        'name' => '火山引擎授权',
-                        'route' => 'mall/setting/volcengine',
+                        'name' => '基础设置',
+                        'route' => 'mall/index/index',
                     ],
                 ],
                 'action' => [
@@ -100,10 +118,6 @@ class Menus
                     [
                         'name' => '队列服务',
                         'route' => 'mall/index/queue',
-                    ],
-                    [
-                        'name' => '基础设置',
-                        'route' => 'mall/index/index',
                     ],
                     [
                         'name' => '上传管理',

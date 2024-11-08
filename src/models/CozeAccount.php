@@ -16,8 +16,6 @@ namespace app\models;
  */
 class CozeAccount extends ModelActiveRecord
 {
-    const vue_cookie_name = 'cozex-account-choose';
-
     /**
      * {@inheritdoc}
      */

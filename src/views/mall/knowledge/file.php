@@ -25,8 +25,8 @@
             <div style="float: right;margin-top: -20px">
                 <el-button type="primary" @click="$navigate({r:'mall/knowledge/add-file', id: id})"
                            size="small">添加上传内容(文件)</el-button>
-<!--                <el-button type="primary" @click="$navigate({r:'mall/knowledge/add-local', id: id})"-->
-<!--                           size="small">添加本地在线文件</el-button>-->
+                <el-button type="primary" @click="$navigate({r:'mall/knowledge/add-local', knowledge_id: id})"
+                           size="small" v-if="format_type == 0">添加本地在线文件</el-button>
             </div>
         </div>
         <div slot="header" style="margin-top: 15px">
@@ -43,15 +43,23 @@
                   type="selection"
                   width="55">
                 </el-table-column>
-                <el-table-column label="资源文件">
+                <el-table-column label="资源文件" min-width="300">
                     <template slot-scope="scope">
                         <div flex="dir:left cross:center">
-                            <app-image mode="aspectFill" style="margin-right: 8px;flex-shrink: 0" src="statics/img/mall/file.png"></app-image>
-                            <div style="width: 100%;">
-                                <div>{{scope.row.name}}</div>
-                                <el-tooltip effect="dark" placement="bottom-start" :content="`${scope.row.desc}`">
-                                    <div style="color: rgb(6 7 5 / 40%); font-size: 12px;">{{scope.row.desc}}</div>
-                                </el-tooltip>
+                            <app-image mode="aspectFill" style="margin-right: 8px;flex-shrink: 0" :src="img"></app-image>
+                            <div style="width: 100%;" v-if="document_id != scope.row.document_id" flex="dir:left cross:center">
+                                <span>{{scope.row.name}}</span>
+                                <el-button type="text" @click="editName(scope.row)">
+                                    <img src="statics/img/mall/edit-mini.png" alt="">
+                                </el-button>
+                            </div>
+                            <div style="display: flex;align-items: center" v-else v-loading="btnLoading">
+                                <el-input style="min-width: 70px" type="text" size="mini" v-model="dName" autocomplete="off"></el-input>
+                                <el-button type="text" style="color: #F56C6C;padding: 0 5px" icon="el-icon-error"
+                                           circle @click="quit()"></el-button>
+                                <el-button type="text" style="margin-left: 0;color: #67C23A;padding: 0 5px"
+                                           icon="el-icon-success" circle @click="changeSubmit(scope.row)">
+                                </el-button>
                             </div>
                         </div>
                     </template>
@@ -75,11 +83,16 @@
                 </el-table-column>
                 <el-table-column prop="create_time" label="创建时间" width="160"></el-table-column>
                 <el-table-column prop="update_time" label="编辑时间" width="160"></el-table-column>
-                <el-table-column label="操作" width="80" fixed="right">
+                <el-table-column label="操作" width="145" fixed="right">
                     <template slot-scope="scope">
                         <el-tooltip class="item" effect="dark" content="删除" placement="top">
                             <el-button circle type="text" size="mini" @click="destroy(scope.row)">
                                 <img src="statics/img/mall/del.png" alt="">
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip class="item" effect="dark" content="编辑" placement="top" v-if="scope.row.file_id">
+                            <el-button circle type="text" size="mini" @click="edit(scope.row)">
+                                <img src="statics/img/mall/edit.png" alt="">
                             </el-button>
                         </el-tooltip>
                     </template>
@@ -108,11 +121,47 @@
                 currentPage: null,
                 listLoading: false,
                 btnLoading: false,
+                img: '',
+                document_id: '',
+                dName: '',
             };
         },
         methods: {
             edit(row){
-
+                navigateTo({r:'mall/knowledge/add-local', knowledge_id: this.id, id: row.file_id})
+            },
+            changeSubmit(row) {
+                let self = this;
+                request({
+                    params: {
+                        r: 'mall/knowledge/update-file'
+                    },
+                    method: 'post',
+                    data: {
+                        id: self.id,
+                        document_id: row.document_id,
+                        name: self.dName,
+                    }
+                }).then(e => {
+                    self.btnLoading = false;
+                    if (e.data.code === 0) {
+                        row.name = self.dName;
+                        self.$message.success(e.data.msg);
+                        this.quit();
+                    } else {
+                        self.$message.error(e.data.msg);
+                    }
+                }).catch(e => {
+                    self.btnLoading = false;
+                });
+            },
+            editName(row) {
+                this.document_id = row.document_id;
+                this.dName = row.name;
+            },
+            quit() {
+                this.document_id = null;
+                this.dName = null;
             },
             destroy: function (column) {
                 this.$confirm('确认删除该记录吗?', '提示', {
@@ -154,6 +203,13 @@
                         this.pageCount = e.data.data.pagination.total_count;
                         this.pageSize = e.data.data.pagination.pageSize;
                         this.currentPage = e.data.data.pagination.current_page;
+                        this.img = 'statics/img/mall/file.png';
+                        if (this.format_type === '1') {
+                            this.img = 'statics/img/mall/table.png';
+                        }
+                        if (this.format_type === '2') {
+                            this.img = 'statics/img/mall/image.png';
+                        }
                     } else {
                         this.$message.error(e.data.msg);
                     }

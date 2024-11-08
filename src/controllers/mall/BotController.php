@@ -27,8 +27,8 @@ class BotController extends AdminController
         if (\Yii::$app->request->isAjax) {
             $form = new IndexForm();
             if (\Yii::$app->request->isGet) {
-                $form->attributes = \Yii::$app->request->get ();
-                return $this->asJson ($form->getSet ());
+                $form->attributes = \Yii::$app->request->get();
+                return $this->asJson ($form->getSet());
             }else{
                 $form->attributes = \Yii::$app->request->post();
                 return $this->asJson ($form->saveSet());

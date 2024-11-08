@@ -11,18 +11,21 @@ namespace app\forms\mall\setting;
 use app\bootstrap\response\ApiCode;
 use app\jobs\TestQueueServiceJob;
 use app\models\Model;
+use app\models\Option;
 
 class QueueForm extends Model
 {
     public $action;
     public $id;
     public $time;
+    public $maxC;
+    public $c;
 
     public function rules()
     {
         return [
             [['action'], 'string'],
-            [['id', 'time'], 'integer'],
+            [['id', 'time', 'maxC', 'c'], 'integer'],
         ];
     }
 
@@ -44,14 +47,18 @@ class QueueForm extends Model
                 foreach ($fs as $f) {
                     if (!function_exists ($f)) $notExistsFs[] = $f;
                 }
+                $model = Option::findOne([
+                    'name' => (new TestQueueServiceJob())->getKey(),
+                ]);
                 $data = [
                     'not_exists_fs' => $notExistsFs,
+                    'date' => $model->updated_at,
+                    'done' => \Yii::$app->serializer->decode($model->value)['done'] ?? false
                 ];
             }
             if ($this->action == 'create') {
                 $time = time();
-                $job = new TestQueueServiceJob();
-                $job->time = $time;
+                $job = new TestQueueServiceJob(['time' => $time]);
                 $id = \Yii::$app->queue->delay(0)->push($job);
                 $data = [
                     'id' => $id,
@@ -61,16 +68,21 @@ class QueueForm extends Model
             if ($this->action == 'test') {
                 $done = \Yii::$app->queue->isDone($this->id);
                 if ($done) {
-                    $job = new TestQueueServiceJob();
-                    $job->time = $this->time;
+                    $job = new TestQueueServiceJob(['time' => $this->time]);
                     if (!$job->valid()) {
-                        throw new \Exception('任务似乎已经运行，但没有得到预期结果，请检查redis是否连接正常并且数据正常。');
+                        throw new \Exception('任务似乎已经运行，但没有得到预期结果，请检查redis是否连接正常并且数据正常');
                     } else {
                         $data = ['done' => true];
                     }
                 } else {
                     $data = ['done' => false];
+                    if($this->maxC === $this->c){
+                        (new TestQueueServiceJob(['time' => -1]))->valid();
+                    }
                 }
+            }
+            if(!isset($data['date'])) {
+                $data['date'] = mysql_timestamp();
             }
             return [
                 'code' => ApiCode::CODE_SUCCESS,
@@ -79,7 +91,10 @@ class QueueForm extends Model
         } catch (\Exception $exception) {
             return [
                 'code' => ApiCode::CODE_ERROR,
-                'msg' => '队列服务测试失败：' . $exception->getMessage (),
+                'msg' => '队列服务测试失败：' . $exception->getMessage(),
+                'data' => [
+                    'date' => mysql_timestamp(),
+                ]
             ];
         }
     }

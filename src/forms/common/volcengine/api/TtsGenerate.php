@@ -39,12 +39,6 @@ class TtsGenerate extends Base
     /** @var string 请求标识  需要保证每次调用传入值唯一，建议使用 UUID */
     public $reqid;
 
-    /** @var string 情感/风格	 */
-    public $emotion;
-
-    /** @var string 语种，与音色有关，具体值参考音色列表，默认为中文 */
-    public $language;
-
     public function getMethodName()
     {
         return "/api/v1/tts";

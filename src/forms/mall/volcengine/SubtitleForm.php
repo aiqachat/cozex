@@ -19,6 +19,7 @@ use app\jobs\CommonJob;
 use app\models\Attachment;
 use app\models\AvData;
 use app\models\Model;
+use yii\helpers\Json;
 
 class SubtitleForm extends Model
 {
@@ -26,7 +27,9 @@ class SubtitleForm extends Model
     public $text;
     public $id;
     public $type;
+    public $data;
     public $is_del;
+    public $account_id;
 
     const TYPE_VC = 1; // 音视频转字幕
     const TYPE_ATA = 2; // 音频打轴
@@ -35,15 +38,18 @@ class SubtitleForm extends Model
     public function rules()
     {
         return [
-            [['file'], 'required'],
+            [['file', 'account_id'], 'required'],
             [['file', 'text'], 'string'],
-            [['id', 'type', 'is_del'], 'integer'],
+            [['data'], 'safe'],
+            [['id', 'type', 'is_del', 'account_id'], 'integer'],
         ];
     }
 
     public function attributeLabels()
     {
         return [
+            'account_id' => '应用',
+            'file' => '文件'
         ];
     }
 
@@ -55,12 +61,13 @@ class SubtitleForm extends Model
         $model = new AvData();
         $model->attributes = $this->attributes;
         $model->type = $this->type ?: 1;
+        $model->data = Json::encode ($this->data ?: []);
         if(!$model->save ()){
             return $this->getErrorResponse($model);
         }
         \Yii::$app->queue->delay (0)->push (new CommonJob([
             'type' => 'handle_subtitle',
-            'data' => ['id' => $model->id, 'is_del' => $this->is_del]
+            'data' => ['id' => $model->id, 'is_del' => $this->data['is_del'] ?? $this->is_del]
         ]));
         return [
             'code' => ApiCode::CODE_SUCCESS,
@@ -70,18 +77,18 @@ class SubtitleForm extends Model
 
     public function handle(){
         $model = AvData::findOne (['id' => $this->id]);
-        if(!$model) {
-            return [
-                'code' => ApiCode::CODE_ERROR,
-                'msg' => '数据不存在'
-            ];
-        }
         try{
+            if(!$model || !$model->account) {
+                throw new \Exception('数据不存在');
+            }
+            $data = $model->data ? Json::decode($model->data) : [];
+            $api = ApiForm::common (['account' => $model->account]);
             if($model->type == self::TYPE_AUC) {
                 $obj = new AucBigModelSubmit();
                 $queryObj = new AucBigModelQuery();
             }else if($model->type == self::TYPE_VC) {
                 $obj = new VcSubmit();
+                $obj->attribute = $data;
                 $queryObj = new VcQuery();
             }else{
                 $obj = new AtaSubmit();
@@ -94,20 +101,20 @@ class SubtitleForm extends Model
                 $extension = strtolower($extension);
                 $obj->format = $extension;
             }else {
-                $obj->url = $model->localFile ($model->file);
+                $obj->url = $model->localFile($model->file);
             }
-            $res = ApiForm::common (['object' => $obj])->request();
+            $res = $api->setObject($obj)->request();
             $model->job_id = $res['id'] ?? '';
             $queryObj->id = $model->job_id;
 
             if($model->type == self::TYPE_AUC) {
                 do{
-                    sleep (1);
-                    $res = ApiForm::common (['object' => $queryObj])->request ();
+                    sleep(1);
+                    $res = $api->setObject($queryObj)->request();
                 }while(empty($res['result']['text']));
                 $res = ['utterances' => $res['result']['utterances']];
             }else {
-                $res = ApiForm::common (['object' => $queryObj])->request ();
+                $res = $api->setObject($queryObj)->request();
             }
             $text = '';
             foreach ($res['utterances'] as $k => $item){

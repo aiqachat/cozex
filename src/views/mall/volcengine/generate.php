@@ -4,6 +4,7 @@
  * copyright: Copyright (c) 2024 深圳网商天下科技有限公司
  * author: chenzs
  */
+Yii::$app->loadViewComponent('app-volcengine-choose')
 ?>
 <style type="text/css">
     @import "<?= \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/statics/css/table.css' ?>";
@@ -21,6 +22,11 @@
     }
 </style>
 <div id="app" v-cloak>
+    <app-volcengine-choose @account="changeAccount"></app-volcengine-choose>
+    <el-alert style="margin-bottom: 10px;" :closable="false"
+            type="success">
+        基于语音识别技术，能够自动将音/视频中的语音、歌词转换为字幕文本，适用于辅助视频字幕创作和外挂字幕自动生成。产品支持多个语种的识别、打轴，是完美适配视频创作和视频观看场景的智能字幕解决方案。
+    </el-alert>
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
         <div slot="header">
             <span>字幕生成列表</span>
@@ -39,15 +45,14 @@
                 <el-table-column prop="file" label="文件"></el-table-column>
                 <el-table-column label="状态" width="90">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.status == 1">
-                            <i class="el-icon-loading"></i>处理中
-                        </span>
-                        <span v-if="scope.row.status == 2">
-                            <i class="el-icon-check"></i>成功
-                        </span>
-                        <span v-if="scope.row.status == 3">
-                            <i class="el-icon-close"></i>失败
-                        </span>
+                        <span v-if="scope.row.status == 1">处理中</span>
+                        <span v-if="scope.row.status == 2">成功</span>
+                        <span v-if="scope.row.status == 3"
+                              @mouseenter="scope.row.showPopover = true"
+                              @mouseleave="scope.row.showPopover = false">失败</span>
+                        <el-popover v-model="scope.row.showPopover">
+                            {{scope.row.err_msg}}
+                        </el-popover>
                     </template>
                 </el-table-column>
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
@@ -108,6 +113,7 @@
             return {
                 searchData: {
                     keyword: '',
+                    account_id: '',
                 },
                 form: [],
                 pageCount: 0,
@@ -126,7 +132,15 @@
                 },
             };
         },
+        watch: {
+            'searchData.account_id': function (val, oldValue){
+                this.getList();
+            },
+        },
         methods: {
+            changeAccount(val){
+                this.searchData.account_id = val;
+            },
             submit() {
                 this.$refs.data.validate((valid) => {
                     if (valid) {
@@ -134,7 +148,7 @@
                         request({
                             params: {r: 'mall/volcengine/generate'},
                             method: 'post',
-                            data: this.data,
+                            data: Object.assign(this.data, {account_id: this.searchData.account_id}),
                         }).then(e => {
                             if (e.data.code === 0) {
                                 this.getList()
@@ -170,6 +184,9 @@
                 this.getList();
             },
             getList(type = 1) {
+                if(!this.searchData.account_id){
+                    return;
+                }
                 if(type === 1) {
                     this.listLoading = true;
                 }
@@ -197,7 +214,7 @@
                     this.listLoading = true;
                     request({
                         params: {r: 'mall/volcengine/destroy'},
-                        data: {id: column.id},
+                        data: {id: column.id, account_id: this.searchData.account_id},
                         method: 'post'
                     }).then(e => {
                         if (e.data.code !== 0) {

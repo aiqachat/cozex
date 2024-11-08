@@ -16,3 +16,7 @@
 .el-table .cell, .el-table th div, .el-table--border td:first-child .cell, .el-table--border th:first-child .cell {
     padding-left: 20px;
 }
+
+.el-table__row td:last-child {
+    background-color: white;
+}

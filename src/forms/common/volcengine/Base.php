@@ -8,9 +8,10 @@
 
 namespace app\forms\common\volcengine;
 
-use yii\base\Model;
-
-class Base extends Model
+/**
+ * @property array $attribute
+ */
+class Base
 {
     const METHOD_POST = 'POST';
     const METHOD_GET = 'GET';
@@ -27,8 +28,42 @@ class Base extends Model
         return '';
     }
 
+    public function __construct($array = [])
+    {
+        $this->attribute = $array;
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     * @throws \Exception
+     */
+    public function __set($name, $value)
+    {
+        $setter = 'set' . $name;
+        if (method_exists($this, $setter)) {
+            $this->$setter($value);
+        }
+    }
+
+    public function setAttribute($array = [])
+    {
+        foreach ($array as $key => $item) {
+            if (property_exists($this, $key)) {
+                $this->$key = $item;
+            }
+        }
+    }
+
+    function getAttribute(): array
+    {
+        $params = get_object_vars($this);
+        unset($params['api']);
+        return $params;
+    }
+
     public function getParams(){
-        return $this->attributes;
+        return $this->getAttribute();
     }
 
     public function setApi(ApiForm $api){
@@ -62,7 +97,7 @@ class Base extends Model
             1011 => '音频数据大小超出阈值。',
             1012 => '音频 header 有误 / 无法进行音频解码。',
             1013 => '音频未识别出任何文本结果。',
-            3001 => '一些参数的值非法，比如operation配置错误',
+            3001 => '一些参数的值非法',
             3005 => '后端服务器负载高',
             3010 => '单次请求超过设置的文本长度阈值',
             3011 => '参数有误或者文本为空、文本与语种不匹配、文本只含标点',

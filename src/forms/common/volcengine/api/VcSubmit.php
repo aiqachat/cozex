@@ -52,8 +52,20 @@ class VcSubmit extends Base
     {
         $get = parent::getParams();
         $get['appid'] = $this->api->appid;
-        unset($get['url']);
-        return "/api/v1/vc/submit?" . http_build_query($get);
+        $get['max_lines'] = intval($this->max_lines);
+        $get['words_per_line'] = intval($this->words_per_line);
+        unset($get['url'], $get['use_ddc'], $get['use_punc'], $get['use_itn']);
+        $url = "/api/v1/vc/submit?" . http_build_query($get);
+        if($this->use_itn){
+            $url .= "&use_itn=True";
+        }
+        if($this->use_punc){
+            $url .= "&use_punc=True";
+        }
+        if($this->use_ddc){
+            $url .= "&use_ddc=True";
+        }
+        return $url;
     }
 
     public function getHeaders(){

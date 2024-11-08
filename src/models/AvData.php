@@ -6,17 +6,19 @@ namespace app\models;
  * This is the model class for table "{{%av_data}}".
  *
  * @property int $id
+ * @property int $account_id 账号id
  * @property string $file 音视频文件
  * @property string $text  字幕文本
  * @property string $job_id  任务id
  * @property string $result  最终结果
  * @property string $err_msg
  * @property string $data
- * @property int $type  1:转字幕；2：字幕打轴
+ * @property int $type  1:转字幕；2：字幕打轴；3：大模型录音识别；4：大模型一次性语音合成；5：精品语音合成 - 异步
  * @property int $status 1:处理中；2：处理完成；3：失败
  * @property int $is_delete
  * @property string $created_at
  * @property string $updated_at
+ * @property VolcengineAccount $account
  */
 class AvData extends ModelActiveRecord
 {
@@ -35,7 +37,7 @@ class AvData extends ModelActiveRecord
     {
         return [
             [['created_at', 'updated_at'], 'required'],
-            [['is_delete', 'status', 'type'], 'integer'],
+            [['is_delete', 'status', 'type', 'account_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['job_id', 'result', 'err_msg', 'text', 'file', 'job_id', 'data', 'file'], 'string'],
         ];
@@ -66,5 +68,10 @@ class AvData extends ModelActiveRecord
             file_put_contents($res['local_uri']. $name, @file_get_contents($file));
             return $res['local_uri']. $name;
         }
+    }
+
+    public function getAccount()
+    {
+        return $this->hasOne(VolcengineAccount::className(), ['id' => 'account_id']);
     }
 }

@@ -128,7 +128,11 @@ Yii::$app->loadViewComponent('app-coze-choose')
                     this.btnLoading = true;
                     request({
                         params: {r: 'mall/bot/use'},
-                        data: {bot_id: row.bot_id},
+                        data: {
+                            bot_id: row.bot_id,
+                            space_id: row.space_id,
+                            account_id: this.searchData.account_id
+                        },
                         method: 'post'
                     }).then(e => {
                         if (e.data.code === 0) {
@@ -146,7 +150,12 @@ Yii::$app->loadViewComponent('app-coze-choose')
                 });
             },
             conf(row){
-                navigateTo({r: 'mall/bot/set', bot_id: row.bot_id});
+                navigateTo({
+                    r: 'mall/bot/set',
+                    bot_id: row.bot_id,
+                    space_id: row.space_id,
+                    account_id: this.searchData.account_id
+                });
             },
             changeAccount(val){
                 this.searchData.account_id = val;

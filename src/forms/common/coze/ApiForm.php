@@ -83,6 +83,6 @@ class ApiForm extends BaseObject
 
     private function getClient(): Client
     {
-        return new Client(['verify' => false]);
+        return new Client(['verify' => \Yii::$app->request->isSecureConnection]);
     }
 }

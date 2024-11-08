@@ -68,7 +68,7 @@ class ListEditForm extends Model
             $where = ['dataset_id' => $this->dataset_id];
         }
         /** @var Knowledge $knowledge */
-        $knowledge = Knowledge::find()->where(['is_delete' => 0])->andWhere($where)->one();
+        $knowledge = Knowledge::find()->where(['is_delete' => 0, "account_id" => $this->account_id])->andWhere($where)->one();
         if($knowledge){
             $res = ApiForm::common([
                 'object' => new Workspaces(),

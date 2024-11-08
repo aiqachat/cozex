@@ -13,6 +13,7 @@ use app\bootstrap\response\ApiCode;
 use app\forms\mall\setting\ConfigForm;
 use app\forms\mall\setting\CozeForm;
 use app\forms\mall\setting\QueueForm;
+use app\forms\mall\setting\VolcengineForm;
 
 class IndexController extends AdminController
 {
@@ -68,6 +69,14 @@ class IndexController extends AdminController
     {
         if (\Yii::$app->request->isAjax) {
             $form = new CozeForm();
+            return $this->asJson($form->data());
+        }
+    }
+
+    public function actionVolcengineAccount()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new VolcengineForm();
             return $this->asJson($form->data());
         }
     }

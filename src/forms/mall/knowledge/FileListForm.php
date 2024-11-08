@@ -13,6 +13,7 @@ use app\forms\common\coze\api\DeleteDocument;
 use app\forms\common\coze\api\ListDocument;
 use app\forms\common\coze\ApiForm;
 use app\models\Knowledge;
+use app\models\KnowledgeFile;
 use app\models\Model;
 
 class FileListForm extends Model
@@ -50,19 +51,34 @@ class FileListForm extends Model
         $req->size = 10;
         $res = ApiForm::common(['object' => $req, 'account' => $model->account])->request();
         $document = [];
+        $ids = [];
         foreach ($res['document_infos'] as $item){
             $item['update_time'] = mysql_timestamp ($item['update_time']);
             $item['create_time'] = mysql_timestamp ($item['create_time']);
             $item['size'] = space_unit($item['size']);
-            $document[] = $item;
+            $document[$item['document_id']] = $item;
+            $ids[] = $item['document_id'];
             $model->format_type = $item['format_type'];
         }
+        $model->num = $res['total'];
         $model->save();
         $pagination = new Pagination(['totalCount' => $res['total'], 'pageSize' => $req->size, 'page' => $req->page - 1]);
+
+        $fileList = KnowledgeFile::find ()
+            ->where(['knowledge_id' => $model->id])
+            ->andWhere (['document_id' => $ids])
+            ->all ();
+        /** @var KnowledgeFile $item */
+        foreach ($fileList as $item){
+            if(!isset($document[$item->document_id])){
+                continue;
+            }
+            $document[$item->document_id]['file_id'] = $item->id;
+        }
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
-                'list' => $document,
+                'list' => array_values ($document),
                 'name' => $model->name,
                 'format_type' => $model->format_type,
                 'pagination' => $pagination

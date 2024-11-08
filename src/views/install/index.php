@@ -238,8 +238,17 @@ new Vue({
                                     title: '提示',
                                     message: h('p', null, [
                                         h('span', null, response.data.msg),
-                                        h('div', { style: 'color: teal' }, '方法一：环境面板配置如BT在PHP配置禁用函数里面删除禁用。'),
+                                        h('div', { style: 'color: teal' }, '方法一：环境面板配置如BT在PHP管理《禁用函数》里面删除禁用。'),
                                         h('div', { style: 'color: teal' }, '方法二：php.ini配置文件就行了搜索：disable_functions把后面proc_open删了。')
+                                    ])
+                                });
+                            }else if(response.data.data && response.data.data.code === 220099322){
+                                const h = this.$createElement;
+                                this.$msgbox({
+                                    title: '提示',
+                                    message: h('p', null, [
+                                        h('span', null, response.data.msg),
+                                        h('div', { style: 'color: teal' }, '方法一：环境面板配置如BT在PHP管理《安装扩展》里面安装fileinfo。'),
                                     ])
                                 });
                             }else if(response.data.data && response.data.data.code === 2){

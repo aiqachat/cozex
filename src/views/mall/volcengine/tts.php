@@ -4,6 +4,7 @@
  * copyright: Copyright (c) 2024 深圳网商天下科技有限公司
  * author: chenzs
  */
+Yii::$app->loadViewComponent('app-volcengine-choose');
 
 use app\forms\mall\volcengine\SpeechForm;
 
@@ -25,11 +26,16 @@ $voiceType = (new SpeechForm())->voiceType();
     }
 </style>
 <div id="app" v-cloak>
+    <app-volcengine-choose @account="changeAccount" :dialog="newDialog" @close="closeDialog"></app-volcengine-choose>
+    <el-alert style="margin-bottom: 10px;" :closable="false"
+              type="success">
+        语音合成(TTS, Text to Speech)，能将文本转换成人类声音。它运用了语音合成领域突破性的端到端合成方案，能提供高保真、个性化的音频
+    </el-alert>
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
         <div slot="header">
             <span>语音合成列表</span>
             <div style="float: right;margin-top: -5px">
-                <el-button type="primary" @click="dialog = true" size="small">添加</el-button>
+                <el-button type="primary" @click="open" size="small">添加</el-button>
             </div>
         </div>
         <div class="table-body">
@@ -63,15 +69,14 @@ $voiceType = (new SpeechForm())->voiceType();
                 </el-table-column>
                 <el-table-column label="状态" width="90">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.status == 1">
-                            <i class="el-icon-loading"></i>处理中
-                        </span>
-                        <span v-if="scope.row.status == 2">
-                            <i class="el-icon-check"></i>成功
-                        </span>
-                        <span v-if="scope.row.status == 3">
-                            <i class="el-icon-close"></i>失败
-                        </span>
+                        <span v-if="scope.row.status == 1">处理中</span>
+                        <span v-if="scope.row.status == 2">成功</span>
+                        <span v-if="scope.row.status == 3"
+                              @mouseenter="scope.row.showPopover = true"
+                              @mouseleave="scope.row.showPopover = false">失败</span>
+                        <el-popover v-model="scope.row.showPopover">
+                            {{scope.row.err_msg}}
+                        </el-popover>
                     </template>
                 </el-table-column>
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
@@ -90,6 +95,11 @@ $voiceType = (new SpeechForm())->voiceType();
                                 <img src="statics/img/mall/download.png" alt="">
                             </el-button>
                         </el-tooltip>
+                        <el-tooltip class="item" effect="dark" content="重试" placement="top" v-if="scope.row.status == 3">
+                            <el-button circle type="text" size="mini" @click="refresh(scope.row)">
+                                <img src="statics/img/mall/refresh.png" alt="">
+                            </el-button>
+                        </el-tooltip>
                         <el-tooltip class="item" effect="dark" content="删除" placement="top">
                             <el-button circle type="text" size="mini" @click="destroy(scope.row)">
                                 <img src="statics/img/mall/del.png" alt="">
@@ -104,16 +114,16 @@ $voiceType = (new SpeechForm())->voiceType();
             </div>
         </div>
         <el-dialog title="操作" :visible.sync="dialog" width="30%">
-            <el-form :model="data" label-width="100px" :rules="rules" ref="data">
-                <el-form-item label="app_id" prop="data.app_id">
+            <el-form :model="data" label-width="110px" :rules="rules" ref="data">
+                <el-form-item label="AppId" prop="data.app_id">
                     <el-input size="small" placeholder="请输入APPID" v-model.trim="data.data.app_id"></el-input>
                     <div style="color: #a4a4a4;">注：空则默认用全局配置</div>
                 </el-form-item>
-                <el-form-item label="Access Token" prop="data.access_token">
+                <el-form-item label="AccessToken" prop="data.access_token">
                     <el-input size="small" placeholder="请输入TOKEN" v-model.trim="data.data.access_token"></el-input>
                     <div style="color: #a4a4a4;">注：空则默认用全局配置</div>
                 </el-form-item>
-                <el-form-item label="使用api" prop="type">
+                <el-form-item label="使用Api" prop="type">
                     <el-radio-group size="small" v-model.trim="data.type" @change="change">
                         <el-radio :label="4">大模型语音</el-radio>
                         <el-radio :label="5">精品长文本语音</el-radio>
@@ -131,7 +141,7 @@ $voiceType = (new SpeechForm())->voiceType();
                 </el-form-item>
                 <el-form-item label="音色列表" prop="data.voice_type" v-if="voices.length > 0">
                     <el-select size="small" v-model="data.data.voice_type" @change="changeVoice" filterable>
-                        <el-option v-for="item in voices" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                        <el-option v-for="(item, ind) in voices" :key="ind" :label="item.name" :value="item.id"></el-option>
                     </el-select>
                     <div style="color: #a4a4a4;">注：音色说明请点击查看<a href="https://www.volcengine.com/docs/6561/97465" target="_blank">官方文档</a></div>
                 </el-form-item>
@@ -161,6 +171,7 @@ $voiceType = (new SpeechForm())->voiceType();
                 searchData: {
                     keyword: '',
                     type: '',
+                    account_id: '',
                 },
                 form: [],
                 pageCount: 0,
@@ -170,6 +181,7 @@ $voiceType = (new SpeechForm())->voiceType();
                 listLoading: false,
                 btnLoading: false,
 
+                newDialog: false,
                 dialog: false,
                 data: {
                     type: 5,
@@ -194,14 +206,35 @@ $voiceType = (new SpeechForm())->voiceType();
                 emotion: [],
             };
         },
+        watch: {
+            'searchData.account_id': function (val, oldValue){
+                this.getList();
+            },
+        },
         methods: {
+            closeDialog() {
+                this.newDialog = false;
+            },
+            open(){
+                if(!this.searchData.account_id){
+                    this.newDialog = true;
+                    return;
+                }
+                this.dialog = true
+            },
+            changeAccount(val){
+                this.searchData.account_id = val;
+            },
             playMusic(row) {
                 let text = "audio" + row.id;
                 this.$refs[text].play();
             },
-            changeVoice() {
+            init() {
                 this.language = [];
                 this.emotion = [];
+            },
+            changeVoice() {
+                this.init();
                 this.voices.forEach(its => {
                     if(its.id === this.data.data.voice_type){
                         if(its.language){
@@ -217,6 +250,8 @@ $voiceType = (new SpeechForm())->voiceType();
             },
             change() {
                 let list = [];
+                this.data.data.voice_type = '';
+                this.init();
                 this.voices = [];
                 if (this.data.type === 5 && this.data.data.version === 2) { // 情感预测版
                     this.options[this.data.type].forEach(item => {
@@ -242,12 +277,11 @@ $voiceType = (new SpeechForm())->voiceType();
                         request({
                             params: {r: 'mall/volcengine/tts'},
                             method: 'post',
-                            data: this.data,
+                            data: Object.assign(this.data, {account_id: this.searchData.account_id}),
                         }).then(e => {
                             if (e.data.code === 0) {
-                                setTimeout(function (){
-                                    navigateTo({r:'mall/volcengine/tts'})
-                                }, 500)
+                                this.getList()
+                                this.dialog = false;
                             } else {
                                 this.$message.error(e.data.msg);
                                 this.btnLoading = false;
@@ -278,6 +312,9 @@ $voiceType = (new SpeechForm())->voiceType();
                 this.getList();
             },
             getList(type = 1) {
+                if(!this.searchData.account_id){
+                    return;
+                }
                 if(type === 1) {
                     this.listLoading = true;
                 }
@@ -305,7 +342,26 @@ $voiceType = (new SpeechForm())->voiceType();
                     this.listLoading = true;
                     request({
                         params: {r: 'mall/volcengine/destroy'},
-                        data: {id: column.id},
+                        data: {id: column.id, account_id: this.searchData.account_id},
+                        method: 'post'
+                    }).then(e => {
+                        if (e.data.code !== 0) {
+                            this.$message.error(e.data.msg);
+                        }
+                        this.getList()
+                    }).catch(e => {
+                        this.listLoading = false;
+                    });
+                });
+            },
+            refresh: function (column) {
+                this.$confirm('确认重试该记录吗?', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    this.listLoading = true;
+                    request({
+                        params: {r: 'mall/volcengine/refresh'},
+                        data: {id: column.id, account_id: this.searchData.account_id},
                         method: 'post'
                     }).then(e => {
                         if (e.data.code !== 0) {

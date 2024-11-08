@@ -218,7 +218,7 @@ class AttachmentUpload extends Model
             'ak' => $config['access_key'],
             'sk' => $config['secret_key'],
             'endpoint' => $config['endpoint'],
-            'enableVerifySSL' => false,
+            'enableVerifySSL' => \Yii::$app->request->isSecureConnection,
         ]);
         $key = trim($this->saveFileFolder . '/' . $this->saveFileName, '/');
         $input = new PutObjectInput($config['bucket'], $key, fopen($this->file->tempName, 'rb'));

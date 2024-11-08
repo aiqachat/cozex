@@ -9,9 +9,8 @@ use app\forms\common\CommonOption;
 use yii\queue\JobInterface;
 use yii\queue\Queue;
 
-class TestQueueServiceJob implements JobInterface
+class TestQueueServiceJob extends BaseJob implements JobInterface
 {
-
     public $time;
 
     /**
@@ -20,17 +19,20 @@ class TestQueueServiceJob implements JobInterface
      */
     public function execute($queue)
     {
-        CommonOption::set($this->getKey(), intval($this->time));
+        CommonOption::set($this->getKey(), ['time' => intval($this->time)]);
     }
 
 
     public function valid()
     {
         $result = CommonOption::get($this->getKey());
-        return intval($result) === intval($this->time);
+        $res = intval($result['time'] ?? 0) === intval($this->time);
+        $result['done'] = $res;
+        CommonOption::set($this->getKey(), $result);
+        return $res;
     }
 
-    private function getKey()
+    public function getKey()
     {
         return 'test_queue_service_job_time';
     }

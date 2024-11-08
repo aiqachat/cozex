@@ -52,4 +52,13 @@ class SettingController extends AdminController
             return $this->asJson($form->del());
         }
     }
+
+    public function actionVolcengineDestroy()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new VolcengineForm();
+            $form->attributes = \Yii::$app->request->post();
+            return $this->asJson($form->del());
+        }
+    }
 }

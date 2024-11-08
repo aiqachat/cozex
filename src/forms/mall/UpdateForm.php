@@ -140,7 +140,7 @@ class UpdateForm extends Model
             throw new \Exception('无法保存文件，请检查文件写入权限。');
         }
 
-        $client = new Client(['verify' => false, 'stream' => true]);
+        $client = new Client(['verify' => \Yii::$app->request->isSecureConnection, 'stream' => true]);
         $response = $client->get($url);
         $body = $response->getBody();
         while (!$body->eof()) {

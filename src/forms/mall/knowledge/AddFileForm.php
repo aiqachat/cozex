@@ -11,6 +11,7 @@ use app\bootstrap\response\ApiCode;
 use app\forms\common\coze\api\BasesDocument;
 use app\forms\common\coze\api\ChunkStrategy;
 use app\forms\common\coze\api\CreateDocument;
+use app\forms\common\coze\api\UpdateDocument;
 use app\forms\common\coze\ApiForm;
 use app\models\Attachment;
 use app\models\Knowledge;
@@ -31,11 +32,13 @@ class AddFileForm extends Model
     public $web_url;
     public $update_interval;
     public $name;
+    public $document_id;
 
     public function rules()
     {
         return [
-            [['id', 'max_length', 'upload_type', 'update_type', 'update_interval'], 'integer'],
+            [['id', 'max_length', 'upload_type', 'update_type', 'update_interval',
+                'document_id'], 'integer'],
             [['type', 'separator', 'separator_custom', 'web_url', 'name'], 'string'],
             [['files', 'handle_rule'], 'safe'],
         ];
@@ -100,6 +103,35 @@ class AddFileForm extends Model
             return [
                 'code' => ApiCode::CODE_SUCCESS,
                 'data' => $res['document_infos']
+            ];
+        }catch (\Exception $e){
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function update()
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        }
+        try {
+            $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0]);
+            if (!$model || !$model->account) {
+                return [
+                    'code' => ApiCode::CODE_ERROR,
+                    'msg' => '数据不存在'
+                ];
+            }
+            $req = new UpdateDocument();
+            $req->document_id = $this->document_id;
+            $req->document_name = $this->name;
+            ApiForm::common(['object' => $req, 'account' => $model->account])->request();
+            return [
+                'code' => ApiCode::CODE_SUCCESS,
+                'msg' => '修改成功'
             ];
         }catch (\Exception $e){
             return [

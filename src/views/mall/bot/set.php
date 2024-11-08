@@ -134,7 +134,12 @@
             getList() {
                 this.listLoading = true;
                 request({
-                    params: {r: 'mall/bot/set', bot_id: getQuery('bot_id')},
+                    params: {
+                        r: 'mall/bot/set',
+                        bot_id: getQuery('bot_id'),
+                        space_id: getQuery('space_id'),
+                        account_id: getQuery('account_id'),
+                    },
                 }).then(e => {
                     if (e.data.code === 0) {
                         this.code = e.data.data.code;

@@ -254,7 +254,7 @@ $coze_set = (new IndexForm())->page();
                 padding-top: 50px;
                 left: 160px;
                 z-index: 1000;
-                width: 160px;
+                width: 170px;
                 height: 100%;
             }
 
