@@ -83,6 +83,7 @@ class Menus
                         ],
                     ],
                     [
+<<<<<<< HEAD
                         'name' => '大模型声音复刻',
                         'route' => 'mall/volcengine/tts-mega',
                         'action' => [
@@ -104,6 +105,13 @@ class Menus
                     ],
                     [
                         'name' => '语音合成',
+=======
+                        'name' => '大模型语音合成',
+                        'route' => 'mall/volcengine/tts-model',
+                    ],
+                    [
+                        'name' => '合成语音',
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                         'route' => 'mall/volcengine/tts',
                         'action' => [
                             [
@@ -126,6 +134,10 @@ class Menus
                         'name' => '语音技术配置',
                         'route' => 'mall/setting/volcengine',
                     ],
+                    [
+                        'name' => '语音技术配置',
+                        'route' => 'mall/setting/volcengine',
+                    ],
                 ],
             ],
             [
@@ -136,10 +148,13 @@ class Menus
                     [
                         'name' => '基础设置',
                         'route' => 'mall/index/index',
+<<<<<<< HEAD
                     ],
                     [
                         'name' => '火山引擎密钥',
                         'route' => 'mall/index/volcengine',
+=======
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                     ],
                 ],
                 'action' => [

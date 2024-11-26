@@ -8,7 +8,10 @@
 <template id="app-volcengine-choose">
     <div class="app-volcengine-choose" style="margin-top: 10px;">
         <el-form size="small" :inline="true" :model="search" v-loading="loading">
+<<<<<<< HEAD
             <el-tag v-if="title" style="background-color: #ffff;border-radius: 10px;margin-right: 10px;font-weight: bold;font-size: 14px;">{{title}}</el-tag>
+=======
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             <el-form-item label="应用名称：">
                 <el-select v-model="search.account_id" placeholder="请选择应用">
                     <el-option v-for="item in account" :key="item.id" :label="item.name" :value="item.id"></el-option>
@@ -37,7 +40,10 @@ Vue.component('app-volcengine-choose', {
     template: '#app-volcengine-choose',
     props: {
         dialog: Boolean,
+<<<<<<< HEAD
         title: String,
+=======
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     },
     data() {
         return {

@@ -22,12 +22,25 @@ Yii::$app->loadViewComponent('app-volcengine-choose')
     }
 </style>
 <div id="app" v-cloak>
+<<<<<<< HEAD
     <app-volcengine-choose @account="changeAccount" :dialog="newDialog" @close="closeDialog" title="字幕打轴"></app-volcengine-choose>
+=======
+    <app-volcengine-choose @account="changeAccount" :dialog="newDialog" @close="closeDialog"></app-volcengine-choose>
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     <el-alert style="margin-bottom: 10px;" :closable="false"
               type="success">
         针对已有对应文本的视频剪辑场景，可以实现自动将文本分句，并与视频时间线完美对齐。
     </el-alert>
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
+<<<<<<< HEAD
+=======
+        <div slot="header">
+            <span>字幕打轴列表</span>
+            <div style="float: right;margin-top: -5px">
+                <el-button type="primary" @click="open" size="small">添加</el-button>
+            </div>
+        </div>
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
         <div class="table-body">
             <div class="input-item">
                 <el-input @keyup.enter.native="search" size="small" placeholder="请输入名称" v-model="searchData.keyword" clearable @clear="search">
@@ -51,11 +64,20 @@ Yii::$app->loadViewComponent('app-volcengine-choose')
                     <template slot-scope="scope">
                         <span v-if="scope.row.status == 1">处理中</span>
                         <span v-if="scope.row.status == 2">成功</span>
+<<<<<<< HEAD
                         <span v-if="scope.row.status == 3">
                             <el-tooltip class="item" effect="dark" :content="scope.row.err_msg" placement="top">
                                 <el-button type="text">失败</el-button>
                             </el-tooltip>
                         </span>
+=======
+                        <span v-if="scope.row.status == 3"
+                              @mouseenter="scope.row.showPopover = true"
+                              @mouseleave="scope.row.showPopover = false">失败</span>
+                        <el-popover v-model="scope.row.showPopover">
+                            {{scope.row.err_msg}}
+                        </el-popover>
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                     </template>
                 </el-table-column>
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>

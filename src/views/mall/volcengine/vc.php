@@ -24,7 +24,11 @@ Yii::$app->loadViewComponent ('app-volcengine-choose')
     }
 </style>
 <div id="app" v-cloak>
+<<<<<<< HEAD
     <app-volcengine-choose @account="changeAccount" :dialog="dialog" @close="closeDialog" title="字幕生成"></app-volcengine-choose>
+=======
+    <app-volcengine-choose @account="changeAccount" :dialog="dialog" @close="closeDialog"></app-volcengine-choose>
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     <el-alert style="margin-bottom: 10px;" :closable="false"
               type="success">
         基于语音识别技术，能够自动将音/视频中的语音、歌词转换为字幕文本，适用于辅助视频字幕创作和外挂字幕自动生成。产品支持多个语种的识别、打轴，是完美适配视频创作和视频观看场景的智能字幕解决方案。
@@ -42,11 +46,20 @@ Yii::$app->loadViewComponent ('app-volcengine-choose')
                         <template slot-scope="scope">
                             <span v-if="scope.row.status == 1">识别中</span>
                             <span v-if="scope.row.status == 2">成功</span>
+<<<<<<< HEAD
                             <span v-if="scope.row.status == 3">
                                 <el-tooltip effect="dark" :content="scope.row.err_msg" placement="top">
                                     <el-button type="text">失败</el-button>
                                 </el-tooltip>
                             </span>
+=======
+                            <span v-if="scope.row.status == 3"
+                                  @mouseenter="scope.row.showPopover = true"
+                                  @mouseleave="scope.row.showPopover = false">失败</span>
+                            <el-popover v-model="scope.row.showPopover">
+                                {{scope.row.err_msg}}
+                            </el-popover>
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                         </template>
                     </el-table-column>
                     <el-table-column label="操作" width="150" fixed="right">
@@ -263,6 +276,7 @@ Yii::$app->loadViewComponent ('app-volcengine-choose')
         },
         mounted: function () {
             this.getList();
+<<<<<<< HEAD
             setInterval(() => {
                 let s = false;
                 for(let item of this.form) {
@@ -273,6 +287,10 @@ Yii::$app->loadViewComponent ('app-volcengine-choose')
                 if(s){
                     this.getList(0);
                 }
+=======
+            this.timer = setInterval(() => {
+                this.getList(0);
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             }, 5000)
         }
     });

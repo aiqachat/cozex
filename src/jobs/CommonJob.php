@@ -62,6 +62,7 @@ class CommonJob extends BaseJob implements RetryableJobInterface
         }
     }
 
+<<<<<<< HEAD
     private function handleCozeToken()
     {
         $model = new CozeForm();
@@ -72,6 +73,8 @@ class CommonJob extends BaseJob implements RetryableJobInterface
         }
     }
 
+=======
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     public function getTtr()
     {
         // TODO: Implement getTtr() method.

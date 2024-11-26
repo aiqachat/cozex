@@ -97,6 +97,7 @@ EOF,
     private function getDefault($get = 0)
     {
         if($get){
+<<<<<<< HEAD
             try {
                 $model = CozeAccount::findOne (['id' => $this->account_id, 'is_delete' => 0]);
                 if ($model) {
@@ -113,6 +114,26 @@ EOF,
                     }
                 }
             }catch (\Exception $e){}
+=======
+            $model = CozeAccount::findOne(['id' => $this->account_id, 'is_delete' => 0]);
+            if(!$model){
+                return [
+                    'code' => ApiCode::CODE_ERROR,
+                    'msg' => 'coze账号数据不存在'
+                ];
+            }
+            $req = new BotsList([
+                'space_id' => $this->space_id,
+                'page_index' => 1,
+                'page_size' => 1000
+            ]);
+            $list = ApiForm::common(['object' => $req, "account" => $model])->request();
+            foreach ($list['data']['space_bots'] as $item){
+                if($this->bot_id == $item['bot_id']) {
+                    $title = $item['bot_name'];
+                }
+            }
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
         }
         return [
             'version' => '0.1.0-beta.6',

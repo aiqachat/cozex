@@ -92,7 +92,11 @@ class QueueForm extends Model
         } catch (\Exception $exception) {
             return [
                 'code' => ApiCode::CODE_ERROR,
+<<<<<<< HEAD
                 'msg' => '队列服务失败：' . $exception->getMessage(),
+=======
+                'msg' => '队列服务测试失败：' . $exception->getMessage(),
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 'data' => [
                     'date' => mysql_timestamp(),
                 ]

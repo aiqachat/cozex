@@ -7,6 +7,7 @@
 
 namespace app\controllers;
 
+<<<<<<< HEAD
 use app\forms\common\coze\api\BotsList;
 use app\forms\common\coze\api\Chat;
 use app\forms\common\coze\api\ChatMsgList;
@@ -17,10 +18,13 @@ use app\forms\common\coze\api\CreateMessage;
 use app\forms\common\coze\ApiForm;
 use app\models\CozeAccount;
 
+=======
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
 class DemoController extends Controller
 {
     public function actionIndex($testCode = 200)
     {
+<<<<<<< HEAD
         $file = \Yii::$app->basePath . "/temp/1.txt";
         $content = file_get_contents ($file);
 
@@ -69,5 +73,9 @@ class DemoController extends Controller
         $obj = new ConversationMsgList();
         $obj->conversation_id = '7438449697141899275';
         echo "<pre>";print_r(ApiForm::common (['object' => $obj, 'account' => CozeAccount::findOne (9)])->request ());die();
+=======
+
+        echo "<pre>";print_r($sql ?? '');die();
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     }
 }

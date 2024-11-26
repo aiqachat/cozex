@@ -20,7 +20,10 @@ use app\models\Attachment;
 use app\models\AvData;
 use app\models\Model;
 use yii\helpers\Json;
+<<<<<<< HEAD
 use yii\web\UploadedFile;
+=======
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
 
 class SubtitleForm extends Model
 {
@@ -63,7 +66,11 @@ class SubtitleForm extends Model
         $model->attributes = $this->attributes;
         $model->type = $this->type ?: 1;
         $model->data = Json::encode ($this->data ?: []);
+<<<<<<< HEAD
         if(!$model->save()){
+=======
+        if(!$model->save ()){
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             return $this->getErrorResponse($model);
         }
         \Yii::$app->queue->delay (0)->push (new CommonJob([
@@ -122,9 +129,12 @@ class SubtitleForm extends Model
                 do{
                     sleep(1);
                     $res = $api->setObject($queryObj)->request();
+<<<<<<< HEAD
                     if(!isset($res['result'])){
                         throw new \Exception('文件不存在或外网无法访问');
                     }
+=======
+>>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 }while(empty($res['result']['text']));
                 $res = ['utterances' => $res['result']['utterances']];
             }else {
