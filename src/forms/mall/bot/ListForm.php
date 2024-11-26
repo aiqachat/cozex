@@ -69,6 +69,8 @@ class ListForm extends Model
                 $sdf = ApiForm::common (['object' => $req, "account" => $model])->request();
                 $data = array_merge($data, array_map(function ($var) use($spaces){
                     $var['space_name'] = $spaces['name'];
+                    $var['space_id'] = $spaces['id'];
+                    $var['publish_time'] = date("Y-m-d", $var['publish_time']);
                     return $var;
                 }, $sdf['data']['space_bots'] ?? []));
             }
@@ -80,16 +82,17 @@ class ListForm extends Model
                 'page_size' => $this->page_size
             ]);
             $list = ApiForm::common(['object' => $req, "account" => $model])->request();
-            $data = $list['data']['space_bots'];
+            $data = array_map(function ($var){
+                $var['space_id'] = $this->space_id;
+                $var['publish_time'] = date("Y-m-d", $var['publish_time']);
+                return $var;
+            }, $list['data']['space_bots']);
             $pagination = new Pagination(['totalCount' => $list['data']['total'], 'pageSize' => $this->page_size, 'page' => $this->page -1]);
         }
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
-                'list' => array_map (function ($var){
-                    $var['publish_time'] = date("Y-m-d", $var['publish_time']);
-                    return $var;
-                }, $data),
+                'list' => $data,
                 'pagination' => $pagination,
                 'set_bot' => (new IndexForm())->getSetting()
             ]

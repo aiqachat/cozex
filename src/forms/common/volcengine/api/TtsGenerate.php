@@ -12,8 +12,11 @@ use app\forms\common\volcengine\Base;
 // https://www.volcengine.com/docs/6561/1257584
 class TtsGenerate extends Base
 {
+    const ONE = 'volcano_tts'; // 语音合成
+    const TWO = 'volcano_mega'; // 语音复刻  https://www.volcengine.com/docs/6561/1305191
+
     /** @var string 业务集群 */
-    public $cluster = 'volcano_tts';
+    public $cluster = self::ONE;
 
     /** @var string 用户标识 */
     public $uid;
@@ -38,12 +41,6 @@ class TtsGenerate extends Base
 
     /** @var string 请求标识  需要保证每次调用传入值唯一，建议使用 UUID */
     public $reqid;
-
-    /** @var string 情感/风格	 */
-    public $emotion;
-
-    /** @var string 语种，与音色有关，具体值参考音色列表，默认为中文 */
-    public $language;
 
     public function getMethodName()
     {
@@ -77,8 +74,6 @@ class TtsGenerate extends Base
         if(isset($response['code']) && $response['code'] == 3000 && $response['message'] == 'Success'){
             return $response;
         }
-        \Yii::error(explode("?", $this->getMethodName())[0] . " = 对接火山引擎接口异常：");
-        \Yii::error($response);
         $this->errorMsg($response);
     }
 }

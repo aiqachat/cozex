@@ -13,6 +13,8 @@ use app\bootstrap\response\ApiCode;
 use app\forms\mall\setting\ConfigForm;
 use app\forms\mall\setting\CozeForm;
 use app\forms\mall\setting\QueueForm;
+use app\forms\mall\setting\VolcanoKeyForm;
+use app\forms\mall\setting\VolcengineForm;
 
 class IndexController extends AdminController
 {
@@ -28,6 +30,31 @@ class IndexController extends AdminController
             }
         } else {
             return $this->render('index');
+        }
+    }
+
+    public function actionVolcengine()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new VolcanoKeyForm();
+            if (\Yii::$app->request->isPost) {
+                $form->attributes = \Yii::$app->request->post();
+                return $this->asJson($form->save());
+            }else{
+                $form->attributes = \Yii::$app->request->get();
+                return $this->asJson($form->get());
+            }
+        } else {
+            return $this->render('volcengine');
+        }
+    }
+
+    public function actionVolcengineDestroy()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new VolcanoKeyForm();
+            $form->attributes = \Yii::$app->request->post();
+            return $this->asJson($form->del());
         }
     }
 
@@ -68,6 +95,14 @@ class IndexController extends AdminController
     {
         if (\Yii::$app->request->isAjax) {
             $form = new CozeForm();
+            return $this->asJson($form->data());
+        }
+    }
+
+    public function actionVolcengineAccount()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new VolcengineForm();
             return $this->asJson($form->data());
         }
     }

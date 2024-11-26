@@ -1,4 +1,6 @@
-<?php defined('YII_ENV') or exit('Access Denied'); ?>
+<?php defined('YII_ENV') or exit('Access Denied');
+$indSetting = (new \app\forms\mall\setting\ConfigForm())->config();
+?>
 <style>
     .num-info {
         display: flex;
@@ -64,7 +66,7 @@
                 </div>
                 <div class="num-info">
                     <div class="num-info-item">
-                        开源版本完全免费开源使用
+                        <?php echo $indSetting['version_text'] ?? '';?>
                     </div>
                 </div>
             </el-card>

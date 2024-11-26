@@ -9,7 +9,7 @@
 namespace app\forms\common\coze;
 
 /**
- * @property string $attribute
+ * @property array $attribute
  */
 class Base
 {
@@ -82,7 +82,7 @@ class Base
             4014 => 'Bot 无法回答此问题',
             4019 => '扣子专业版账号已欠费',
             4020 => '当前 RPM 已超出购买的额度',
-            4100 => '个人访问令牌（secret）不正确',
+            4100 => '访问令牌（secret）不正确',
             4101 => '当前使用的个人访问令牌没有权限访问该资源',
             4200 => '未找到该资源，包括资源 ID 错误、此资源并非由当前账号创建等。',
             4302 => '待上传的文件大小超出接口限制',
@@ -91,7 +91,7 @@ class Base
             5000 => '服务器内部错误',
             708232003 => '当前使用的个人访问令牌未被授予知识库所在空间的权限',
             708232001 => '请求参数错误，包括参数格式错误、必选参数缺失等',
-            700012006 => '个人访问令牌（secret）不正确',
+            700012006 => '访问令牌（secret）不正确',
         ];
         throw new \Exception($res[$response['code'] ?? ''] ?? ($response['msg'] ?? $response['err_msg']));
     }

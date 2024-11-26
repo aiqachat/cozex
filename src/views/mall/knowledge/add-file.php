@@ -60,8 +60,8 @@ Yii::$app->loadViewComponent('app-attachment-dragging')
                 <template v-if="active == 0">
                     <el-form-item label="上传方式" prop="upload_type" style="margin-top: 10px;">
                         <el-radio-group size="small" v-model="form.upload_type">
-                            <el-radio :label="1">在线网页</el-radio>
                             <el-radio :label="2">离线文件</el-radio>
+                            <el-radio :label="1">在线网页</el-radio>
                         </el-radio-group>
                     </el-form-item>
                     <template v-if="form.upload_type == 2">

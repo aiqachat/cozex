@@ -51,7 +51,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                   type="selection"
                   width="55">
                 </el-table-column>
-                <el-table-column label="资源(文件夹)">
+                <el-table-column label="资源(文件夹)" min-width="200">
                     <template slot-scope="scope">
                         <div flex="dir:left cross:center">
                             <app-image mode="aspectFill" style="margin-right: 8px;flex-shrink: 0" :src="scope.row.img"></app-image>
@@ -72,7 +72,7 @@ Yii::$app->loadViewComponent('app-coze-choose')
                         <el-tag v-else-if="scope.row.format_type == 2" size="mini" type="success">照片</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="size" label="文件大小" width="100"></el-table-column>
+                <el-table-column prop="num" label="文件数量" width="100"></el-table-column>
                 <el-table-column prop="updated_at" label="编辑时间" width="180" sortable="false"></el-table-column>
                 <el-table-column label="操作" width="150" fixed="right">
                     <template slot-scope="scope">

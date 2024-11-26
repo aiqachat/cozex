@@ -42,7 +42,7 @@ class AucBigModelSubmit extends Base
     }
 
     public function getParams(){
-        $param = $this->attributes;
+        $param = $this->getAttribute();
         $data = [
             'user' => ['uid' => $this->uid],
             'request' => ['model_name' => $this->model_name, 'enable_itn' => $this->enable_itn],

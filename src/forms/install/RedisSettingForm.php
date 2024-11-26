@@ -42,6 +42,12 @@ class RedisSettingForm extends Model
         }
         $channel = 'wstx_' . rand(100, 999);
         $localConfigFile = \Yii::$app->basePath . '/config/local.php';
+        if(file_exists($localConfigFile)){
+            $localConfig = require $localConfigFile;
+            if(!empty($localConfig['queue']['channel'])){
+                $channel = $localConfig['queue']['channel'];
+            }
+        }
         if ($this->password) {
             $passwordVal = "'{$this->password}'";
         } else {

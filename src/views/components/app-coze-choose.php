@@ -14,7 +14,7 @@
     }
 </style>
 <template id="app-coze-choose">
-    <div class="app-coze-choose">
+    <div class="app-coze-choose" style="margin-top: 10px;">
         <el-form size="small" :inline="true" :model="search" v-loading="loading">
             <el-form-item label="COZE账号：">
                 <el-select v-model="search.account_id" placeholder="请选择coze账号">
@@ -63,13 +63,13 @@ Vue.component('app-coze-choose', {
             account: [],
             space: [],
             cookieName: 'cozex-account-choose',
-            placeholder: '请先选择coze账号',
         }
     },
     watch: {
         'search.account_id': function (val, oldValue){
             this.$emit('account', val);
             this.getSpace();
+            this.saveCookie();
         },
         'search.space_id': function (val, oldValue){
             if(!this.search.account_id){

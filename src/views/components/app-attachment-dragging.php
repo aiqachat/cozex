@@ -34,6 +34,7 @@
             @success="handleSuccess"
             :multiple="true"
             :max="max"
+            :size="size"
             :params="params"
             :fields="fields"
             :accept="accept"
@@ -57,6 +58,7 @@
                 type: Number,
                 default: 1,
             },
+            size: Number,
             notice: {
                 type: String,
                 default: '',
@@ -77,6 +79,9 @@
                     }
                     if (this.type === 2) {
                         return 'image/png,image/jpeg,image/jpeg';
+                    }
+                    if (this.type === 3) {
+                        return 'audio/wav,audio/mp3,audio/mp4a-latm,audio/mpeg';
                     }
                     return '*/*';
                 },
@@ -110,9 +115,6 @@
                 if (!urls.length) {
                     return;
                 }
-                console.log('handleComplete')
-                console.log(attachments)
-                console.log(urls)
             },
             handleSuccess(files) {
                 this.$emit('success', files);

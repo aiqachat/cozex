@@ -22,12 +22,15 @@ class ConfigForm extends Model
     public $passport_bg;
     public $copyright;
     public $copyright_url;
+    public $version_text;
+    public $voice_text;
 
     public function rules()
     {
         return [
             [['copyright'], 'trim'],
             [['copyright_url', 'passport_logo', 'copyright', 'passport_bg', 'name', 'mall_logo_pic'], 'string', 'max' => 255],
+            [['version_text', 'voice_text'], 'string'],
         ];
     }
 
@@ -70,12 +73,14 @@ class ConfigForm extends Model
     {
         $host = \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . "/";
         return [
-            'name' => 'cozex',
+            'name' => 'CozeX-扣子X',
             'mall_logo_pic' => $host . 'statics/img/mall/poster-big-shop.png', //商城logo
             'passport_logo' => $host . 'statics/img/admin/login-logo.png',
             'passport_bg' => $host . 'statics/img/admin/BG.png',
-            'copyright' => 'Powered by AIQA',
-            'copyright_url' => 'https://aiqa.chat',
+            'copyright' => 'Powered by Netbcloud',
+            'copyright_url' => 'https://www.netbcloud.com',
+            'version_text' => '开源版本完全免费开源使用',
+            'voice_text' => '今天天气可好了，我打算和朋友一起去野餐，带上美食和饮料，找个舒适的草坪，什么烦恼都没了，你要不要和我们一起呀？也可以加我微信：xuyy0755'
         ];
     }
 }

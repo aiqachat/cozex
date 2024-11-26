@@ -11,7 +11,7 @@ namespace app\models;
  * @property string $dataset_id  知识库ID
  * @property string $name
  * @property string $desc
- * @property int $size  文件的大小，单位为字节
+ * @property int $num  文件的数量
  * @property int $format_type 0：文档类型；1：表格类型；2：照片类型
  * @property int $is_delete
  * @property string $created_at
@@ -36,7 +36,7 @@ class Knowledge extends ModelActiveRecord
     {
         return [
             [['dataset_id', 'created_at', 'updated_at', 'account_id', 'space_id'], 'required'],
-            [['is_delete', 'format_type', 'size', 'account_id'], 'integer'],
+            [['is_delete', 'format_type', 'num', 'account_id'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['dataset_id', 'name', 'desc', 'space_id'], 'string'],
         ];

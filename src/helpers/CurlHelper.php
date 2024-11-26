@@ -37,7 +37,7 @@ class CurlHelper extends Component
     public function getClient($headers = array())
     {
         return new Client([
-            'verify' => false,
+            'verify' => \Yii::$app->request->isSecureConnection,
             'headers' => $headers,
             'timeout' => $this->timeout,
         ]);

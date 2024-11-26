@@ -11,6 +11,7 @@ namespace app\forms\install;
 
 use app\bootstrap\response\ApiCode;
 use app\forms\common\CommonOption;
+use app\forms\mall\setting\QueueForm;
 use app\helpers\CurlHelper;
 use app\models\Model;
 use yii\db\Connection;
@@ -168,6 +169,9 @@ EOF;
         }
 
         try {
+            if(!extension_loaded ('fileinfo')){
+                throw new \Exception('请开启PHP扩展fileinfo', 220099322);
+            }
             cmd_exe("chown -R www:www ".\Yii::$app->basePath." & chmod -R 755 ".\Yii::$app->basePath);
             $res = $this->getDb()->createCommand('SHOW TABLES LIKE :keyword', [':keyword' => $this->tablePrefix . '%'])
                 ->queryAll();
@@ -254,6 +258,12 @@ EOF;
             $this->saveConfig();
             $this->installLock();
             $this->getSystemInfo();
+            (new QueueForm())->clearQueue();
+            (new QueueForm())->queueFile();
+            return [
+                'code' => ApiCode::CODE_SUCCESS,
+                'msg' => '安装完成。',
+            ];
         } catch (\Exception $exception) {
             if (isset($this->dbErrorCode[$exception->getCode()])) {
                 return [
@@ -275,10 +285,6 @@ EOF;
                 ],
             ];
         }
-        return [
-            'code' => ApiCode::CODE_SUCCESS,
-            'msg' => '安装完成。',
-        ];
     }
 
     /**

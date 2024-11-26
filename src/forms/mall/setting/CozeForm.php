@@ -8,8 +8,10 @@
 namespace app\forms\mall\setting;
 
 use app\bootstrap\response\ApiCode;
+use app\forms\common\coze\api\OauthToken;
 use app\forms\common\coze\api\Workspaces;
 use app\forms\common\coze\ApiForm;
+use app\jobs\CommonJob;
 use app\models\CozeAccount;
 use app\models\Model;
 
@@ -17,15 +19,21 @@ class CozeForm extends Model
 {
     public $coze_secret;
     public $name;
+    public $client_id;
+    public $client_secret;
+    public $type;
     public $remark;
     public $id;
     public $page_size;
 
+    public $code;
+    public $state;
+
     public function rules()
     {
         return [
-            [['id'], 'integer'],
-            [['coze_secret', 'name', 'remark'], 'string'],
+            [['id', 'type'], 'integer'],
+            [['coze_secret', 'name', 'remark', 'client_id', 'client_secret', 'state', 'code'], 'string'],
             [['page_size'], 'default', 'value' => 10],
         ];
     }
@@ -119,14 +127,26 @@ class CozeForm extends Model
                     'msg' => '数据不存在'
                 ];
             }
-            $where = [
-                'and',
-                ['coze_secret' => $this->coze_secret],
-                ['not', ['id' => $this->id]]
-            ];
+            if($this->type == 1) {
+                $where = [
+                    'and',
+                    ['coze_secret' => $this->coze_secret],
+                    ['not', ['id' => $this->id]]
+                ];
+            }else{
+                $where = [
+                    'and',
+                    ['or', ['client_id' => $this->client_id], ['client_secret' => $this->client_secret]],
+                    ['not', ['id' => $this->id]]
+                ];
+            }
         }else{
             $model = new CozeAccount();
-            $where = ['coze_secret' => $this->coze_secret];
+            if($this->type == 1) {
+                $where = ['coze_secret' => $this->coze_secret];
+            }else{
+                $where = ['or', ['client_id' => $this->client_id], ['client_secret' => $this->client_secret]];
+            }
         }
         $exist = CozeAccount::find()->where(['is_delete' => 0])->andWhere($where)->exists();
         if($exist){
@@ -136,12 +156,98 @@ class CozeForm extends Model
             ];
         }
         $model->attributes = $this->attributes;
-        if(!$model->save()){
-            return $this->getErrorResponse($model);
+        if($this->type == 1) {
+            if (!$model->save ()) {
+                return $this->getErrorResponse ($model);
+            }
+        }else{
+            if($this->code){
+                return $model;
+            }
+            if($model->getDirtyAttributes (['client_id', 'client_secret'])){
+                $key = md5($this->client_id . $this->client_secret);
+                \Yii::$app->cache->set($key, $this->attributes);
+                $redirect_uri = \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/notify/coze.php';
+                $url = "https://www.coze.cn/api/permission/oauth2/authorize?response_type=code&client_id={$this->client_id}&redirect_uri={$redirect_uri}&state={$key}";
+            }elseif(!$model->save()){
+                return $this->getErrorResponse($model);
+            }
         }
         return [
             'code' => ApiCode::CODE_SUCCESS,
-            'msg' => '成功'
+            'msg' => '成功',
+            'data' => [
+                'url' => $url ?? '',
+            ]
+        ];
+    }
+
+    public function handleNotify()
+    {
+        try {
+            $res = \Yii::$app->cache->get($this->state);
+            if(!$res){
+                throw new \Exception('数据异常');
+            }
+            $res['code'] = $this->code;
+            $this->attributes = $res;
+            $obj = new OauthToken();
+            $obj->attribute = $this->attributes;
+            $obj->redirect_uri = \Yii::$app->request->hostInfo . \Yii::$app->request->scriptUrl;
+            $res = ApiForm::common(['secret' => $this->client_secret, 'object' => $obj])->request();
+            $model = $this->save();
+            if(isset($model['code']) && $model['code'] == ApiCode::CODE_ERROR){
+                throw new \Exception($model['msg']);
+            }
+            $isNewRecord = $model->isNewRecord;
+            if(!$model->saveOauth($res)){
+                return $this->getErrorResponse($model);
+            }
+            if($isNewRecord){
+                // refresh_token 有效期为 30 天。有效期内可以凭 refresh_token 调用 API
+                \Yii::$app->queue->delay(30 * 24 * 3600 - 3600)->push(new CommonJob([
+                    'type' => 'handle_coze_token',
+                    'data' => ['id' => $model->id]
+                ]));
+            }
+            return \Yii::$app->response->redirect(\Yii::$app->request->hostInfo  . dirname(\Yii::$app->request->baseUrl) . '/index.php?r=mall/setting/coze');
+        } catch (\Exception $exception) {
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => $exception->getMessage(),
+                'url' => \Yii::$app->request->hostInfo  . dirname(\Yii::$app->request->baseUrl) . '/index.php?r=mall/setting/coze'
+            ];
+        }
+    }
+
+    public function handleJob()
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        }
+        try {
+            $model = CozeAccount::findOne($this->id);
+            if(!$model){
+                throw new \Exception('数据不存在');
+            }
+            if($model->is_delete = 1){
+                throw new \Exception('数据已删除');
+            }
+            ApiForm::common(['account' => $model]);
+            // refresh_token 有效期为 30 天。有效期内可以凭 refresh_token 调用 API
+            \Yii::$app->queue->delay(30 * 24 * 3600 - 3600)->push(new CommonJob([
+                'type' => 'handle_coze_token',
+                'data' => ['id' => $model->id]
+            ]));
+        } catch (\Exception $exception) {
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => $exception->getMessage(),
+            ];
+        }
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'msg' => '',
         ];
     }
 

@@ -15,7 +15,6 @@ class CommonOption
     const GROUP_APP = 'app';
 
     const NAME_IND_SETTING = 'ind_setting'; // 设置
-    const NAME_VOLCENGINE_SETTING = 'volcengine_setting'; // 火山引擎设置
     const NAME_COZE_WEB_SDK = 'coze_web_sdk'; // coze web设置
     const NAME_VERSION = 'version'; // 更新记录的系统版本号
 

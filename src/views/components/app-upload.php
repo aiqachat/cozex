@@ -20,6 +20,7 @@
             disabled: Boolean,
             multiple: Boolean,
             max: Number,
+            size: Number,
             accept: String,
             params: Object,
             fields: Object,
@@ -76,14 +77,20 @@
                 for (let i = 0; i < rawFiles.length; i++) {
                     if(this.isDragging) {
                         let fileType = rawFiles[i].type.toLowerCase();
+                        console.log(fileType)
                         if(!fileType){
                             const parts = rawFiles[i].name.split('.');
                             fileType = parts[parts.length - 1].toLowerCase();
-                        }
+                        }   console.log(fileType)
+                        console.log(this.accept)
                         if (this.accept !== '*/*' && !this.accept.includes(fileType)) {
                             this.$message.error('文件类型不正确，请重新上传')
                             return;
                         }
+                    }
+                    if(this.size && rawFiles[i].size > this.size){
+                        this.$message.error('文件大小超过限制')
+                        return;
                     }
                     const file = {
                         _complete: false,

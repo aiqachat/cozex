@@ -24,7 +24,7 @@ class AttachmentUploadForm extends Model
 
     protected $docExt = ['txt', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'pdf', 'md'];
     protected $imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp',];
-    protected $videoExt = ['mp4', 'ogg', 'm4a',];
+    protected $videoExt = ['mp4', 'ogg', 'm4a', 'wav', 'mp3'];
 
     public function rules()
     {

@@ -8,7 +8,6 @@
  * @link: https://www.netbcloud.com
  */
 ?>
-
 <style>
     .currency-width {
         width: 500px;
@@ -129,6 +128,19 @@
                             <el-input class="currency-width" v-model="form.copyright_url"
                                       placeholder="例如:https://www.baidu.com">
                             </el-input>
+                        </el-form-item>
+                    </el-card>
+                </el-tab-pane>
+                <el-tab-pane label="内容设置" name="content">
+                    <el-card class="box-card">
+                        <div slot="header" class="clearfix">
+                            <span>内容设置</span>
+                        </div>
+                        <el-form-item label="语音技术默认词" prop="voice_text">
+                            <el-input v-model="form.voice_text" type="textarea" rows="4" class="currency-width"></el-input>
+                        </el-form-item>
+                        <el-form-item label="版本授权默认词" prop="version_text">
+                            <el-input v-model="form.version_text" type="textarea" rows="3" class="currency-width"></el-input>
                         </el-form-item>
                     </el-card>
                 </el-tab-pane>

@@ -23,11 +23,7 @@ if (!Yii::$app->user->isGuest) {
 }
 $currentRoute = Yii::$app->controller->route;
 $indSetting = (new ConfigForm())->config();
-if (!empty($indSetting['name'])) {
-    $siteName = $indSetting['name'];
-} else {
-    $siteName = 'cozex管理';
-}
+$siteName = $indSetting['name'];
 $coze_set = (new IndexForm())->page();
 ?>
 <?php $this->beginPage(); ?>
@@ -254,7 +250,7 @@ $coze_set = (new IndexForm())->page();
                 padding-top: 50px;
                 left: 160px;
                 z-index: 1000;
-                width: 160px;
+                width: 170px;
                 height: 100%;
             }
 

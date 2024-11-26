@@ -56,7 +56,6 @@ class ListForm extends Model
         $list = $query->page($pagination, $this->page_size)->all();
         /** @var Knowledge $item */
         foreach ($list as $item){
-            $item->size = space_unit($item->size);
             $item->format_type = (string)$item->format_type;
         }
         return [

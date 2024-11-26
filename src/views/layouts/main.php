@@ -3,11 +3,7 @@
 use app\forms\mall\setting\ConfigForm;
 
 $indSetting = (new ConfigForm())->config();
-if (!empty($indSetting['name'])) {
-    $siteName = $indSetting['name'];
-} else {
-    $siteName = 'cozex管理';
-}
+$siteName = $indSetting['name'];
 ?>
 <?php $this->beginPage(); ?>
 <!DOCTYPE html>

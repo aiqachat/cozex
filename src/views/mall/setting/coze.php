@@ -19,13 +19,20 @@
         <div slot="header">
             <span>coze授权账号</span>
             <div style="float: right;margin-top: -5px">
-                <el-button type="primary" @click="edit" size="small">添加Coze账号授权</el-button>
+                <el-button type="primary" @click="edit({type: 2})" size="small">添加coze账号授权(OAuth)</el-button>
+                <el-button type="primary" @click="edit({type: 1})" size="small">添加coze账号授权(个人令牌)</el-button>
             </div>
         </div>
         <div class="table-body">
             <el-table :data="form" border style="width: 100%" v-loading="listLoading">
                 <el-table-column type="selection" width="55"></el-table-column>
                 <el-table-column label="名称" prop="name" width="250"></el-table-column>
+                <el-table-column prop="type" label="授权类型">
+                    <template slot-scope="scope">
+                        <el-tag v-if="scope.row.type == 1">个人令牌</el-tag>
+                        <el-tag v-else>oAuth令牌</el-tag>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="remark" label="备注"></el-table-column>
                 <el-table-column prop="coze_secret" label="令牌">
                     <template slot-scope="scope">
@@ -54,17 +61,31 @@
             </div>
         </div>
         <!-- 编辑 -->
-        <el-dialog :title="data.id ? '编辑Coze账号授权' : '添加Coze账号授权'" :visible.sync="dialog" width="30%">
-            <div style="color: #a4a4a4;padding: 0 0 10px 35px;">说明：在Coze点击头像-扣子API-授权-添加新令牌，最好打开全部权限勾选全部权限</div>
-            <el-form :model="data" label-width="80px" :rules="dataRules" ref="data">
+        <el-dialog :title="title" :visible.sync="dialog" width="30%">
+            <div style="color: #a4a4a4;padding: 0 0 10px 35px;" v-if="data.type == 1">说明（2024年10月开始单次最长授权时间为30天）：在Coze点击头像-扣子API-授权-添加新令牌，最好打开全部权限勾选全部权限</div>
+            <div style="color: #a4a4a4;padding: 0 0 10px 35px;" v-else>说明（推荐使用模式）：在Coze头像上方向-点击[扣子API]-[授权]-[OAuth应用]-[创建新应用]，最好打开全部权限勾选全部权限</div>
+            <el-form :model="data" label-width="100px" :rules="dataRules" ref="data">
                 <el-form-item label="名称" prop="name" size="small">
                     <el-input v-model.trim="data.name"></el-input>
                 </el-form-item>
-                <el-form-item label="访问令牌" prop="coze_secret" size="small">
-                    <el-input v-model.trim="data.coze_secret" maxlength="150" show-word-limit></el-input>
-                </el-form-item>
+                <template v-if="data.type == 1">
+                    <el-form-item label="访问令牌" prop="coze_secret" size="small">
+                        <el-input v-model.trim="data.coze_secret" maxlength="70" show-word-limit></el-input>
+                    </el-form-item>
+                </template>
+                <template v-else>
+                    <el-form-item label="客户端ID" prop="client_id" size="small">
+                        <el-input v-model.trim="data.client_id" maxlength="64" show-word-limit></el-input>
+                    </el-form-item>
+                    <el-form-item label="客户端密钥" prop="client_secret" size="small">
+                        <el-input v-model.trim="data.client_secret" maxlength="64" show-word-limit></el-input>
+                    </el-form-item>
+                </template>
                 <el-form-item label="备注" prop="remark" size="small">
                     <el-input v-model.trim="data.remark"></el-input>
+                </el-form-item>
+                <el-form-item label="重定向URL" size="small" v-if="data.type == 2">
+                    <?php echo \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/notify/coze.php';?>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -93,10 +114,17 @@
                     coze_secret: [
                         {required: true, message: '访问令牌不能为空', trigger: 'blur'},
                     ],
+                    client_id: [
+                        {required: true, message: '客户端ID不能为空', trigger: 'blur'},
+                    ],
+                    client_secret: [
+                        {required: true, message: '客户端密钥不能为空', trigger: 'blur'},
+                    ],
                     name: [
                         {required: true, message: '名称不能为空', trigger: 'blur'},
                     ],
                 },
+                title: '添加',
             };
         },
         methods: {
@@ -104,6 +132,18 @@
                 this.data = {};
                 if(row){
                     this.data = Object.assign({}, row);
+                    this.title = '添加';
+                    if(this.data.id){
+                        this.title = '编辑';
+                    }
+                    if(this.data.type === 2) {
+                        this.title = this.title + 'coze账号授权(OAuth)';
+                    }else{
+                        this.title = this.title + 'coze账号授权(个人令牌)';
+                    }
+                }
+                if(this.$refs.data) {
+                    this.$refs.data.clearValidate();
                 }
                 this.dialog = true;
             },
@@ -135,8 +175,13 @@
                             data: this.data,
                         }).then(e => {
                             if (e.data.code === 0) {
-                                this.getList()
-                                this.dialog = false;
+                                if(e.data.data.url){
+                                    location.href = (e.data.data.url);
+                                }else {
+                                    this.$message.success(e.data.msg);
+                                    this.dialog = false;
+                                    this.getList()
+                                }
                             } else {
                                 this.$message.error(e.data.msg);
                             }

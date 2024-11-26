@@ -27,7 +27,7 @@ class Chat extends Base
     public $user_id;
 
     /**
-     * @var CreateConversation[] 对话的附加信息
+     * @var CreateMessage[] 对话的附加信息
      */
     public $additional_messages;
 
@@ -59,12 +59,14 @@ class Chat extends Base
     {
         $params = parent::getAttribute();
         unset($params['conversation_id']);
-        if($this->additional_messages){
+        if(is_array($this->additional_messages)){
             foreach ($this->additional_messages as $k => $item){
-                if($item instanceof CreateConversation){
-                    $params['additional_messages'][$k] = $item->getAttribute()['messages'];
+                if($item instanceof CreateMessage){
+                    $params['additional_messages'][$k] = $item->getAttribute();
                 }
             }
+        }elseif($params['additional_messages'] instanceof CreateMessage){
+            $params['additional_messages'] = [$params['additional_messages']->getAttribute()];
         }
         return $params;
     }
