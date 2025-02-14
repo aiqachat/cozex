@@ -9,7 +9,6 @@
 
 namespace app\controllers\mall;
 
-use app\forms\mall\index\IndexForm;
 use app\forms\mall\volcengine\ListForm;
 use app\forms\mall\volcengine\SoundForm;
 use app\forms\mall\volcengine\SoundReprintForm;
@@ -90,7 +89,6 @@ class VolcengineController extends AdminController
         }
     }
 
-<<<<<<< HEAD
     public function actionAucModel()
     {
         if (\Yii::$app->request->isAjax) {
@@ -110,8 +108,6 @@ class VolcengineController extends AdminController
         }
     }
 
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     public function actionTtsModel()
     {
         if (\Yii::$app->request->isAjax) {
@@ -130,7 +126,6 @@ class VolcengineController extends AdminController
         }
     }
 
-<<<<<<< HEAD
     public function actionTtsMega()
     {
         if (\Yii::$app->request->isAjax) {
@@ -182,8 +177,6 @@ class VolcengineController extends AdminController
         }
     }
 
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     public function actionTts()
     {
         if (\Yii::$app->request->isAjax) {

@@ -16,7 +16,7 @@ Yii::$app->loadViewComponent('app-volcengine-choose')
     }
 </style>
 <div id="app" v-cloak>
-    <app-volcengine-choose @account="changeAccount" title="大模型语音识别-火山引擎"></app-volcengine-choose>
+    <app-volcengine-choose @account="changeAccount" title="大模型录音识别-火山引擎"></app-volcengine-choose>
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
         <div slot="header">
             <div style="color: #a4a4a4;">

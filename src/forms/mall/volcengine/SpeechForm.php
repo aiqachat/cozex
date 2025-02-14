@@ -104,11 +104,7 @@ class SpeechForm extends Model
                 'token' => $data['access_token'] ?? '',
                 'account' => $model->account
             ]);
-<<<<<<< HEAD
             if(!in_array($model->type, array_keys(self::text))) {
-=======
-            if(!in_array($model->type, [self::TYPE_TTS_1, self::TYPE_TTS_2])) {
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 throw new \Exception('type 错误');
             }
             if($model->type == self::TYPE_TTS_2) {
@@ -116,7 +112,6 @@ class SpeechForm extends Model
                 $obj->setVersion($data['version']);
                 $obj->style = $data['style'] ?? '';
                 $obj->language = $data['language'] ?? '';
-<<<<<<< HEAD
                 $obj->speed = floatval($data['speed'] ?? 1);
             }else{
                 $obj = new TtsGenerate();
@@ -124,10 +119,6 @@ class SpeechForm extends Model
             }
             if($model->type == self::TYPE_TTS_3){
                 $obj->cluster = TtsGenerate::TWO;
-=======
-            }else{
-                $obj = new TtsGenerate();
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             }
             $obj->voice_type = $data['voice_type'];
             $obj->text = $model->text;
@@ -177,11 +168,7 @@ class SpeechForm extends Model
 
     private $repeat = '_repeat';
 
-<<<<<<< HEAD
     public function voiceType($type = null, $json = true)
-=======
-    public function voiceType($type = null)
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     {
         $host = "https://lf3-static.bytednsdoc.com/obj/eden-cn/lm_hz_ihsph/ljhwZthlaukjlkulzlp/portal/bigtts/short_trial_url";
         $addr = \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/statics/img/voice';
@@ -521,11 +508,7 @@ class SpeechForm extends Model
                         [
                             'name' => '阳光青年',
                             'id' => 'zh_male_yangguangqingnian_moon_bigtts',
-<<<<<<< HEAD
                             'audition' => "{$host}/阳光青年.mp3",
-=======
-                            'audition' => "{$host}/温暖阿虎.mp3",
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                             'sex' => '1',
                             'age' => '1',
                             'pic' => "{$addr}/10.png",
@@ -875,11 +858,7 @@ class SpeechForm extends Model
         if($type){
             $list = $list[$type] ?? $list;
         }
-<<<<<<< HEAD
         return $json ? Json::encode($list, JSON_UNESCAPED_UNICODE) : $list;
-=======
-        return Json::encode($list, JSON_UNESCAPED_UNICODE);
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     }
 
     protected function language($data)

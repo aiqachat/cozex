@@ -73,6 +73,36 @@ class Menus
                         'route' => 'mall/volcengine/titling',
                     ],
                     [
+                        'name' => '大模型录音识别',
+                        'route' => 'mall/volcengine/auc-model',
+                        'action' => [
+                            [
+                                'name' => '语音识别',
+                                'route' => 'mall/volcengine/auc',
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => '语音合成TTS',
+                        'route' => 'mall/volcengine/tts',
+                        'action' => [
+                            [
+                                'name' => '更多',
+                                'route' => 'mall/volcengine/three',
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => '语音合成TTS长文本',
+                        'route' => 'mall/volcengine/tts-long-text',
+                        'action' => [
+                            [
+                                'name' => '更多',
+                                'route' => 'mall/volcengine/one',
+                            ],
+                        ],
+                    ],
+                    [
                         'name' => '大模型语音合成',
                         'route' => 'mall/volcengine/tts-model',
                         'action' => [
@@ -83,7 +113,6 @@ class Menus
                         ],
                     ],
                     [
-<<<<<<< HEAD
                         'name' => '大模型声音复刻',
                         'route' => 'mall/volcengine/tts-mega',
                         'action' => [
@@ -92,47 +121,6 @@ class Menus
                                 'route' => 'mall/volcengine/record',
                             ],
                         ],
-                    ],
-                    [
-                        'name' => '大模型语音识别',
-                        'route' => 'mall/volcengine/auc-model',
-                        'action' => [
-                            [
-                                'name' => '语音识别',
-                                'route' => 'mall/volcengine/auc',
-                            ],
-                        ],
-                    ],
-                    [
-                        'name' => '语音合成',
-=======
-                        'name' => '大模型语音合成',
-                        'route' => 'mall/volcengine/tts-model',
-                    ],
-                    [
-                        'name' => '合成语音',
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
-                        'route' => 'mall/volcengine/tts',
-                        'action' => [
-                            [
-                                'name' => '更多',
-                                'route' => 'mall/volcengine/three',
-                            ],
-                        ],
-                    ],
-                    [
-                        'name' => '语音合成长文本',
-                        'route' => 'mall/volcengine/tts-long-text',
-                        'action' => [
-                            [
-                                'name' => '更多',
-                                'route' => 'mall/volcengine/one',
-                            ],
-                        ],
-                    ],
-                    [
-                        'name' => '语音技术配置',
-                        'route' => 'mall/setting/volcengine',
                     ],
                     [
                         'name' => '语音技术配置',
@@ -148,13 +136,10 @@ class Menus
                     [
                         'name' => '基础设置',
                         'route' => 'mall/index/index',
-<<<<<<< HEAD
                     ],
                     [
                         'name' => '火山引擎密钥',
                         'route' => 'mall/index/volcengine',
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                     ],
                 ],
                 'action' => [

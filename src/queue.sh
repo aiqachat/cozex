@@ -1,4 +1,5 @@
 #!/bin/bash
+
 basepath=$(cd `dirname $0`; pwd)
 chmod a+x "$basepath/yii"
 command="php $basepath/yii queue/listen 1"

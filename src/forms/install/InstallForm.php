@@ -258,11 +258,8 @@ EOF;
             $this->saveConfig();
             $this->installLock();
             $this->getSystemInfo();
-<<<<<<< HEAD
             (new QueueForm())->clearQueue();
             (new QueueForm())->queueFile();
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             return [
                 'code' => ApiCode::CODE_SUCCESS,
                 'msg' => '安装完成。',

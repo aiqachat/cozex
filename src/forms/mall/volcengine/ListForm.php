@@ -80,7 +80,6 @@ class ListForm extends Model
         foreach ($data as $item){
             $items = $item->toArray();
             unset($items['data']);
-<<<<<<< HEAD
             $items['file'] = basename($item->file);
             if($item->data){
                 $items['data'] = Json::decode($item->data) ?: [];
@@ -88,12 +87,6 @@ class ListForm extends Model
                 if(empty($items['data']['voice_name'])){
                     $items['data']['voice_name'] = $item->voice($items['data']['voice_type'] ?? '');
                 }
-=======
-            $items['file'] = basename ($item->file);
-            if($item->data){
-                $items['data'] = Json::decode($item->data) ?: [];
-                unset($items['data']['app_id'], $items['data']['access_token']);
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             }
             $list[] = $items;
         }

@@ -6,17 +6,11 @@
  */
 Yii::$app->loadViewComponent('app-volcengine-choose');
 
-<<<<<<< HEAD
 use app\forms\mall\setting\ConfigForm;
 use app\forms\mall\volcengine\SpeechForm;
 
 $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
 $indSetting = (new ConfigForm())->config();
-=======
-use app\forms\mall\volcengine\SpeechForm;
-
-$voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
 ?>
 <style type="text/css">
     @import "<?= \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/statics/css/table.css' ?>";
@@ -79,17 +73,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
         border: none;
     }
 
-<<<<<<< HEAD
-=======
-    .search-input .el-input__inner {
-        border-radius: 4px 0 0 4px;
-    }
-
-    .search-btn {
-        border-radius: 0 4px 4px 0;
-    }
-
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     .choose {
         border-color: #734CF8;
         background-color: #F1EFFD;
@@ -99,7 +82,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
         background: #E4F0FF;
     }
 
-<<<<<<< HEAD
     .tags .el-radio-group, .tags .el-radio-button {
         margin: 5px;
     }
@@ -162,47 +144,19 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
         <div slot="header">
             <div style="color: #a4a4a4;">
                 <?=SpeechForm::text[SpeechForm::TYPE_TTS_1]?>
-=======
-    .tags .el-radio-group {
-        margin: 5px;
-    }
-
-    .tags .el-radio-button {
-        margin: 5px;
-    }
-</style>
-<div id="app" v-cloak>
-    <app-volcengine-choose @account="changeAccount" :dialog="dialog" @close="closeDialog"></app-volcengine-choose>
-    <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
-        <div slot="header">
-            <span style="font-weight: bold;font-size: 16px;">大模型语音合成</span>
-            <div style="color: #a4a4a4;margin-top: 10px;">
-                依托新一代大模型能力，火山语音模型能够根据上下文，智能预测文本的情绪、语调等信息。并生成超自然、高保真、个性化的语音，以满足不同用户的个性化需求。相较于传统语音合成技术，语音大模型能输出在自然度、音质、韵律、气口、情感、语气词表达等方面更像真人。
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             </div>
         </div>
         <div class="table-body">
             <div flex="box:last" style="margin-bottom: 5px;">
-<<<<<<< HEAD
                 <div style="line-height: 30px;">选择音色</div>
                 <div flex class="search-group">
                     <el-input style="width: 250px" size="small"
-=======
-                <div>选择音色</div>
-                <div flex class="search-group">
-                    <el-input style="width: 250px" size="small"
-                              class="search-input"
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                               placeholder="请输入想搜索的音色"
                               v-model="searchData.name"
                               clearable
                               @clear="change"
                               @keyup.enter.native="change"></el-input>
-<<<<<<< HEAD
                     <el-button type="primary" size="small" @click="change">搜索</el-button>
-=======
-                    <el-button class="search-btn" type="primary" size="small" @click="change">搜索</el-button>
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 </div>
             </div>
             <div class="tags">
@@ -241,24 +195,13 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                     </div>
                     <div style="text-align: right;">
                         <template v-if="item.audition">
-<<<<<<< HEAD
                             <el-button @click.stop="playMusic(item.audition)"
                                        class="model-btn" size="mini" type="info" round>试听</el-button>
-=======
-                            <audio :ref="'audio' + item.id" >
-                                <source :src="item.audition" type="audio/mpeg">
-                            </audio>
-                            <el-tooltip effect="dark" content="点击试听音色" placement="top">
-                                <el-button @click.stop="playMusic(item)"
-                                           class="model-btn" size="mini" type="info" round>试听</el-button>
-                            </el-tooltip>
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                         </template>
                     </div>
                 </div>
             </div>
         </div>
-<<<<<<< HEAD
         <el-form :model="data" label-width="0px" :rules="rules" ref="data" v-loading="formLoading">
             <div class="voice_text">
                 <div class="voice_input" style="margin-top: 10px;">
@@ -289,35 +232,12 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                         </el-upload>
                     </el-form-item>
                 </div>
-=======
-        <el-form :model="data" label-width="80px" :rules="rules" ref="data" v-loading="formLoading">
-            <el-form-item label="当前选择" prop="data.voice_type">
-                <div flex="cross:center">
-                    <template v-if="data.data.voice_type">
-                        <img :src="rsd.pic" style="width: 40px;height: 40px;"/>
-                        <span style="margin-left: 10px">{{rsd.name}}</span>
-                    </template>
-                </div>
-            </el-form-item>
-            <el-form-item label="输入文本" prop="text">
-                <el-input size="small" type="textarea" v-model.trim="data.text" rows="10" maxlength="20000" show-word-limit></el-input>
-            </el-form-item>
-            <div flex="main:center">
-                <el-button :loading="btnLoading" size="small" type="primary" @click="submit">立即合成</el-button>
-                <el-upload action="" accept="text/plain" :show-file-list="false" :on-progress="handleProgress">
-                    <el-button style="margin-left: 10px;" size="small" type="success">上传文本</el-button>
-                </el-upload>
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             </div>
         </el-form>
         <div class="table-body" style="margin-top: 10px;">
             <div flex="box:last cross:center" style="margin-bottom: 5px;">
                 <div>最近合成记录列表</div>
-<<<<<<< HEAD
                 <el-button type="primary" size="small" @click="$navigate({r:'mall/volcengine/two', type: <?=SpeechForm::TYPE_TTS_1;?>})">更多</el-button>
-=======
-                <el-button type="primary" size="small" @click="$navigate({r:'mall/volcengine/tts'})">更多</el-button>
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             </div>
             <el-table :data="form" border style="width: 100%" v-loading="listLoading">
                 <el-table-column type="selection" width="55"></el-table-column>
@@ -328,7 +248,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                         </span>
                     </template>
                 </el-table-column>
-<<<<<<< HEAD
                 <el-table-column label="状态" width="80">
                     <template slot-scope="scope">
                         <span v-if="scope.row.status == 1">处理中</span>
@@ -346,28 +265,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                     <template slot-scope="scope">
                         <el-tooltip class="item" effect="dark" content="播放" placement="top" v-if="scope.row.status == 2">
                             <el-button circle type="text" size="mini" @click="playMusic(scope.row.result)">
-=======
-                <el-table-column label="状态" width="90">
-                    <template slot-scope="scope">
-                        <span v-if="scope.row.status == 1">处理中</span>
-                        <span v-if="scope.row.status == 2">成功</span>
-                        <span v-if="scope.row.status == 3"
-                              @mouseenter="scope.row.showPopover = true"
-                              @mouseleave="scope.row.showPopover = false">失败</span>
-                        <el-popover v-model="scope.row.showPopover">
-                            {{scope.row.err_msg}}
-                        </el-popover>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
-                <el-table-column label="操作" width="220" fixed="right">
-                    <template slot-scope="scope">
-                        <audio :ref="'audio' + scope.row.id" >
-                            <source :src="scope.row.result" type="audio/mpeg">
-                        </audio>
-                        <el-tooltip class="item" effect="dark" content="播放" placement="top" v-if="scope.row.status == 2">
-                            <el-button circle type="text" size="mini" @click="playMusic(scope.row)">
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                                 <img src="statics/img/mall/music.png" alt="">
                             </el-button>
                         </el-tooltip>
@@ -411,14 +308,9 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                 data: {
                     data: {
                         voice_type: '',
-<<<<<<< HEAD
                         speed: 1
                     },
                     text: `<?= $indSetting['voice_text'] ?? ''?>`,
-=======
-                    },
-                    text: '',
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 },
                 rules: {
                     text: [
@@ -432,10 +324,7 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                 voices: [],
                 rsd: {},
                 dialog: false,
-<<<<<<< HEAD
                 audio: null,
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             };
         },
         watch: {
@@ -461,7 +350,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
             },
             choose(row) {
                 this.data.data.voice_type = row.id;
-<<<<<<< HEAD
                 this.data.data.voice_name = row.name;
                 this.rsd = row;
             },
@@ -472,13 +360,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                 }
                 this.audio = new Audio(row);
                 this.audio.play();
-=======
-                this.rsd = row;
-            },
-            playMusic(row) {
-                let text = "audio" + row.id;
-                this.$refs[text].length > 0  ? this.$refs[text][0].play() : this.$refs[text].play();
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             },
             change() {
                 this.voices = [];
@@ -487,10 +368,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                         if(item.children.length > 0){
                             item.children.forEach(its => {
                                 its.parent_name = item.name;
-<<<<<<< HEAD
-=======
-                                its.desc = '';
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                                 this.voices.push(its)
                             });
                         }
@@ -646,7 +523,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
         },
         mounted: function () {
             this.getList();
-<<<<<<< HEAD
             setInterval(() => {
                 let s = false;
                 for(let item of this.form) {
@@ -657,10 +533,6 @@ $voiceType = (new SpeechForm())->voiceType(SpeechForm::TYPE_TTS_1);
                 if(s){
                     this.getList(0);
                 }
-=======
-            this.timer = setInterval(() => {
-                this.getList(0);
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             }, 5000)
             this.change();
         }

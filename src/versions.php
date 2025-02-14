@@ -22,11 +22,7 @@ CREATE TABLE `wstx_knowledge_file` (
   `document_id` varchar(64) DEFAULT '' COMMENT '文档id',
   `name` varchar(155) DEFAULT '' COMMENT '名称',
   `content` longtext DEFAULT '' COMMENT '内容',
-<<<<<<< HEAD
   `is_delete` tinyint(1) NOT NULL DEFAULT '0',
-=======
-  `is_delete` int(11) NOT NULL DEFAULT '0',
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -43,11 +39,7 @@ CREATE TABLE `wstx_volcengine_account` (
   `name` varchar(100) DEFAULT '',
   `app_id` varchar(20) NOT NULL DEFAULT '' COMMENT 'APP ID',
   `access_token` varchar(100) NOT NULL DEFAULT '' COMMENT 'Access Token',
-<<<<<<< HEAD
   `is_delete` tinyint(1) NOT NULL DEFAULT '0',
-=======
-  `is_delete` int(11) NOT NULL DEFAULT '0',
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -85,7 +77,6 @@ EOF;
             Yii::error ($e);
         }
     },
-<<<<<<< HEAD
     '1.0.3' => function () {
         $sql = <<<EOF
 alter table `wstx_coze_account` add `type` tinyint(1) DEFAULT 1 COMMENT '1：个人令牌；2：OAuth';
@@ -123,6 +114,4 @@ CREATE TABLE `wstx_volcengine_keys_relation` (
 EOF;
         sql_execute($sql);
     },
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
 ];

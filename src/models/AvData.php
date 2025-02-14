@@ -72,7 +72,6 @@ class AvData extends ModelActiveRecord
         }
     }
 
-<<<<<<< HEAD
     public function voice($voice = '')
     {
         if(!$voice){
@@ -98,8 +97,6 @@ class AvData extends ModelActiveRecord
         return $list[$voice];
     }
 
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     public function getAccount()
     {
         return $this->hasOne(VolcengineAccount::className(), ['id' => 'account_id']);

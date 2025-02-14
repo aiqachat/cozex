@@ -13,10 +13,7 @@ namespace app\models;
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
-<<<<<<< HEAD
  * @property VolcengineKeys $key
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
  */
 class VolcengineAccount extends ModelActiveRecord
 {
@@ -55,7 +52,6 @@ class VolcengineAccount extends ModelActiveRecord
             'updated_at' => 'Updated At',
         ];
     }
-<<<<<<< HEAD
 
     public function getKey()
     {
@@ -64,6 +60,4 @@ class VolcengineAccount extends ModelActiveRecord
                 $query->andWhere(['is_delete' => 0]);
             })->andWhere(['is_delete' => 0]);
     }
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
 }

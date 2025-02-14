@@ -134,24 +134,11 @@ $indSetting = (new ConfigForm())->config();
     }
 </style>
 <div id="app" v-cloak>
-<<<<<<< HEAD
     <app-volcengine-choose @account="changeAccount" :dialog="dialog" @close="closeDialog" title="<?=SpeechForm::text_name[SpeechForm::TYPE_TTS_4]?>"></app-volcengine-choose>
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
         <div slot="header">
             <div style="color: #a4a4a4;">
                 <?=SpeechForm::text[SpeechForm::TYPE_TTS_4]?>
-=======
-    <app-volcengine-choose @account="changeAccount" :dialog="newDialog" @close="closeDialog"></app-volcengine-choose>
-    <el-alert style="margin-bottom: 10px;" :closable="false"
-              type="success">
-        语音合成(TTS, Text to Speech)，能将文本转换成人类声音。它运用了语音合成领域突破性的端到端合成方案，能提供高保真、个性化的音频
-    </el-alert>
-    <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
-        <div slot="header">
-            <span>语音合成列表</span>
-            <div style="float: right;margin-top: -5px">
-                <el-button type="primary" @click="open" size="small">添加</el-button>
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
             </div>
         </div>
         <div class="table-body">
@@ -256,7 +243,6 @@ $indSetting = (new ConfigForm())->config();
                 </el-table-column>
                 <el-table-column label="状态" width="80">
                     <template slot-scope="scope">
-<<<<<<< HEAD
                         <span v-if="scope.row.status == 1">处理中</span>
                         <span v-if="scope.row.status == 2">成功</span>
                         <span v-if="scope.row.status == 3">
@@ -264,23 +250,6 @@ $indSetting = (new ConfigForm())->config();
                                 <el-button type="text">失败</el-button>
                             </el-tooltip>
                         </span>
-=======
-                        <el-tag v-if="scope.row.type == 4" size="mini" type="success">大模型语音</el-tag>
-                        <el-tag v-else-if="scope.row.data.version == 1" size="mini" type="success">普通版</el-tag>
-                        <el-tag v-else-if="scope.row.data.version == 2" size="mini" type="success">情感预测版</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column label="状态" width="90">
-                    <template slot-scope="scope">
-                        <span v-if="scope.row.status == 1">处理中</span>
-                        <span v-if="scope.row.status == 2">成功</span>
-                        <span v-if="scope.row.status == 3"
-                              @mouseenter="scope.row.showPopover = true"
-                              @mouseleave="scope.row.showPopover = false">失败</span>
-                        <el-popover v-model="scope.row.showPopover">
-                            {{scope.row.err_msg}}
-                        </el-popover>
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                     </template>
                 </el-table-column>
                 <el-table-column prop="data.voice_name" label="使用音色" width="150"></el-table-column>
@@ -311,57 +280,6 @@ $indSetting = (new ConfigForm())->config();
                 </el-table-column>
             </el-table>
         </div>
-<<<<<<< HEAD
-=======
-        <el-dialog title="操作" :visible.sync="dialog" width="30%">
-            <el-form :model="data" label-width="110px" :rules="rules" ref="data">
-                <el-form-item label="AppId" prop="data.app_id">
-                    <el-input size="small" placeholder="请输入APPID" v-model.trim="data.data.app_id"></el-input>
-                    <div style="color: #a4a4a4;">注：空则默认用全局配置</div>
-                </el-form-item>
-                <el-form-item label="AccessToken" prop="data.access_token">
-                    <el-input size="small" placeholder="请输入TOKEN" v-model.trim="data.data.access_token"></el-input>
-                    <div style="color: #a4a4a4;">注：空则默认用全局配置</div>
-                </el-form-item>
-                <el-form-item label="使用Api" prop="type">
-                    <el-radio-group size="small" v-model.trim="data.type" @change="change">
-                        <el-radio :label="4">大模型语音</el-radio>
-                        <el-radio :label="5">精品长文本语音</el-radio>
-                    </el-radio-group>
-                    <div style="color: #a4a4a4;" v-if="data.type == 4">注：目前该能力只对企业客户开放，如需测试或接入须先进行企业认证。</div>
-                </el-form-item>
-                <el-form-item label="使用版本" prop="data.version" v-if="data.type == 5">
-                    <el-radio-group size="small" v-model.trim="data.data.version" @change="change">
-                        <el-radio :label="1">普通版</el-radio>
-                        <el-radio :label="2">情感预测版</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-                <el-form-item label="语音文本" prop="text">
-                    <el-input size="small" type="textarea" v-model.trim="data.text" rows="10" show-word-limit></el-input>
-                </el-form-item>
-                <el-form-item label="音色列表" prop="data.voice_type" v-if="voices.length > 0">
-                    <el-select size="small" v-model="data.data.voice_type" @change="changeVoice" filterable>
-                        <el-option v-for="(item, ind) in voices" :key="ind" :label="item.name" :value="item.id"></el-option>
-                    </el-select>
-                    <div style="color: #a4a4a4;">注：音色说明请点击查看<a href="https://www.volcengine.com/docs/6561/97465" target="_blank">官方文档</a></div>
-                </el-form-item>
-                <el-form-item label="感情选择" prop="data.style" v-if="emotion.length > 0">
-                    <el-select size="small" v-model="data.data.style" filterable>
-                        <el-option v-for="item in emotion" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="语言选择" prop="data.language" v-if="language.length > 0">
-                    <el-select size="small" v-model="data.data.language" filterable>
-                        <el-option v-for="item in language" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                    </el-select>
-                </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="dialog = false">取消</el-button>
-                <el-button :loading="btnLoading" type="primary" @click="submit">确认</el-button>
-            </div>
-        </el-dialog>
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
     </el-card>
 </div>
 <script>
@@ -370,25 +288,14 @@ $indSetting = (new ConfigForm())->config();
         data() {
             return {
                 searchData: {
-<<<<<<< HEAD
                     account_id: '',
                     tag: '',
-=======
-                    keyword: '',
-                    type: '',
-                    account_id: '',
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 },
                 form: [],
                 formLoading: false,
                 listLoading: false,
                 btnLoading: false,
 
-<<<<<<< HEAD
-=======
-                newDialog: false,
-                dialog: false,
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 data: {
                     data: {
                         style: '',
@@ -418,7 +325,6 @@ $indSetting = (new ConfigForm())->config();
         watch: {
             'searchData.account_id': function (val, oldValue){
                 this.getList();
-<<<<<<< HEAD
             },
         },
         methods: {
@@ -444,34 +350,6 @@ $indSetting = (new ConfigForm())->config();
                     this.voices = temp;
                 }
                 let check = false;
-=======
-            },
-        },
-        methods: {
-            closeDialog() {
-                this.newDialog = false;
-            },
-            open(){
-                if(!this.searchData.account_id){
-                    this.newDialog = true;
-                    return;
-                }
-                this.dialog = true
-            },
-            changeAccount(val){
-                this.searchData.account_id = val;
-            },
-            playMusic(row) {
-                let text = "audio" + row.id;
-                this.$refs[text].play();
-            },
-            init() {
-                this.language = [];
-                this.emotion = [];
-            },
-            changeVoice() {
-                this.init();
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 this.voices.forEach(its => {
                     if(its.id === this.data.data.voice_type){
                         check = true;
@@ -519,26 +397,10 @@ $indSetting = (new ConfigForm())->config();
                     }
                 });
             },
-<<<<<<< HEAD
             playMusic(row) {
                 if (this.audio) {
                     this.audio.pause();
                     this.audio = null;
-=======
-            change() {
-                let list = [];
-                this.data.data.voice_type = '';
-                this.init();
-                this.voices = [];
-                if (this.data.type === 5 && this.data.data.version === 2) { // 情感预测版
-                    this.options[this.data.type].forEach(item => {
-                        if (item.id === 'yousheng') {
-                            list.push(item)
-                        }
-                    });
-                } else {
-                    list = this.options[this.data.type]
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 }
                 this.audio = new Audio(row);
                 this.audio.play();
@@ -558,10 +420,6 @@ $indSetting = (new ConfigForm())->config();
                         }).then(e => {
                             if (e.data.code === 0) {
                                 this.getList()
-<<<<<<< HEAD
-=======
-                                this.dialog = false;
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                             } else {
                                 this.$message.error(e.data.msg);
                             }
@@ -589,11 +447,7 @@ $indSetting = (new ConfigForm())->config();
                     return;
                 }
                 if(type === 1) {
-<<<<<<< HEAD
                     this.formLoading = true;
-=======
-                    this.listLoading = true;
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                 }
                 request({
                     params: Object.assign({r: 'mall/volcengine/tts'}, this.searchData),
@@ -616,28 +470,6 @@ $indSetting = (new ConfigForm())->config();
                     request({
                         params: {r: 'mall/volcengine/destroy'},
                         data: {id: column.id, account_id: this.searchData.account_id},
-<<<<<<< HEAD
-=======
-                        method: 'post'
-                    }).then(e => {
-                        if (e.data.code !== 0) {
-                            this.$message.error(e.data.msg);
-                        }
-                        this.getList()
-                    }).catch(e => {
-                        this.listLoading = false;
-                    });
-                });
-            },
-            refresh: function (column) {
-                this.$confirm('确认重试该记录吗?', '提示', {
-                    type: 'warning'
-                }).then(() => {
-                    this.listLoading = true;
-                    request({
-                        params: {r: 'mall/volcengine/refresh'},
-                        data: {id: column.id, account_id: this.searchData.account_id},
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
                         method: 'post'
                     }).then(e => {
                         if (e.data.code !== 0) {

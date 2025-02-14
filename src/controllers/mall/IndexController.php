@@ -13,10 +13,7 @@ use app\bootstrap\response\ApiCode;
 use app\forms\mall\setting\ConfigForm;
 use app\forms\mall\setting\CozeForm;
 use app\forms\mall\setting\QueueForm;
-<<<<<<< HEAD
 use app\forms\mall\setting\VolcanoKeyForm;
-=======
->>>>>>> aa46331817a85d4745f22daa8a771a67c28a9ec7
 use app\forms\mall\setting\VolcengineForm;
 
 class IndexController extends AdminController
