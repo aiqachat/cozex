@@ -8,6 +8,7 @@ use Yii;
  * This is the model class for table "{{%attachment_group}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property string $name
  * @property int $is_delete
  * @property string $created_at
@@ -32,7 +33,7 @@ class AttachmentGroup extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['name'], 'required'],
+            [['mall_id', 'name'], 'required'],
             [['is_delete', 'is_recycle', 'type'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['name'], 'string', 'max' => 64],

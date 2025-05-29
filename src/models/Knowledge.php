@@ -6,6 +6,7 @@ namespace app\models;
  * This is the model class for table "{{%knowledge}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property string $account_id 授权账号
  * @property string $space_id  所属空间
  * @property string $dataset_id  知识库ID
@@ -35,7 +36,7 @@ class Knowledge extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['dataset_id', 'created_at', 'updated_at', 'account_id', 'space_id'], 'required'],
+            [['mall_id', 'dataset_id', 'created_at', 'updated_at', 'account_id', 'space_id'], 'required'],
             [['is_delete', 'format_type', 'num', 'account_id'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['dataset_id', 'name', 'desc', 'space_id'], 'string'],

@@ -31,6 +31,18 @@ class BatchListMegaTTSTrainStatus extends Basics
     /** @var int 与NextToken相配合控制返回结果的最大数量; 如果不为空则必须在范围[1, 100]内, 默认为10 */
     public $MaxResults;
 
+    /** @var int 下单时间检索上边界毫秒级时间戳，受实例交付速度影响，可能比支付完成的时间晚 */
+    public $OrderTimeStart;
+
+    /** @var int 下单时间检索下边界毫秒级时间戳，受实例交付速度影响，可能比支付完成的时间晚 */
+    public $OrderTimeEnd;
+
+    /** @var int 实例到期时间的检索上边界毫秒级时间戳 */
+    public $ExpireTimeStart;
+
+    /** @var int 实例到期时间的检索下边界毫秒级时间戳 */
+    public $ExpireTimeEnd;
+
     function setIdent()
     {
         // TODO: Implement getSign() method.

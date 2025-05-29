@@ -24,4 +24,9 @@ class ApiCode
      * 状态码：未登录
      */
     const CODE_NOT_LOGIN = -1;
+
+    /**
+     * 状态码：商城禁用
+     */
+    const CODE_STORE_DISABLED = -2;
 }

@@ -1,6 +1,12 @@
 Yii Framework 2 redis extension Change Log
 ==========================================
 
+2.0.19 February 13, 2025
+------------------------
+
+- Enh #264: Improve performance of `mget()` for big list of keys (alx-xc, rob006)
+
+
 2.0.18 September 04, 2022
 -------------------------
 

@@ -8,6 +8,7 @@ use Yii;
  * This is the model class for table "{{%attachment_storage}}".
  *
  * @property string $id
+ * @property int $mall_id
  * @property int $type 存储类型：1=本地，2=阿里云，3=腾讯云，4=七牛
  * @property string $config 存储配置
  * @property int $status 状态：0=未启用，1=已启用
@@ -37,7 +38,7 @@ class AttachmentStorage extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['type', 'status', 'user_id'], 'integer'],
+            [['mall_id', 'type', 'status', 'user_id'], 'integer'],
             [['config'], 'required'],
             [['config'], 'string'],
             [['created_at', 'updated_at'], 'safe'],

@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS `wstx_admin_info`;
 CREATE TABLE `wstx_admin_info` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `app_max_count` int(11) NOT NULL DEFAULT '-1' COMMENT '创建小程序最大数量-1.无限制',
+  `app_max_count` int(11) NOT NULL DEFAULT '-1' COMMENT '创建最大数量-1.无限制',
   `permissions` text NOT NULL COMMENT '账户权限',
   `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
   `expired_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '账户过期时间',

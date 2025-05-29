@@ -73,7 +73,8 @@ class ModelActiveRecord extends \yii\db\ActiveRecord
             return true;
         }
         try {
-            $isSave = true;
+            $userId = 0;
+            $isSave = !$insert; // 新增操作不记录日志
             try {
                 if (!\Yii::$app->user->isGuest) {
                     $userId = \Yii::$app->user->id;
@@ -81,27 +82,19 @@ class ModelActiveRecord extends \yii\db\ActiveRecord
                     $user = \Yii::$app->user->identity;
                     $userIdentity = $user->identity;
 
-                    // 会员影响队列时间
-                    // 小程序端操作不记录日志
-                    if ($userIdentity->is_super_admin == 0 && $userIdentity->is_admin == 0
-                        && $userIdentity->is_operator == 0) {
+                    if ($userIdentity->is_super_admin == 0 && $userIdentity->is_admin == 0) {
                         $isSave = false;
                     }
-                    // 管理员 新增操作不记录日志
-                    if (($userIdentity->is_super_admin == 1 || $userIdentity->is_admin == 1) && $insert === true) {
-                        $isSave = false;
-                    }
-                } else {
-                    $userId = 0;
-                    $isSave = !$insert;
                 }
-            } catch (\Exception $e) {
-                $userId = 0;
-                $isSave = !$insert;
-            }
+            } catch (\Exception $e) {}
 
             // 更新时 保存日志
-            if ($this->isLog === true && $isSave) {
+            if ($isSave) {
+                try {
+                    $mallId = \Yii::$app->mall->id;
+                } catch (\Exception $e) {
+                    $mallId = 0;
+                }
                 // 去除以下字段 不记录日志
                 $arr = ['created_at', 'updated_at', 'deleted_at'];
                 $afterUpdate = $this->attributes;
@@ -142,7 +135,7 @@ class ModelActiveRecord extends \yii\db\ActiveRecord
                     }
 
                     // 白名单之内的数据
-                    if (!$this->guarded && $this->fillable) {
+                    if ($this->fillable) {
                         foreach ($newBeforeUpdate as $key => $item) {
                             if (!in_array($key, $this->fillable)) {
                                 unset($newBeforeUpdate[$key]);
@@ -159,6 +152,7 @@ class ModelActiveRecord extends \yii\db\ActiveRecord
                         'modelId' => $this->attributes['id'] ?? 0,
                         'remark' => $remark,
                         'user_id' => $userId,
+                        'mall_id' => $mallId
                     ];
                     $class = new UserActionJob($dataArr);
                     \Yii::$app->queue->delay(10)->push($class);

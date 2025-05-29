@@ -49,7 +49,7 @@ class ListEditForm extends Model
             return $this->getErrorResponse();
         }
         if($this->id){
-            $model = Knowledge::findOne($this->id);
+            $model = Knowledge::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
             if(!$model){
                 return [
                     'code' => ApiCode::CODE_ERROR,
@@ -68,7 +68,10 @@ class ListEditForm extends Model
             $where = ['dataset_id' => $this->dataset_id];
         }
         /** @var Knowledge $knowledge */
-        $knowledge = Knowledge::find()->where(['is_delete' => 0, "account_id" => $this->account_id])->andWhere($where)->one();
+        $knowledge = Knowledge::find()
+            ->where(['is_delete' => 0, "account_id" => $this->account_id, 'mall_id' => \Yii::$app->mall->id])
+            ->andWhere($where)
+            ->one();
         if($knowledge){
             $res = ApiForm::common([
                 'object' => new Workspaces(),
@@ -80,6 +83,7 @@ class ListEditForm extends Model
                 'msg' => "资源ID已经在空间名为'{$return[$knowledge->space_id]['name']}'下面添加",
             ];
         }
+        $model->mall_id = \Yii::$app->mall->id;
         if(!$model->save()){
             return $this->getErrorResponse($model);
         }

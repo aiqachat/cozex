@@ -3,13 +3,24 @@
 basepath=$(cd `dirname $0`; pwd)
 chmod a+x "$basepath/yii"
 command="php $basepath/yii queue/listen 1"
+command1="php $basepath/yii queue1/listen 1"
 
 result=$(ps -ef | grep "`echo $command`" | grep -v "grep")
+result1=$(ps -ef | grep "`echo $command1`" | grep -v "grep")
 
 if [ ! -n "$result" ]
 then
   echo "Starting the process."
   str=$(nohup $command >/dev/null 2>&1 &)
+  echo -e "\033[32mOk.\033[0m"
+else
+  echo "The process has been started."
+fi
+
+if [ ! -n "$result1" ]
+then
+  echo "Starting the process."
+  str=$(nohup $command1 >/dev/null 2>&1 &)
   echo -e "\033[32mOk.\033[0m"
 else
   echo "The process has been started."

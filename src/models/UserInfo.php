@@ -8,14 +8,15 @@ namespace app\models;
  * @property string $id
  * @property int $user_id
  * @property string $avatar 头像
- * @property string $platform_user_id 用户所属平台的用户id
+ * @property string $integral 积分
+ * @property string $total_integral 最高积分
  * @property string $balance 余额
  * @property string $total_balance 总余额
  * @property int $is_blacklist 是否黑名单
- * @property string $contact_way 联系方式
+ * @property string $mobile 手机号，不可随便改
+ * @property string $email 邮箱，不可随便改
  * @property string $remark 备注
  * @property int $is_delete
- * @property string $remark_name 备注名
  */
 class UserInfo extends ModelActiveRecord
 {
@@ -35,8 +36,9 @@ class UserInfo extends ModelActiveRecord
         return [
             [['user_id'], 'required'],
             [['user_id', 'is_blacklist', 'is_delete'], 'integer'],
-            [['balance', 'total_balance'], 'number'],
-            [['avatar', 'platform_user_id', 'contact_way', 'remark', 'remark_name'], 'string', 'max' => 255],
+            [['balance', 'total_balance', 'integral', 'total_integral'], 'number'],
+            [['avatar', 'remark'], 'string', 'max' => 255],
+            [['mobile', 'email'], 'string', 'max' => 100],
         ];
     }
 
@@ -48,15 +50,15 @@ class UserInfo extends ModelActiveRecord
         return [
             'id' => 'ID',
             'user_id' => 'User ID',
+            'integral' => '积分',
+            'total_integral' => '最高积分',
             'avatar' => '头像',
-            'platform_user_id' => '用户所属平台的用户id',
             'balance' => '余额',
             'total_balance' => '总余额',
             'is_blacklist' => '是否黑名单',
-            'contact_way' => '联系方式',
+            'mobile' => '联系方式',
             'remark' => '备注',
             'is_delete' => 'Is Delete',
-            'remark_name' => '备注名',
         ];
     }
 

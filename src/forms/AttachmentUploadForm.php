@@ -8,9 +8,12 @@
 
 namespace app\forms;
 
+use app\forms\admin\mall\MallOverrunForm;
 use app\forms\common\attachment\AttachmentUpload;
 use app\forms\common\attachment\CommonAttachment;
 use app\models\Model;
+use app\models\User;
+use GuzzleHttp\Psr7\MimeType;
 use yii\web\UploadedFile;
 
 class AttachmentUploadForm extends Model
@@ -38,36 +41,42 @@ class AttachmentUploadForm extends Model
 
     public function validateExt($a, $p)
     {
-        if(!$this->type || $this->type != 'video') {
-            $supportExt = array_merge ($this->docExt, $this->imageExt, $this->videoExt);
+        // 获取真实文件类型，判断跟文件后缀是否一致
+//        $mimeType = FileHelper::getMimeType($this->file->tempName, null, false);
+//        $extensionsByMimeType = FileHelper::getExtensionsByMimeType($mimeType);
+//        if (!in_array(mb_strtolower($this->file->extension, 'UTF-8'), $extensionsByMimeType, true)) {
+//            $this->addError ($a, '文件错误');
+//        }
+
+        // 根据图片后缀得到类型
+        $extension = strtolower(pathinfo($this->file->name, PATHINFO_EXTENSION));
+        $mimeType = MimeType::fromExtension($extension);
+        if ($mimeType === null || ($mimeType !== $this->file->type && strpos($mimeType, $extension) === false)) {
+            $this->addError ($a, '文件错误');
+        }
+        if($this->type != 'video') {
+            $supportExt = array_merge($this->docExt, $this->imageExt, $this->videoExt);
             if (!in_array ($this->file->extension, $supportExt)) {
                 $this->addError ($a, '不支持的文件类型: ' . $this->file->extension);
             }
         }else{
-            $finfo = finfo_open(FILEINFO_MIME_TYPE); // 打开文件信息处理
-            $mimeType = finfo_file($finfo, $this->file->tempName); // 获取 MIME 类型
-            finfo_close($finfo); // 关闭文件信息处理
             if (strpos($mimeType, 'video') === false && strpos($mimeType, 'audio') === false) {
                 $this->addError($a, '不支持的音视频类型: ' . $mimeType);
             }
         }
 
+        $option = (new MallOverrunForm())->getSetting();
         if (($this->type == 'image' || in_array($this->file->extension, $this->imageExt))){
-            if ($this->file->size > (2 * 1024 * 1024)) {
+            if (!$option['is_img_overrun'] && $this->file->size > ($option['img_overrun'] * 1024 * 1024)) {
                 $this->addError($a, '图片大小超出限制,当前大小为: '
                     . (round($this->file->size / 1024 / 1024, 4)) . 'MB,最大限制为:'
-                    . '2MB');
+                    . $option['img_overrun'] . 'MB');
             }
         }else{
-            $filesize = ini_get('upload_max_filesize');
-            $size = intval($filesize);
-            if(strtolower(str_replace($size, "", $filesize)) != 'm'){
-                $size = 10;
-            }
-            if ($this->file->size > ($size * 1024 * 1024)) {
+            if (!$option['is_video_overrun'] && $this->file->size > ($option['video_overrun'] * 1024 * 1024)) {
                 $this->addError($a, '文件大小超出限制,当前大小为: '
                     . (round($this->file->size / 1024 / 1024, 4)) . 'MB,最大限制为:'
-                    . "{$size}MB");
+                    . $option['video_overrun'] . 'MB');
             }
         }
     }
@@ -78,12 +87,26 @@ class AttachmentUploadForm extends Model
             return $this->getErrorResponse($this);
         }
 
+        try {
+            $mall = \Yii::$app->mall;
+        } catch (\Exception $e) {
+            $mall = null;
+        }
+
         $user = null;
+        $user_id = 0;
         if (!\Yii::$app->user->isGuest) {
+            /** @var User $user */
             $user = \Yii::$app->user->identity;
+            $userIdentity = $user->identity;
+            if (
+                $userIdentity && !$userIdentity->is_super_admin && !$userIdentity->is_admin
+            ) {
+                $user_id = $user->id;
+            }
         }
         try {
-            $storage = CommonAttachment::getCommon($user)->getAttachment();
+            $storage = CommonAttachment::getCommon($user, $mall)->getAttachment();
         } catch (\Exception $exception) {
             return [
                 'code' => 1,
@@ -108,11 +131,15 @@ class AttachmentUploadForm extends Model
         }
 
         try {
+            $mallId = $mall ? $mall->id : 0;
+
             $attachmentUpload = new AttachmentUpload([
                 'storage' => $storage,
                 'file' => $this->file,
+                'mall_id' => $mallId,
                 'type' => $type ?? 0,
-                'attachment_group_id' => $this->attachment_group_id ?: 0
+                'attachment_group_id' => $this->attachment_group_id ?: 0,
+                'user_id' => $user_id
             ]);
             $attachment = $attachmentUpload->upload();
             $attachment->thumb_url = $attachment->thumb_url ? $attachment->thumb_url : $attachment->url;

@@ -17,6 +17,7 @@
 
 namespace Tos\Model;
 
+use Tos\Config\ConfigParser;
 use Tos\Exception\TosClientException;
 use Tos\Helper\Helper;
 
@@ -24,9 +25,9 @@ trait InputTranslator
 {
     use EnumChecker;
 
-    protected static function &transCreateBucketInput(CreateBucketInput &$input)
+    protected static function &transCreateBucketInput(CreateBucketInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $headers = [];
         self::dealAcl($input, $headers);
 
@@ -46,9 +47,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transHeadBucketInput(HeadBucketInput &$input)
+    protected static function &transHeadBucketInput(HeadBucketInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $request = new HttpRequest();
         $request->operation = 'headBucket';
         $request->method = Enum::HttpMethodHead;
@@ -56,9 +57,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transDeleteBucketInput(DeleteBucketInput &$input)
+    protected static function &transDeleteBucketInput(DeleteBucketInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $request = new HttpRequest();
         $request->operation = 'deleteBucket';
         $request->method = Enum::HttpMethodDelete;
@@ -66,7 +67,7 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transListBucketsInput(ListBucketsInput &$input)
+    protected static function &transListBucketsInput(ListBucketsInput &$input, ConfigParser &$cp)
     {
         $request = new HttpRequest();
         $request->operation = 'listBuckets';
@@ -74,9 +75,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transCopyObjectInput(CopyObjectInput &$input)
+    protected static function &transCopyObjectInput(CopyObjectInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $headers = [];
@@ -109,9 +110,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transPutObjectInput(PutObjectInput &$input)
+    protected static function &transPutObjectInput(PutObjectInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         $headers = [];
 
@@ -138,9 +139,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transPutObjectFromFileInput(PutObjectFromFileInput &$input)
+    protected static function &transPutObjectFromFileInput(PutObjectFromFileInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $filePath = trim($input->getFilePath());
@@ -184,9 +185,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transGetObjectInput(GetObjectInput &$input)
+    protected static function &transGetObjectInput(GetObjectInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         $headers = [];
         $queries = [];
@@ -258,7 +259,7 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transGetObjectToFileInput(GetObjectToFileInput &$input)
+    protected static function &transGetObjectToFileInput(GetObjectToFileInput &$input, ConfigParser &$cp)
     {
         $filePath = trim($input->getFilePath());
         if (!$filePath) {
@@ -289,18 +290,18 @@ trait InputTranslator
             $filePath .= $key;
         }
 
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         if ($doMkdir) {
-            $result = [self::transHeadObjectInput($input), $filePath, $doMkdir, $bucket, $key];
+            $result = [self::transHeadObjectInput($input, $cp), $filePath, $doMkdir, $bucket, $key];
         } else {
-            $result = [self::transGetObjectInput($input), $filePath, $doMkdir, $bucket, $key];
+            $result = [self::transGetObjectInput($input, $cp), $filePath, $doMkdir, $bucket, $key];
         }
         return $result;
     }
 
-    protected static function &transDeleteObjectInput(DeleteObjectInput &$input)
+    protected static function &transDeleteObjectInput(DeleteObjectInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         $queries = [];
         if ($versionId = $input->getVersionID()) {
@@ -316,9 +317,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transDeleteMultiObjectsInput(DeleteMultiObjectsInput &$input)
+    protected static function &transDeleteMultiObjectsInput(DeleteMultiObjectsInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         if (!is_array($input->getObjects()) || count($input->getObjects()) === 0) {
             throw new TosClientException('empty objects');
         }
@@ -356,9 +357,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transGetObjectACLInput(GetObjectACLInput &$input)
+    protected static function &transGetObjectACLInput(GetObjectACLInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $queries = ['acl' => ''];
@@ -375,9 +376,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transHeadObjectInput(&$input)
+    protected static function &transHeadObjectInput(&$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $headers = [];
@@ -399,9 +400,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transAppendObjectInput(AppendObjectInput &$input)
+    protected static function &transAppendObjectInput(AppendObjectInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         if (!$input->getContent()) {
             throw new TosClientException('empty content');
@@ -436,9 +437,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transListObjectsInput(ListObjectsInput &$input)
+    protected static function &transListObjectsInput(ListObjectsInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
 
         $queries = [];
         self::dealListParams($input, $queries);
@@ -451,9 +452,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transListObjectVersionsInput(ListObjectVersionsInput &$input)
+    protected static function &transListObjectVersionsInput(ListObjectVersionsInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
 
         $queries = ['versions' => ''];
         self::dealListParams($input, $queries, 1);
@@ -465,9 +466,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transPutObjectACLInput(PutObjectACLInput &$input)
+    protected static function &transPutObjectACLInput(PutObjectACLInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $queries = ['acl' => ''];
@@ -519,9 +520,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transSetObjectMetaInput(SetObjectMetaInput &$input)
+    protected static function &transSetObjectMetaInput(SetObjectMetaInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $queries = ['metadata' => ''];
@@ -543,9 +544,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transCreateMultipartUploadInput(CreateMultipartUploadInput &$input)
+    protected static function &transCreateMultipartUploadInput(CreateMultipartUploadInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $headers = [];
@@ -569,7 +570,7 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transUploadFileInput(UploadFileInput &$input)
+    protected static function &transUploadFileInput(UploadFileInput &$input, ConfigParser &$cp)
     {
         $filePath = self::checkFilePath($input->getFilePath());
 
@@ -585,7 +586,7 @@ trait InputTranslator
 
         $checkpointFile = null;
         if ($input->isEnableCheckpoint()) {
-            $bucket = self::checkBucket($input->getBucket());
+            $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
             $key = self::checkKey($input->getKey());
 
             $checkpointFile = trim(strval($input->getCheckpointFile()));
@@ -600,9 +601,9 @@ trait InputTranslator
         return $result;
     }
 
-    protected static function &transUploadPartInput(UploadPartInput &$input)
+    protected static function &transUploadPartInput(UploadPartInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         if (!$input->getContent()) {
             throw new TosClientException('empty content');
@@ -624,9 +625,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transUploadPartFromFileInput(UploadPartFromFileInput &$input)
+    protected static function &transUploadPartFromFileInput(UploadPartFromFileInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $filePath = self::checkFilePath($input->getFilePath());
@@ -667,9 +668,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transCompleteMultipartUploadInput(CompleteMultipartUploadInput &$input)
+    protected static function &transCompleteMultipartUploadInput(CompleteMultipartUploadInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         if (!is_array($parts = $input->getParts()) || count($parts) === 0) {
             throw new TosClientException('empty parts');
@@ -704,9 +705,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transAbortMultipartUploadInput(AbortMultipartUploadInput &$input)
+    protected static function &transAbortMultipartUploadInput(AbortMultipartUploadInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $queries = [];
@@ -721,9 +722,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transUploadPartCopyInput(UploadPartCopyInput &$input)
+    protected static function &transUploadPartCopyInput(UploadPartCopyInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $headers = [];
@@ -765,9 +766,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transListMultipartUploadsInput(ListMultipartUploadsInput &$input)
+    protected static function &transListMultipartUploadsInput(ListMultipartUploadsInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $queries = ['uploads' => ''];
         self::dealListParams($input, $queries, 2);
 
@@ -779,9 +780,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transListPartsInput(ListPartsInput &$input)
+    protected static function &transListPartsInput(ListPartsInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $queries = [];
@@ -803,9 +804,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transPutObjectTaggingInput(PutObjectTaggingInput &$input)
+    protected static function &transPutObjectTaggingInput(PutObjectTaggingInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
 
         $queries = ['tagging' => ''];
@@ -841,9 +842,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transGetObjectTaggingInput(GetObjectTaggingInput &$input)
+    protected static function &transGetObjectTaggingInput(GetObjectTaggingInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         $queries = ['tagging' => ''];
         if ($versionId = $input->getVersionID()) {
@@ -858,9 +859,9 @@ trait InputTranslator
         return $request;
     }
 
-    protected static function &transDeleteObjectTaggingInput(DeleteObjectTaggingInput &$input)
+    protected static function &transDeleteObjectTaggingInput(DeleteObjectTaggingInput &$input, ConfigParser &$cp)
     {
-        $bucket = self::checkBucket($input->getBucket());
+        $bucket = self::checkBucket($input->getBucket(), $cp->isCustomDomain());
         $key = self::checkKey($input->getKey());
         $queries = ['tagging' => ''];
         if ($versionId = $input->getVersionID()) {
@@ -1112,8 +1113,12 @@ trait InputTranslator
         }
     }
 
-    protected static function checkBucket($bucket)
+    protected static function checkBucket($bucket, $isCustomDomain=false)
     {
+        if($isCustomDomain){
+            return $bucket;
+        }
+
         $bucket = trim($bucket);
         $length = strlen($bucket);
         if ($length < 3 || $length > 63) {

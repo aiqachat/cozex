@@ -34,7 +34,7 @@ class ConfigParser
     /**
      * @var string
      */
-    private $version = '2.1.11';
+    private $version = '2.1.12';
 
     /**
      * @var string
@@ -81,6 +81,10 @@ class ConfigParser
      * @var bool
      */
     private $autoRecognizeContentType = true;
+    /**
+     * @var bool
+     */
+    private $isCustomDomain = false;
 
     public function __construct(array $config)
     {
@@ -138,14 +142,22 @@ class ConfigParser
             $this->autoRecognizeContentType = boolval($config['autoRecognizeContentType']);
         }
 
+        if (isset($config['isCustomDomain'])) {
+            $this->isCustomDomain = boolval($config['isCustomDomain']);
+        }
+
         $this->userAgent = 've-tos-php-sdk/' . $this->version . ' (' . PHP_OS . '/' . php_uname('m') . ';' . PHP_VERSION . ')';
     }
 
     /**
      * @return string
      */
-    public function getEndpoint($bucket = '', $key = '', $schema = '', $domain = '', $mustAddKey = false)
+    public function getEndpoint($bucket = '', $key = '', $schema = '', $domain = '', $mustAddKey = false, $isCustomDomain = null)
     {
+        if($isCustomDomain === null){
+            $isCustomDomain = $this->isCustomDomain;
+        }
+
         if (!$schema) {
             $schema = $this->schema;
         }
@@ -155,7 +167,7 @@ class ConfigParser
         }
 
         $endpoint = $schema;
-        if (($bkt = strval($bucket)) !== '') {
+        if (($bkt = strval($bucket)) !== '' && !$isCustomDomain) {
             $endpoint .= $bkt . '.' . $domain;
             if ($key !== '') {
                 $endpoint .= '/' . Helper::urlencodeWithSafe($key);
@@ -166,20 +178,23 @@ class ConfigParser
                 $endpoint .= '/' . Helper::urlencodeWithSafe($key);
             }
         }
-
         return $endpoint;
     }
 
     /**
      * @return string
      */
-    public function getHost($bucket = '', $domain = '')
+    public function getHost($bucket = '', $domain = '', $isCustomDomain = null)
     {
+        if($isCustomDomain === null){
+            $isCustomDomain = $this->isCustomDomain;
+        }
+
         if (!$domain) {
             $domain = $this->domain;
         }
-        if (strval($bucket) !== '') {
-            $host = $bucket . '.' . $domain;
+        if (($bkt = strval($bucket)) !== '' && !$isCustomDomain) {
+            $host = $bkt . '.' . $domain;
         } else {
             $host = $domain;
         }
@@ -257,5 +272,13 @@ class ConfigParser
     public function isAutoRecognizeContentType()
     {
         return $this->autoRecognizeContentType;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCustomDomain()
+    {
+        return $this->isCustomDomain;
     }
 }

@@ -41,9 +41,16 @@ class VolcengineForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $data = VolcengineAccount::find()->where(['is_delete' => 0])
+        $data = VolcengineAccount::find()->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
             ->page($pagination, $this->page_size)
             ->all();
+        if(!empty($data)) {
+            $account = VolcengineAccount::findOne (['mall_id' => \Yii::$app->mall->id, 'is_default' => 1, 'is_delete' => 0]);
+            if (!$account) {
+                VolcengineAccount::updateAll(['is_default' => 1], ['id' => $data[0]->id]);
+                $data[0]->is_default = 1;
+            }
+        }
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
@@ -59,14 +66,15 @@ class VolcengineForm extends Model
             return $this->getErrorResponse();
         }
         /** @var VolcengineAccount[] $data */
-        $data = VolcengineAccount::find()->where(['is_delete' => 0])->all();
+        $data = VolcengineAccount::find()->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])->all();
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
                 'account' => array_map(function ($var){
                     return [
                         'id' => $var->id,
-                        'name' => $var->name
+                        'name' => $var->name,
+                        'is_default' => $var->is_default
                     ];
                 }, $data),
             ]
@@ -79,7 +87,7 @@ class VolcengineForm extends Model
             return $this->getErrorResponse();
         }
         if($this->id){
-            $model = VolcengineAccount::findOne($this->id);
+            $model = VolcengineAccount::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
             if(!$model){
                 return [
                     'code' => ApiCode::CODE_ERROR,
@@ -95,7 +103,10 @@ class VolcengineForm extends Model
             $model = new VolcengineAccount();
             $where = ['or', ['access_token' => $this->access_token], ['app_id' => $this->app_id]];
         }
-        $exist = VolcengineAccount::find()->where(['is_delete' => 0])->andWhere($where)->one();
+        $exist = VolcengineAccount::find()
+            ->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
+            ->andWhere($where)
+            ->one();
         if($exist){
             return [
                 'code' => ApiCode::CODE_ERROR,
@@ -103,6 +114,30 @@ class VolcengineForm extends Model
             ];
         }
         $model->attributes = $this->attributes;
+        $model->mall_id = \Yii::$app->mall->id;
+        if(!$model->save()){
+            return $this->getErrorResponse($model);
+        }
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'msg' => '成功'
+        ];
+    }
+
+    public function setDefault()
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        }
+        $model = VolcengineAccount::findOne(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id]);
+        if(!$model){
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => '数据不存在'
+            ];
+        }
+        VolcengineAccount::updateAll(['is_default' => 0], ['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0]);
+        $model->is_default = 1;
         if(!$model->save()){
             return $this->getErrorResponse($model);
         }
@@ -117,7 +152,7 @@ class VolcengineForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = VolcengineAccount::findOne($this->id);
+        $model = VolcengineAccount::findOne(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id]);
         if(!$model){
             return [
                 'code' => ApiCode::CODE_ERROR,

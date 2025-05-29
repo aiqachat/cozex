@@ -8,81 +8,34 @@
 namespace app\forms\mall\user;
 
 use app\bootstrap\response\ApiCode;
-use app\forms\mall\export\UserExport;
+use app\models\BalanceLog;
+use app\models\IntegralLog;
 use app\models\Model;
 use app\models\User;
 use app\models\UserIdentity;
 use app\models\UserInfo;
-use yii\helpers\ArrayHelper;
 
 class UserForm extends Model
 {
-    public $id;
-    public $page_size;
+    public $password;
     public $keyword;
+    public $field;
+    public $id;
+    public $sort;
     public $user_id;
     public $status;
-    public $date;
     public $start_date;
     public $end_date;
-
-    public $flag;
-    public $fields;
-    public $sort;
-
-    public $batch_ids;
-    public $pic_url;
-    public $num;
-    public $remark;
-    public $type;
-    public $price;
-
-    public $password;
 
     public function rules()
     {
         return [
-            [['date', 'flag', 'keyword'], 'trim'],
-            [['start_date', 'end_date', 'keyword', 'sort', 'pic_url', 'remark', 'password'], 'string'],
-            [['id', 'user_id', 'status', 'num', 'type'], 'integer'],
+            [['password', 'start_date', 'end_date', 'field', 'sort'], 'string'],
+            [['id', 'user_id', 'status'], 'integer'],
             [['keyword'], 'string', 'max' => 255],
-            [['page_size'], 'default', 'value' => 10],
-            [['fields', 'batch_ids'], 'safe'],
-            [['keyword'], 'default', 'value' => ''],
-            [['price'], 'number', 'min' => 0.01, 'max' => 99999999],
         ];
     }
 
-    public function searchUser()
-    {
-        if (!$this->validate()) {
-            return $this->getErrorResponse();
-        }
-
-        $query = User::find()->alias('u')->with('userPlatform')->select('u.id,u.nickname')->where([
-            'AND',
-            ['or', ['LIKE', 'BINARY(u.nickname)', $this->keyword], ['u.id' => $this->keyword], ['u.mobile' => $this->keyword]],
-        ]);
-        $list = $query->InnerJoinwith('userInfo')->orderBy('nickname')->limit(30)->all();
-
-        $newList = [];
-        /** @var User $item */
-        foreach ($list as $item) {
-            $newItem = ArrayHelper::toArray($item);
-            $newItem['avatar'] = $item->userInfo ? $item->userInfo->avatar : '';
-            $newItem['nickname'] = $item->nickname;
-            $newList[] = $newItem;
-        }
-
-        return [
-            'code' => ApiCode::CODE_SUCCESS,
-            'data' => [
-                'list' => $newList,
-            ],
-        ];
-    }
-
-    //用户列表
     public function getList()
     {
         if (!$this->validate()) {
@@ -90,6 +43,7 @@ class UserForm extends Model
         };
         $query = User::find()->alias('u')->where([
             'u.is_delete' => 0,
+            'u.mall_id' => \Yii::$app->mall->id,
         ])->InnerJoin([
             'i' => UserInfo::tableName(),
         ], 'u.id = i.user_id')
@@ -97,41 +51,59 @@ class UserForm extends Model
                 'd' => UserIdentity::tableName(),
             ], 'd.user_id = u.id');
 
-        $searchWhere = [
-            'OR',
-            ['like', 'BINARY(u.nickname)', $this->keyword],
-            ['like', 'u.mobile', $this->keyword],
-            ['like', 'u.id', $this->keyword],
-            ['like', 'BINARY(i.remark_name)', $this->keyword],
-            ['like', 'BINARY(i.remark)', $this->keyword],
-            ['like', 'i.contact_way', $this->keyword],
-        ];
-
-        $query->keyword($this->keyword, $searchWhere);
-
-        $query->select(['i.*', 'u.nickname', 'u.mobile', 'd.is_admin', 'u.mobile', 'u.created_at']);
-
-        switch ($this->sort) {
-            default:
-                $query->orderBy('u.id DESC');
-                break;
+        if($this->field){
+            switch ($this->field){
+                case 'uid':
+                    $query->andWhere(['like', 'u.uid', $this->keyword]);
+                    break;
+                case 'nickname':
+                    $query->andWhere(['like', 'BINARY(u.nickname)', $this->keyword]);
+                    break;
+                case 'mobile':
+                    $query->andWhere(['like', 'i.mobile', $this->keyword]);
+                    break;
+                case 'email':
+                    $query->andWhere(['like', 'i.email', $this->keyword]);
+                    break;
+            }
+        }
+        if($this->sort){
+            $pos = strrpos($this->sort, "_");
+            switch (substr($this->sort, 0, $pos)){
+                case 'created_at':
+                    $query->orderBy ('u.created_at ' . substr($this->sort, $pos + 1));
+                    break;
+                case 'uid':
+                    $query->orderBy ('u.uid ' . substr($this->sort, $pos + 1));
+                    break;
+                case 'balance':
+                    $query->orderBy ('i.balance ' . substr($this->sort, $pos + 1));
+                    break;
+                case 'integral':
+                    $query->orderBy ('i.integral ' . substr($this->sort, $pos + 1));
+                    break;
+            }
+        }else{
+            $query->orderBy ('u.id DESC');
+        }
+        if($this->status !== null){
+            $query->andWhere(['i.is_blacklist' => $this->status]);
         }
 
-        $list = $query->page($pagination, $this->page_size)
+        $query->select(['i.*', 'u.nickname', 'u.created_at', 'u.uid']);
+
+        $list = $query->page($pagination)
             ->asArray()
             ->all();
-
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
                 'list' => $list,
                 'pagination' => $pagination,
-                'exportList' => (new UserExport())->fieldsList(),
             ],
         ];
     }
 
-    //用户编辑
     public function getDetail()
     {
         if (!$this->validate()) {
@@ -141,7 +113,7 @@ class UserForm extends Model
         $user = User::find()->alias('u')
             ->with('identity')
             ->with('userInfo')
-            ->where(['u.id' => $this->id])
+            ->where(['u.id' => $this->id, 'u.mall_id' => \Yii::$app->mall->id])
             ->one();
 
         if (!$user) {
@@ -155,15 +127,13 @@ class UserForm extends Model
             'id' => $user->id,
             'username' => $user->username,
             'nickname' => $user->nickname,
-            'mobile' => $user->mobile,
+            'mobile' => $user->userInfo->mobile,
+            'email' => $user->userInfo->email,
             'avatar' => $user->userInfo->avatar,
-            'contact_way' => $user->userInfo->contact_way,
             'remark' => $user->userInfo->remark,
             'is_blacklist' => $user->userInfo->is_blacklist,
             'created_at' => $user->created_at,
-            'remark_name' => $user->userInfo->remark_name,
         ];
-
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'msg' => '请求成功',
@@ -187,6 +157,7 @@ class UserForm extends Model
                 throw new \Exception($this->getErrorMsg($user));
             }
 
+            \Yii::$app->user->identity->clearLogin();
             \Yii::$app->user->logout();
             return [
                 'code' => ApiCode::CODE_SUCCESS,
@@ -198,5 +169,99 @@ class UserForm extends Model
                 'msg' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * 余额记录
+     */
+    public function balanceLog()
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        };
+
+        $query = BalanceLog::find()->alias('b')->where([
+            'b.mall_id' => \Yii::$app->mall->id,
+        ])->joinwith(['user'])->orderBy('id desc');
+
+        if ($this->user_id) {
+            $query->andWhere(['b.user_id' => $this->user_id]);
+        }
+
+        if ($this->start_date && $this->end_date) {
+            $query->andWhere(['<', 'b.created_at', $this->end_date])
+                ->andWhere(['>', 'b.created_at', $this->start_date]);
+        }
+
+        if ($this->keyword) {
+            $userQuery = User::find()->where(['like', 'BINARY(nickname)', $this->keyword])->select('id');
+            $query->andWhere([
+                'or',
+                ['like', 'order_no', $this->keyword],
+                ['user_id' => $userQuery]
+            ]);
+        }
+
+        $list = $query->page($pagination)->asArray()->all();
+
+        foreach ($list as &$v) {
+            $desc = json_decode($v['custom_desc'], true) ?? [];
+            $v['info_desc'] = $desc;
+        };
+        unset($v);
+
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'data' => [
+                'list' => $list,
+                'pagination' => $pagination,
+            ],
+        ];
+    }
+
+    /**
+     * 积分记录
+     */
+    public function integralLog()
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        };
+
+        $query = IntegralLog::find()->alias('i')->where([
+            'i.mall_id' => \Yii::$app->mall->id,
+        ])->joinwith(['user'])->orderBy('id desc');
+
+        if ($this->user_id) {
+            $query->andWhere(['i.user_id' => $this->user_id]);
+        }
+
+        if ($this->start_date && $this->end_date) {
+            $query->andWhere(['<', 'i.created_at', $this->end_date])->andWhere(['>', 'i.created_at', $this->start_date]);
+        }
+
+        if ($this->keyword) {
+            $userQuery = User::find()->where(['like', 'BINARY(nickname)', $this->keyword])->select('id');
+            $query->andWhere([
+                'or',
+                ['like', 'order_no', $this->keyword],
+                ['user_id' => $userQuery]
+            ]);
+        }
+
+        $list = $query->page($pagination)->asArray()->all();
+
+        foreach ($list as &$v) {
+            $desc = json_decode($v['custom_desc'], true) ?? [];
+            $v['info_desc'] = $desc;
+        };
+        unset($v);
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'data' => [
+                'list' => $list,
+                'pagination' => $pagination,
+            ],
+        ];
     }
 }

@@ -1,5 +1,5 @@
-# CozeX1.07
-CozeX扣子API封装的一套coze智能体管理saas软件，火山方舟平台大模型SAAS软件。
+# CozeX1.0.18
+CozeX扣子API封装的一套coze智能体管理saas软件，火山方舟平台大模型语音技术SAAS软件。
 
 ### 主要功能目前集成
 #### 一、扣子智能体
@@ -11,12 +11,12 @@ CozeX集成了火山引起大模型的主要声音常用功能，使用户可以
 ![alt text](/docs/cozexvoice.jpg)
 
 ## 当前开发说明
-cozex系统基于Yii2框架，采用PHP7.0以上版本开发，具有很强的可扩展性，并且完全开放源代码。拥有灵活扩展特性之外更安全、高效、数据过滤，同时采用vue作为页面模板渲染引擎，让系统更简单。
+cozex系统基于Yii2框架，采用PHP7.2以上版本开发，具有很强的可扩展性，并且完全开放源代码。拥有灵活扩展特性之外更安全、高效、数据过滤，同时采用vue作为页面模板渲染引擎，让系统更简单。
 
 
 ## 技术要求
 
-- Linux基本命令使用、文件、进程管理、Nginx+PHP+MySQL+Redis环境配置
+- Linux基本命令使用、文件、进程管理、Nginx + PHP(7.2 - 8.1) + MySQL(5.6 - 5.7) + Redis 环境配置
 
 - PHP开发
 
@@ -52,7 +52,7 @@ MySQL扩展库：数据存储
 
 ```
 /bootstrap #启动文件
-/condif #配置文件
+/config #配置文件
 /controllers #控制器
 /events #事件定义类
 /forms #表单处理

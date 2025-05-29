@@ -44,7 +44,7 @@ class VolcanoKeyForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $data = VolcengineKeys::find()->where(['is_delete' => 0])
+        $data = VolcengineKeys::find()->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
             ->with("keysRelation")
             ->page($pagination, $this->page_size)
             ->asArray()
@@ -71,7 +71,7 @@ class VolcanoKeyForm extends Model
             return $this->getErrorResponse();
         }
         if($this->id){
-            $model = VolcengineKeys::findOne($this->id);
+            $model = VolcengineKeys::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
             if(!$model){
                 return [
                     'code' => ApiCode::CODE_ERROR,
@@ -87,7 +87,10 @@ class VolcanoKeyForm extends Model
             $model = new VolcengineKeys();
             $where = ['or', ['secret_key' => $this->secret_key], ['access_id' => $this->access_id]];
         }
-        $exist = VolcengineKeys::find()->where(['is_delete' => 0])->andWhere($where)->one();
+        $exist = VolcengineKeys::find()
+            ->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
+            ->andWhere($where)
+            ->one();
         if($exist){
             return [
                 'code' => ApiCode::CODE_ERROR,
@@ -95,6 +98,7 @@ class VolcanoKeyForm extends Model
             ];
         }
         $model->attributes = $this->attributes;
+        $model->mall_id = \Yii::$app->mall->id;
         if(!$model->save()){
             return $this->getErrorResponse($model);
         }
@@ -109,16 +113,18 @@ class VolcanoKeyForm extends Model
             ];
         }
         VolcengineKeysRelation::updateAll(["is_delete" => 1], ["is_delete" => 0, "key_id" => $model->id]);
-        foreach ($this->account as $account){
-            $relation = VolcengineKeysRelation::findOne(['account_id' => $account, 'key_id' => $model->id]);
-            if(!$relation) {
-                $relation = new VolcengineKeysRelation();
-                $relation->account_id = $account;
-                $relation->key_id = $model->id;
-            }
-            $relation->is_delete = 0;
-            if(!$relation->save()){
-                return $this->getErrorResponse($relation);
+        if(is_array ($this->account)) {
+            foreach ($this->account as $account) {
+                $relation = VolcengineKeysRelation::findOne (['account_id' => $account, 'key_id' => $model->id]);
+                if (!$relation) {
+                    $relation = new VolcengineKeysRelation();
+                    $relation->account_id = $account;
+                    $relation->key_id = $model->id;
+                }
+                $relation->is_delete = 0;
+                if (!$relation->save ()) {
+                    return $this->getErrorResponse ($relation);
+                }
             }
         }
         return [
@@ -132,7 +138,7 @@ class VolcanoKeyForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = VolcengineKeys::findOne($this->id);
+        $model = VolcengineKeys::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
         if(!$model){
             return [
                 'code' => ApiCode::CODE_ERROR,

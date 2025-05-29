@@ -13,6 +13,7 @@ use app\forms\common\coze\api\Workspaces;
 use app\forms\common\coze\ApiForm;
 use app\jobs\CommonJob;
 use app\models\CozeAccount;
+use app\models\Mall;
 use app\models\Model;
 
 class CozeForm extends Model
@@ -50,7 +51,7 @@ class CozeForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $data = CozeAccount::find()->where(['is_delete' => 0])
+        $data = CozeAccount::find()->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
             ->page($pagination, $this->page_size)
             ->all();
         return [
@@ -68,7 +69,7 @@ class CozeForm extends Model
             return $this->getErrorResponse();
         }
         /** @var CozeAccount[] $data */
-        $data = CozeAccount::find()->where(['is_delete' => 0])->all();
+        $data = CozeAccount::find()->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])->all();
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
@@ -88,7 +89,7 @@ class CozeForm extends Model
             return $this->getErrorResponse();
         }
         /** @var CozeAccount $data */
-        $data = CozeAccount::find()->where(['id' => $this->id])->one();
+        $data = CozeAccount::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
         $return = [];
         if($data){
             $res = ApiForm::common([
@@ -120,7 +121,7 @@ class CozeForm extends Model
             return $this->getErrorResponse();
         }
         if($this->id){
-            $model = CozeAccount::findOne($this->id);
+            $model = CozeAccount::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
             if(!$model){
                 return [
                     'code' => ApiCode::CODE_ERROR,
@@ -148,7 +149,10 @@ class CozeForm extends Model
                 $where = ['or', ['client_id' => $this->client_id], ['client_secret' => $this->client_secret]];
             }
         }
-        $exist = CozeAccount::find()->where(['is_delete' => 0])->andWhere($where)->exists();
+        $exist = CozeAccount::find()
+            ->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
+            ->andWhere($where)
+            ->exists();
         if($exist){
             return [
                 'code' => ApiCode::CODE_ERROR,
@@ -156,6 +160,7 @@ class CozeForm extends Model
             ];
         }
         $model->attributes = $this->attributes;
+        $model->mall_id = \Yii::$app->mall->id;
         if($this->type == 1) {
             if (!$model->save ()) {
                 return $this->getErrorResponse ($model);
@@ -165,8 +170,10 @@ class CozeForm extends Model
                 return $model;
             }
             if($model->getDirtyAttributes (['client_id', 'client_secret'])){
-                $key = md5($this->client_id . $this->client_secret);
-                \Yii::$app->cache->set($key, $this->attributes);
+                $key = md5($this->client_id . $this->client_secret . \Yii::$app->mall->id);
+                $data = $this->attributes;
+                $data['mall_id'] = \Yii::$app->mall->id;
+                \Yii::$app->cache->set($key, $data);
                 $redirect_uri = \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/notify/coze.php';
                 $url = "https://www.coze.cn/api/permission/oauth2/authorize?response_type=code&client_id={$this->client_id}&redirect_uri={$redirect_uri}&state={$key}";
             }elseif(!$model->save()){
@@ -189,6 +196,11 @@ class CozeForm extends Model
             if(!$res){
                 throw new \Exception('数据异常');
             }
+            $mall = Mall::findOne ($res['mall_id']);
+            if(!$mall){
+                throw new \Exception('商城不存在');
+            }
+            \Yii::$app->mall = $mall;
             $res['code'] = $this->code;
             $this->attributes = $res;
             $obj = new OauthToken();
@@ -205,17 +217,18 @@ class CozeForm extends Model
             }
             if($isNewRecord){
                 // refresh_token 有效期为 30 天。有效期内可以凭 refresh_token 调用 API
-                \Yii::$app->queue->delay(30 * 24 * 3600 - 3600)->push(new CommonJob([
+                \Yii::$app->queue->delay(30 * 86400 - 3600)->push(new CommonJob([
                     'type' => 'handle_coze_token',
+                    'mall' => \Yii::$app->mall,
                     'data' => ['id' => $model->id]
                 ]));
             }
-            return \Yii::$app->response->redirect(\Yii::$app->request->hostInfo  . dirname(\Yii::$app->request->baseUrl) . '/index.php?r=mall/setting/coze');
+            return \Yii::$app->response->redirect(\Yii::$app->request->hostInfo  . dirname(\Yii::$app->request->baseUrl) . '/wsroot.php?r=netb/setting/coze');
         } catch (\Exception $exception) {
             return [
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => $exception->getMessage(),
-                'url' => \Yii::$app->request->hostInfo  . dirname(\Yii::$app->request->baseUrl) . '/index.php?r=mall/setting/coze'
+                'url' => \Yii::$app->request->hostInfo  . dirname(\Yii::$app->request->baseUrl) . '/wsroot.php?r=netb/setting/coze'
             ];
         }
     }
@@ -226,7 +239,7 @@ class CozeForm extends Model
             return $this->getErrorResponse();
         }
         try {
-            $model = CozeAccount::findOne($this->id);
+            $model = CozeAccount::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
             if(!$model){
                 throw new \Exception('数据不存在');
             }
@@ -234,11 +247,6 @@ class CozeForm extends Model
                 throw new \Exception('数据已删除');
             }
             ApiForm::common(['account' => $model]);
-            // refresh_token 有效期为 30 天。有效期内可以凭 refresh_token 调用 API
-            \Yii::$app->queue->delay(30 * 24 * 3600 - 3600)->push(new CommonJob([
-                'type' => 'handle_coze_token',
-                'data' => ['id' => $model->id]
-            ]));
         } catch (\Exception $exception) {
             return [
                 'code' => ApiCode::CODE_ERROR,
@@ -256,7 +264,7 @@ class CozeForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = CozeAccount::findOne($this->id);
+        $model = CozeAccount::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
         if(!$model){
             return [
                 'code' => ApiCode::CODE_ERROR,
@@ -264,6 +272,29 @@ class CozeForm extends Model
             ];
         }
         $model->is_delete = 1;
+        if(!$model->save()){
+            return $this->getErrorResponse($model);
+        }
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'msg' => '成功'
+        ];
+    }
+
+    public function setDefault()
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        }
+        $model = CozeAccount::findOne(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id]);
+        if(!$model){
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => '数据不存在'
+            ];
+        }
+        CozeAccount::updateAll(['is_default' => 0], ['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0]);
+        $model->is_default = 1;
         if(!$model->save()){
             return $this->getErrorResponse($model);
         }

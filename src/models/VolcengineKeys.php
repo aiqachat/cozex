@@ -6,6 +6,7 @@ namespace app\models;
  * This is the model class for table "{{%volcengine_keys}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property string $name
  * @property string $access_id
  * @property string $secret_key
@@ -32,7 +33,7 @@ class VolcengineKeys extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['secret_key', 'created_at', 'updated_at',], 'required'],
+            [['mall_id', 'secret_key', 'created_at', 'updated_at',], 'required'],
             [['is_delete'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['secret_key', 'name', 'access_id'], 'string'],

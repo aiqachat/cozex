@@ -8,6 +8,7 @@ use Yii;
  * This is the model class for table "{{%core_exception_log}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property int $level 异常等级1.报错|2.警告|3.记录信息
  * @property string $title 异常标题
  * @property string $content 异常内容
@@ -31,7 +32,7 @@ class CoreExceptionLog extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['content', 'created_at'], 'required'],
+            [['mall_id', 'content', 'created_at'], 'required'],
             [['level', 'is_delete'], 'integer'],
             [['content'], 'string'],
             [['created_at'], 'safe'],

@@ -56,7 +56,7 @@
           mon: 'Dush',
           tue: 'Sesh',
           wed: 'Chor',
-          thu: 'Pay',
+          thu: 'StripePay',
           fri: 'Jum',
           sat: 'Shan'
         },

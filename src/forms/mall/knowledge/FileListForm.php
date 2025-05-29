@@ -38,7 +38,7 @@ class FileListForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0]);
+        $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0, 'mall_id' => \Yii::$app->mall->id]);
         if(!$model){
             return [
                 'code' => ApiCode::CODE_ERROR,
@@ -65,7 +65,7 @@ class FileListForm extends Model
         $pagination = new Pagination(['totalCount' => $res['total'], 'pageSize' => $req->size, 'page' => $req->page - 1]);
 
         $fileList = KnowledgeFile::find ()
-            ->where(['knowledge_id' => $model->id])
+            ->where(['knowledge_id' => $model->id, 'mall_id' => \Yii::$app->mall->id])
             ->andWhere (['document_id' => $ids])
             ->all ();
         /** @var KnowledgeFile $item */
@@ -91,7 +91,7 @@ class FileListForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0]);
+        $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0, 'mall_id' => \Yii::$app->mall->id]);
         if(!$model){
             return [
                 'code' => ApiCode::CODE_ERROR,
@@ -122,7 +122,7 @@ class FileListForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0]);
+        $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0, 'mall_id' => \Yii::$app->mall->id]);
         if(!$model){
             return [
                 'code' => ApiCode::CODE_ERROR,

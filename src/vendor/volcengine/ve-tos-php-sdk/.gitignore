@@ -7,13 +7,11 @@ local_test/
 .phpunit*
 
 temp
-sample/temp
-test/Test/temp
 temp2
+sample/temp
 sample/temp2
+test/Test/temp
 test/Test/temp2
 test/result.txt
+
 main.php
-test.phar
-test.php
-test2.php

@@ -14,30 +14,52 @@ class CommonOption
     const GROUP_ADMIN = 'admin';
     const GROUP_APP = 'app';
 
-    const NAME_IND_SETTING = 'ind_setting'; // 设置
+    const NAME_IND_SETTING = 'ind_setting'; // saas设置
+    const NAME_MALL_SETTING = 'mall_setting'; // 基础设置
+    const NAME_MALL_CONTENT = 'mall_content'; // 内容设置
     const NAME_COZE_WEB_SDK = 'coze_web_sdk'; // coze web设置
     const NAME_VERSION = 'version'; // 更新记录的系统版本号
+    const NAME_OVERRUN = 'overrun';
+    const NAME_WX_PAY = 'wx_pay_config'; // 微信支付设置
+    const NAME_STRIPE_PAY = 'stripe_pay_config'; // 全球支付设置
+    const NAME_USER_INTEGRAL_SETTING = 'user_integral_setting'; // 积分设置
+    const NAME_VOLCENGINE_PRICE = 'volcengine_price'; // 价格设置
+    const NAME_SMS_SETTING = 'sms_setting'; // 短信设置
+    const NAME_USER_REGISTER_LOGIN = 'user_register_login'; // 用户注册登录
+    const NAME_USER_SETTING = 'user_global_setting'; // 用户全局设置
+    const NAME_USER_MENU_SETTING = 'user_menu_setting'; // 用户菜单设置
+    const NAME_RECHARGE_SETTING = 'recharge_setting'; //充值相关
 
     private static $loadedOptions = [];
 
     /**
      * @param $name string Name
      * @param $value mixed Value
+     * @param $mall_id integer Integer
      * @param $group string Name
      * @return boolean
      */
-    public static function set($name, $value, $group = '')
+    public static function set($name, $value, $mall_id = null, $group = '')
     {
         if (empty($name)) {
             return false;
         }
+        if($mall_id === null){
+            try {
+                $mall_id = \Yii::$app->mall->id;
+            }catch (\Exception $e){
+                $mall_id = 0;
+            }
+        }
         $model = Option::findOne([
             'name' => $name,
+            'mall_id' => $mall_id,
             'group' => $group,
         ]);
         if (!$model) {
             $model = new Option();
             $model->name = $name;
+            $model->mall_id = $mall_id;
             $model->group = $group;
         }
         $model->value = \Yii::$app->serializer->encode($value);
@@ -45,6 +67,7 @@ class CommonOption
         if ($result) {
             $loadedOptionKey = md5(json_encode([
                 'name' => $name,
+                'mall_id' => $mall_id,
                 'group' => $group,
             ]));
             self::$loadedOptions[$loadedOptionKey] = $value;
@@ -54,14 +77,23 @@ class CommonOption
 
     /**
      * @param $name string Name
+     * @param $mall_id integer Integer
      * @param $group string Name
      * @param $default string Name
      * @return null|array|string|object
      */
-    public static function get($name, $group = '', $default = null)
+    public static function get($name, $mall_id = null, $group = '', $default = null)
     {
+        if($mall_id === null){
+            try {
+                $mall_id = \Yii::$app->mall->id;
+            }catch (\Exception $e){
+                $mall_id = 0;
+            }
+        }
         $loadedOptionKey = md5(json_encode([
             'name' => $name,
+            'mall_id' => $mall_id,
             'group' => $group,
         ]));
         if (array_key_exists($loadedOptionKey, self::$loadedOptions)) {
@@ -69,6 +101,7 @@ class CommonOption
         }
         $model = Option::findOne([
             'name' => $name,
+            'mall_id' => $mall_id,
             'group' => $group
         ]);
 
@@ -79,51 +112,6 @@ class CommonOption
         }
         self::$loadedOptions[$loadedOptionKey] = $result;
         return $result;
-    }
-
-    /**
-     * @param $list
-     * @param string $group
-     * @return bool
-     */
-    public static function setList($list, $group = '')
-    {
-        if (!is_array($list)) {
-            return false;
-        }
-        foreach ($list as $item) {
-            self::set(
-                $item['name'],
-                $item['value'],
-                ($item['group'] ?? $group)
-            );
-        }
-        return true;
-    }
-
-    /**
-     * @param $names
-     * @param string $group
-     * @param null $default
-     * @return array
-     */
-    public static function getList($names, $group = '', $default = null)
-    {
-        if (is_string($names)) {
-            $names = explode(',', $names);
-        }
-        if (!is_array($names)) {
-            return [];
-        }
-        $list = [];
-        foreach ($names as $name) {
-            if (empty($name)) {
-                continue;
-            }
-            $value = self::get($name, $group, $default);
-            $list[$name] = $value;
-        }
-        return $list;
     }
 
     /**
@@ -140,14 +128,35 @@ class CommonOption
                 continue;
             }
             if (is_array($item)) {
-                $data[$key] = self::checkDefault($data[$key], $item);
+                $data[$key] = self::checkDefault((array)$data[$key], $item, $unset);
+            }else{
+                if(is_numeric($item)){
+                    $data[$key] = floatval($data[$key]);
+                }
             }
         }
         if($unset){
-            $data = array_intersect_key($data, $default);
+            foreach ($data as $key => $item){
+                if(is_numeric ($key)){
+                    $default = null;
+                    break;
+                }
+            }
+            if($default) {
+                $data = array_intersect_key($data, $default);
+            }
         }
-        return array_map(function ($item) {
-            return is_numeric($item) ? (int)$item : $item;
-        }, $data);
+        return $data;
+    }
+
+    public static function getWeChatV3Key()
+    {
+        $v3_key = self::get('wechat_v3_default_key');
+        if (empty($v3_key)) {
+            $v3_key = \Yii::$app->security->generateRandomString();
+            $v3_key = str_replace (['-', '_'], ['U', 9], $v3_key);
+            CommonOption::set('wechat_v3_default_key', $v3_key);
+        }
+        return $v3_key;
     }
 }

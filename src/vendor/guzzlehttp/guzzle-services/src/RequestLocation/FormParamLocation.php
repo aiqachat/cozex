@@ -1,4 +1,5 @@
 <?php
+
 namespace GuzzleHttp\Command\Guzzle\RequestLocation;
 
 use GuzzleHttp\Command\CommandInterface;
@@ -12,10 +13,10 @@ use Psr\Http\Message\RequestInterface;
  */
 class FormParamLocation extends AbstractLocation
 {
-    /** @var string $contentType */
+    /** @var string */
     protected $contentType = 'application/x-www-form-urlencoded; charset=utf-8';
 
-    /** @var array $formParamsData */
+    /** @var array */
     protected $formParamsData = [];
 
     /**
@@ -29,10 +30,6 @@ class FormParamLocation extends AbstractLocation
     }
 
     /**
-     * @param CommandInterface $command
-     * @param RequestInterface $request
-     * @param Parameter        $param
-     *
      * @return RequestInterface
      */
     public function visit(
@@ -49,10 +46,6 @@ class FormParamLocation extends AbstractLocation
     }
 
     /**
-     * @param CommandInterface $command
-     * @param RequestInterface $request
-     * @param Operation        $operation
-     *
      * @return RequestInterface
      */
     public function after(
@@ -75,10 +68,9 @@ class FormParamLocation extends AbstractLocation
         }
 
         $body = http_build_query($data['form_params'], '', '&');
-        $modify['body'] = Psr7\stream_for($body);
+        $modify['body'] = Psr7\Utils::streamFor($body);
         $modify['set_headers']['Content-Type'] = $this->contentType;
-        $request = Psr7\modify_request($request, $modify);
 
-        return $request;
+        return Psr7\Utils::modifyRequest($request, $modify);
     }
 }

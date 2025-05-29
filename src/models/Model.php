@@ -43,8 +43,7 @@ class Model extends \yii\base\Model
         if (!$model) {
             $model = $this;
         }
-        $msg = isset($model->errors) ? current($model->errors)[0] : '数据异常！';
-        return $msg;
+        return isset($model->errors) ? current($model->errors)[0] : '数据异常！';
     }
 
     public function success($data)

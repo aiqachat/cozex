@@ -8,8 +8,21 @@
 
 namespace app\bootstrap;
 
+use app\bootstrap\currency\Currency;
+use app\bootstrap\payment\Payment;
+use app\forms\common\payment\stripe\StripePay;
+use app\forms\common\payment\wechat\WechatPay;
+use app\forms\common\payment\Factory;
+use app\forms\permission\branch\BaseBranch;
+use app\forms\permission\branch\IndBranch;
+use app\forms\permission\role\AdminRole;
+use app\forms\permission\role\BaseRole;
+use app\forms\permission\role\SuperAdminRole;
+use app\forms\permission\role\UserRole;
 use app\handlers\HandlerBase;
 use app\handlers\HandlerRegister;
+use app\models\Mall;
+use app\models\UserIdentity;
 use yii\queue\Queue;
 use yii\redis\Connection;
 use yii\web\Response;
@@ -20,13 +33,32 @@ use yii\web\Response;
  * @property Serializer $serializer
  * @property Connection $redis
  * @property Queue $queue
+ * @property Queue $queue1
  * @property string $hostInfo
  * @property string $baseUrl
+ * @property BaseRole $role
+ * @property BaseBranch $branch
+ * @property Currency $currency
+ * @property Payment $payment
+ * @property WechatPay $wechatPay
+ * @property StripePay $stripePay
+ * @property Mall $mall
+ * @property Sms $sms
+ * @property int $precision 精度位数
  */
 trait Application
 {
     private $hostInfo;
     private $baseUrl;
+    private $role;
+    private $branch;
+    private $currency;
+    private $payment;
+    private $wechatPay;
+    private $stripePay;
+    private $mallId;
+    protected $mall;
+    private $sms;
 
     protected function setInitParams()
     {
@@ -35,6 +67,18 @@ trait Application
         return $this;
     }
 
+    public function getSms()
+    {
+        if (!$this->sms) {
+            $this->sms = new Sms();
+        }
+        return $this->sms;
+    }
+
+    public function getPrecision()
+    {
+        return 4;
+    }
 
     /**
      * Load .env file
@@ -86,10 +130,10 @@ trait Application
         $this->response->on(
             Response::EVENT_BEFORE_SEND,
             function ($event) {
-                /** @var \yii\web\Response $response */
+                /** @var Response $response */
                 $response = $event->sender;
                 if (is_array($response->data) || is_object($response->data)) {
-                    $response->format = \yii\web\Response::FORMAT_JSON;
+                    $response->format = Response::FORMAT_JSON;
                 }
             }
         );
@@ -125,6 +169,115 @@ trait Application
             }
         }
         return $this;
+    }
+
+    // 获取登录商城的分支版本
+    public function getBranch()
+    {
+        if (!$this->branch) {
+            $this->branch = new IndBranch();
+        }
+        return $this->branch;
+    }
+
+    public function getCurrency()
+    {
+        if ($this->currency) {
+            return $this->currency;
+        }
+        $this->currency = new Currency();
+        return $this->currency;
+    }
+
+    public function getPayment()
+    {
+        if ($this->payment) {
+            return $this->payment;
+        }
+        $this->payment = new Payment();
+        return $this->payment;
+    }
+
+    public function getWechatPay()
+    {
+        if ($this->wechatPay) {
+            return $this->wechatPay;
+        }
+        $this->wechatPay = (new Factory())->wechatPay();
+        return $this->wechatPay;
+    }
+
+    public function getStripePay()
+    {
+        if ($this->stripePay) {
+            return $this->stripePay;
+        }
+        $this->stripePay = (new Factory())->stripePay();
+        return $this->stripePay;
+    }
+
+    public function getMallId()
+    {
+        return $this->mallId;
+    }
+
+    public function setMallId($mallId)
+    {
+        $this->mallId = $mallId;
+    }
+
+    /**
+     * @return Mall
+     * @throws \Exception
+     */
+    public function getMall()
+    {
+        if (!$this->mall || !$this->mall->id) {
+            throw new \Exception('mall is Null');
+        }
+        return $this->mall;
+    }
+
+
+    /**
+     * @param Mall $mall
+     */
+    public function setMall(Mall $mall)
+    {
+        $this->mall = $mall;
+    }
+
+    /**
+     * @return BaseRole
+     * @throws \Exception
+     * 获取登录用户的角色
+     */
+    public function getRole()
+    {
+        if (!$this->role) {
+            if (\Yii::$app->user->isGuest) {
+                throw new \Exception('用户未登录');
+            }
+            /* @var UserIdentity $userIdentity */
+            $userIdentity = \Yii::$app->user->identity->identity;
+            $config = [
+                'user' => \Yii::$app->user->identity,
+                'mall' => \Yii::$app->mall
+            ];
+            if ($userIdentity->is_super_admin == 1) {
+                // 总管理员
+                $this->role = new SuperAdminRole($config);
+            } elseif ($userIdentity->is_admin == 1) {
+                // 子管理员
+                $this->role = new AdminRole($config);
+            } elseif (\Yii::$app->user->identity->mall_id == \Yii::$app->mall->id) {
+                // 普通用户
+                $this->role = new UserRole($config);
+            } else {
+                throw new \Exception('未知用户权限');
+            }
+        }
+        return $this->role;
     }
 
     /**

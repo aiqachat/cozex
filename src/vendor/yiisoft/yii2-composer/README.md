@@ -6,7 +6,7 @@
     <br>
 </p>
 
-This is the composer installer for [Yii framework 2.0](http://www.yiiframework.com) extensions.
+This is the composer installer for [Yii framework 2.0](https://www.yiiframework.com) extensions.
 It implements a new composer package type named `yii2-extension`,
 which should be used by all Yii 2 extensions if they are distributed as composer packages.
 
@@ -14,7 +14,7 @@ For license information check the [LICENSE](LICENSE.md)-file.
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/yii2-composer/v/stable.png)](https://packagist.org/packages/yiisoft/yii2-composer)
 [![Total Downloads](https://poser.pugx.org/yiisoft/yii2-composer/downloads.png)](https://packagist.org/packages/yiisoft/yii2-composer)
-[![Build Status](https://travis-ci.com/yiisoft/yii2-composer.svg?branch=master)](https://travis-ci.com/yiisoft/yii2-composer)
+[![Build status](https://github.com/yiisoft/yii2-composer/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-composer/actions?query=workflow%3Abuild)
 
 
 Usage

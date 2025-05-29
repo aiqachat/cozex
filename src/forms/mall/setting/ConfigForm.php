@@ -12,75 +12,120 @@ namespace app\forms\mall\setting;
 
 use app\bootstrap\response\ApiCode;
 use app\forms\common\CommonOption;
-use app\models\Model;
+use app\validators\DomainValidator;
 
-class ConfigForm extends Model
+class ConfigForm extends BasicConfigForm
 {
-    public $name;
-    public $mall_logo_pic;
-    public $passport_logo;
-    public $passport_bg;
-    public $copyright;
-    public $copyright_url;
-    public $version_text;
-    public $voice_text;
-
     public function rules()
     {
-        return [
-            [['copyright'], 'trim'],
-            [['copyright_url', 'passport_logo', 'copyright', 'passport_bg', 'name', 'mall_logo_pic'], 'string', 'max' => 255],
-            [['version_text', 'voice_text'], 'string'],
-        ];
+        return array_merge(parent::rules(), [
+            [['tab'], 'default', 'value' => self::TAB_BASIC],
+        ]);
     }
 
     public function save()
     {
-        if (!$this->validate()) {
-            return $this->getErrorResponse();
+        if ($this->tab === self::TAB_BASIC) {
+            if (!$this->validate()) {
+                return $this->getErrorResponse();
+            }
+            if ($this->formData['user_domain']) {
+                if (!preg_match((new DomainValidator())->pattern, $this->formData['user_domain'])) {
+                    return [
+                        'code' => ApiCode::CODE_ERROR,
+                        'msg' => '用户端域名格式不正确',
+                    ];
+                }
+                $this->formData['is_user_domain'] = 1;
+            }
+            $mall = \Yii::$app->mall;
+            $mall->name = $this->formData['name'];
+            $mall->save();
+            unset($this->formData['name']);
+            $data = CommonOption::checkDefault($this->formData, $this->getDefault());
+            CommonOption::set($this->getName(), $data, \Yii::$app->mall->id, CommonOption::GROUP_APP);
+            return [
+                'code' => ApiCode::CODE_SUCCESS,
+                'msg' => '保存成功'
+            ];
+        } else {
+            return parent::save();
         }
-        CommonOption::set(CommonOption::NAME_IND_SETTING, $this->attributes, CommonOption::GROUP_ADMIN);
-        return [
-            'code' => ApiCode::CODE_SUCCESS,
-            'msg' => '保存成功'
-        ];
-    }
-
-    public function get(){
-        return [
-            'code' => ApiCode::CODE_SUCCESS,
-            'msg' => '成功',
-            'data' => [
-                'data' => $this->config(),
-                'default' => $this->defaultValue()
-            ]
-        ];
     }
 
     public function config()
     {
-        $setting = CommonOption::get(CommonOption::NAME_IND_SETTING, CommonOption::GROUP_ADMIN);
-        $setting = $setting ? (array)$setting : [];
-        return CommonOption::checkDefault($setting, $this->getDefault());
+        $data = parent::config();
+        if ($this->tab === self::TAB_BASIC) {
+            $data['name'] = \Yii::$app->mall->name;
+        }
+        return $data;
     }
 
-    private function getDefault()
+    const TAB_BASIC = 'basic';
+    const TAB_CONTENT = 'content';
+    const TAB_SMS = 'sms';
+    const TAB_RECHARGE = 'recharge';
+
+    public function getList()
     {
-        return array_merge(array_fill_keys(array_keys($this->attributes), ''), $this->defaultValue());
+        return [
+            self::TAB_BASIC => CommonOption::NAME_MALL_SETTING,
+            self::TAB_CONTENT => CommonOption::NAME_MALL_CONTENT,
+            self::TAB_SMS => CommonOption::NAME_SMS_SETTING,
+            self::TAB_RECHARGE => CommonOption::NAME_RECHARGE_SETTING,
+        ];
     }
 
-    public function defaultValue()
+    public function basic()
     {
         $host = \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . "/";
         return [
-            'name' => 'CozeX-扣子X',
             'mall_logo_pic' => $host . 'statics/img/mall/poster-big-shop.png', //商城logo
-            'passport_logo' => $host . 'statics/img/admin/login-logo.png',
-            'passport_bg' => $host . 'statics/img/admin/BG.png',
-            'copyright' => 'Powered by Netbcloud',
-            'copyright_url' => 'https://www.netbcloud.com',
-            'version_text' => '开源版本完全免费开源使用',
-            'voice_text' => '今天天气可好了，我打算和朋友一起去野餐，带上美食和饮料，找个舒适的草坪，什么烦恼都没了，你要不要和我们一起呀？也可以加我微信：xuyy0755'
+            'user_domain' => '',
+            'is_user_domain' => 0,
+            'is_wechat_pay' => 1,
+            'is_stripe_pay' => 1,
+            'currency' => 'CNY',
+            'currency_symbol' => '¥'
+        ];
+    }
+
+    const CURRENCY = [
+        ['id' => 'CNY', 'name' => '人民币', 'symbol' => '¥'],
+        ['id' => 'HKD', 'name' => '港币', 'symbol' => 'HK$'],
+        ['id' => 'USD', 'name' => '美元', 'symbol' => '＄'],
+        ['id' => 'EUR', 'name' => '欧元', 'symbol' => '€'],
+        ['id' => 'JPY', 'name' => '日元', 'symbol' => '¥'],
+        ['id' => 'KRW', 'name' => '韩元', 'symbol' => '₩'],
+    ];
+
+    public function content()
+    {
+        return [
+            'voice_text' => '今天天气可好了，我打算和朋友一起去野餐，带上美食和饮料，找个舒适的草坪，什么烦恼都没了，你要不要和我们一起呀？也可以加我微信：xuyy0755',
+            'voice_text_en' => 'The weather is so nice today! I plan to go on a picnic with my friends, bringing food and drinks. We\'ll find a comfortable lawn to relax, and all worries will disappear. Would you like to join us? You can also add my WeChat: xuyy0755',
+        ];
+    }
+
+    public function recharge()
+    {
+        return [
+            'title' => '我已了解：',
+            'title_en' => 'I understand:',
+            'agreement' => '充值协议',
+            'agreement_en' => 'Recharge Agreement',
+        ];
+    }
+
+    public function sms()
+    {
+        return [
+            'app_id' => '',
+            'access_key_id' => '',
+            'access_key_secret' => '',
+            'template_name' => '',
+            'code_template_id' => '',
         ];
     }
 }

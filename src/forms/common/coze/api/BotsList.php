@@ -9,6 +9,7 @@ namespace app\forms\common\coze\api;
 
 use app\forms\common\coze\Base;
 
+// 查看智能体列表
 class BotsList extends Base
 {
     /** @var string Bot 所在的空间的 Space ID。Space ID 是空间的唯一标识。 */

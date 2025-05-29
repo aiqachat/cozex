@@ -50,7 +50,7 @@ class AddFileForm extends Model
             return $this->getErrorResponse();
         }
         try {
-            $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0]);
+            $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0, 'mall_id' => \Yii::$app->mall->id]);
             if (!$model || !$model->account) {
                 return [
                     'code' => ApiCode::CODE_ERROR,
@@ -68,7 +68,7 @@ class AddFileForm extends Model
                     if (empty($item['id'])) {
                         continue;
                     }
-                    $attachment = Attachment::findOne (['id' => $item['id']]);
+                    $attachment = Attachment::findOne (['id' => $item['id'], 'mall_id' => \Yii::$app->mall->id]);
                     if (!$attachment) {
                         continue;
                     }
@@ -118,7 +118,7 @@ class AddFileForm extends Model
             return $this->getErrorResponse();
         }
         try {
-            $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0]);
+            $model = Knowledge::findOne(['id' => $this->id, 'is_delete' => 0, 'mall_id' => \Yii::$app->mall->id]);
             if (!$model || !$model->account) {
                 return [
                     'code' => ApiCode::CODE_ERROR,

@@ -45,6 +45,9 @@ class TtsAsyncSubmit extends Base
     /** @var string 指定情感，“情感预测版”默认为预测值，“普通版”默认为音色默认值 */
     public $style;
 
+    /** @var int 是否开启字幕时间戳，0表示不开启，1表示开启句级别字幕时间戳，2表示开启字词级别时间戳，3表示开启音素级别时间戳 */
+    public $enable_subtitle;
+
     protected $version = self::TYPE_COMMON;
     const TYPE_COMMON = 1;
     const TYPE_EMOTION = 2;

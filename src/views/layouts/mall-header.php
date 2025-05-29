@@ -96,6 +96,10 @@
         line-height: 60px;
         cursor: pointer;
     }
+
+    .el-menu-item.is-active {
+        color: white;
+    }
 </style>
 <template id="mall-header">
     <div style="background: #1e222d;">
@@ -109,26 +113,30 @@
                         <template v-if="mall">
                             <img v-if="mall.mall_logo_pic" :src="mall.mall_logo_pic" alt=""/>
                         </template>
-                        <span style="font-size: 32px;">{{mall.name}}</span>
+                        <span style="font-size: 22px;">{{mall.name}}</span>
                     </div>
                 </el-menu-item>
                 <div class="header-menu-item"></div>
             </el-menu>
             <el-menu class="menu-box" mode="horizontal" menu-trigger="hover"
                      background-color="#1e222d"
+                     active-text-color="#ffd04b"
                      text-color="#fff">
-<!--                <el-menu-item @click="navigateClick({r: 'mall/file/index'})" index="5">-->
+<!--                <el-menu-item @click="navigateClick({r: 'netb/file/index'})" index="5">-->
 <!--                    <img ref="system_download_icon" id="system-download-icon" src="statics/img/mall/download-1.png">-->
 <!--                </el-menu-item>-->
-                <el-menu-item @click="navigateClick({r: 'mall/cache/clean', '_layout': 'mall'})" index="4">缓存</el-menu-item>
+                <el-menu-item @click="navigateClick({r: 'admin/cache/clean', '_layout': 'mall'})" index="4">缓存</el-menu-item>
                 <el-submenu index="2" v-if="mall && user" popper-class="mall-header-menu">
                     <template slot="title">
                         <span :title="mall.name" class="mall-name mall-name-icon">{{mall.name.substr(0,2)}}</span>
                     </template>
                     <el-menu-item index="2-1" :disabled="true">{{mall.name}}</el-menu-item>
                     <el-menu-item index="2-2" :disabled="true">{{user.nickname}}({{user.username}})</el-menu-item>
-                    <el-menu-item index="2-4" @click="updatePassword">修改密码</el-menu-item>
-                    <el-menu-item index="2-5" @click="logout">注销</el-menu-item>
+                    <el-menu-item index="2-3" @click="goBackToSystem" v-if="user.identity && user.mall_id == 0">返回系统</el-menu-item>
+                    <template v-if="user.identity && user.identity.is_admin == 1">
+                        <el-menu-item index="2-4" @click="updatePassword">修改密码</el-menu-item>
+                        <el-menu-item index="2-5" @click="logout">注销</el-menu-item>
+                    </template>
                 </el-submenu>
             </el-menu>
         </header>
@@ -214,14 +222,17 @@
             }
         },
         methods: {
+            goBackToSystem() {
+                this.$navigate({r: 'admin/index/back-index'});
+            },
             indexClick() {
-                navigateTo({r: 'mall/statistic/index'})
+                navigateTo({r: 'netb/statistic/index'})
                 this.clearMenuStorage();
             },
             loadData() {
                 this.$request({
                     params: {
-                        r: 'mall/index/header-bar',
+                        r: 'netb/index/header-bar',
                     },
                     method: 'get',
                 }).then(e => {
@@ -237,7 +248,7 @@
                 let self = this;
                 this.$request({
                     params: {
-                        r: 'mall/user/logout'
+                        r: 'netb/user/logout'
                     },
                     method: 'get',
                     data: {}
@@ -257,7 +268,7 @@
                         this.btnLoading = true;
                         this.$request({
                             params: {
-                                r: 'mall/user/update-password'
+                                r: 'netb/user/update-password'
                             },
                             method: 'post',
                             data: {

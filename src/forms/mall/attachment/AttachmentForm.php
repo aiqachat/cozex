@@ -33,7 +33,7 @@ class AttachmentForm extends Model
             return $this->getErrorResponse();
         }
         try {
-            $common = CommonAttachment::getCommon(\Yii::$app->user->identity);
+            $common = CommonAttachment::getCommon(\Yii::$app->user->identity, \Yii::$app->mall);
             $auth = $common->getStorageAuth();
             if (!is_array($auth)) {
                 throw new \Exception('该账户没有设置存储方式');
@@ -56,7 +56,8 @@ class AttachmentForm extends Model
         } catch (\Exception $exception) {
             return [
                 'code' => ApiCode::CODE_ERROR,
-                'msg' => $exception->getMessage()
+                'msg' => $exception->getMessage(),
+                'msgr' => $exception->getFile()
             ];
         }
     }

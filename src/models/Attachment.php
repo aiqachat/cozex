@@ -8,6 +8,7 @@ use Yii;
  * This is the model class for table "{{%attachment}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property int $storage_id
  * @property int $attachment_group_id
  * @property int $user_id
@@ -38,7 +39,7 @@ class Attachment extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['storage_id', 'user_id', 'name', 'size', 'url', 'type', 'created_at', 'updated_at', 'deleted_at'], 'required'],
+            [['storage_id', 'user_id', 'name', 'mall_id', 'url', 'type', 'created_at', 'updated_at'], 'required'],
             [['storage_id', 'attachment_group_id', 'user_id', 'size', 'type', 'is_delete', 'is_recycle'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['name'], 'string', 'max' => 128],

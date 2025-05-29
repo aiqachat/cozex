@@ -82,9 +82,13 @@ trait Signer
     private static function getCanonicalHeaders(HttpRequest &$request, &$signedHeaders, array &$signedHeader)
     {
         $canonicalHeaders = '';
+        $contentSha256 = '';
         ksort($request->headers);
         foreach ($request->headers as $key => $val) {
             $lowerKey = strtolower($key);
+            if($lowerKey === Constant::HeaderContentSHA256){
+                $contentSha256 = $val;
+            }
             if ($lowerKey !== Constant::HeaderHostLower && $lowerKey !== Constant::HeaderContentTypeLower &&
                 strpos($lowerKey, Constant::HeaderPrefix) !== 0) {
                 continue;
@@ -94,10 +98,10 @@ trait Signer
             $canonicalHeaders .= $lowerKey . ':' . trim(strval($val)) . "\n";
         }
         $signedHeaders = substr($signedHeaders, 0, strlen($signedHeaders) - 1);
-        return $canonicalHeaders;
+        return [$canonicalHeaders, $contentSha256];
     }
 
-    private static function getCanonicalRequest(HttpRequest &$request, $canonicalHeaders = '', &$signedHeaders = '', $query = false)
+    private static function getCanonicalRequest(HttpRequest &$request, $canonicalHeaders = '', &$signedHeaders = '', $query = false, $contentSha256='')
     {
         $canonicalRequest = strtoupper($request->method) . "\n";
         $canonicalRequest .= '/';
@@ -127,16 +131,19 @@ trait Signer
             $canonicalRequest .= "\n";
         } else {
             $signedHeaders = '';
-            ksort($request->headers);
+            $headers = [];
             foreach ($request->headers as $key => $val) {
-                $lowerKey = strtolower($key);
-                if ($lowerKey !== Constant::HeaderHostLower && $lowerKey !== Constant::HeaderContentTypeLower &&
-                    strpos($lowerKey, Constant::HeaderPrefix) !== 0) {
+                $headers[strtolower($key)] = $val;
+            }
+            ksort($headers);
+            foreach ($headers as $key => $val) {
+                if ($key !== Constant::HeaderHostLower && $key !== Constant::HeaderContentTypeLower &&
+                    strpos($key, Constant::HeaderPrefix) !== 0) {
                     continue;
                 }
 
-                $signedHeaders .= $lowerKey . ';';
-                $canonicalRequest .= $lowerKey . ':' . trim(strval($val)) . "\n";
+                $signedHeaders .= $key . ';';
+                $canonicalRequest .= $key . ':' . trim(strval($val)) . "\n";
             }
             $canonicalRequest .= "\n";
             $signedHeaders = substr($signedHeaders, 0, strlen($signedHeaders) - 1);
@@ -145,12 +152,13 @@ trait Signer
         $canonicalRequest .= $signedHeaders;
         $canonicalRequest .= "\n";
 
-        if ($query) {
+        if($contentSha256){
+            $canonicalRequest .= $contentSha256;
+        }else if ($query) {
             $canonicalRequest .= self::$unsignedPayload;
         } else {
             $canonicalRequest .= self::$emptyHashPayload;
         }
-
         return $canonicalRequest;
     }
 }

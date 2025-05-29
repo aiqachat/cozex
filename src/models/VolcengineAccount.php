@@ -6,9 +6,11 @@ namespace app\models;
  * This is the model class for table "{{%volcengine_account}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property string $name
  * @property string $app_id
  * @property string $access_token  访问token
+ * @property int $is_default  1：是默认账户
  * @property int $is_delete
  * @property string $created_at
  * @property string $updated_at
@@ -31,8 +33,8 @@ class VolcengineAccount extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['access_token', 'created_at', 'updated_at',], 'required'],
-            [['is_delete'], 'integer'],
+            [['mall_id', 'access_token', 'created_at', 'updated_at',], 'required'],
+            [['is_delete', 'is_default'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['access_token', 'name', 'app_id'], 'string'],
         ];

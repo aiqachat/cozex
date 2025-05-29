@@ -14,6 +14,12 @@ use yii\validators\Validator;
 
 class DomainValidator extends Validator
 {
+    public $pattern = '/^'
+        . '[-a-zA-Z0-9\x{4e00}-\x{9fa5}]{1,64}'
+        . '(\.[-a-zA-Z0-9\x{4e00}-\x{9fa5}]{1,64}){1,4}'
+        . '(\:[0-9]{1,5}){0,1}'
+        . '$/u';
+
     public function validateAttribute($model, $attribute)
     {
         $result = $this->validateValue($model->$attribute);
@@ -27,12 +33,7 @@ class DomainValidator extends Validator
         if ($value === null || $value === '') {
             return ['域名不能为空。', []];
         }
-        $pattern = '/^'
-            . '[-a-zA-Z0-9\x{4e00}-\x{9fa5}]{1,64}'
-            . '(\.[-a-zA-Z0-9\x{4e00}-\x{9fa5}]{1,64}){1,4}'
-            . '(\:[0-9]{1,5}){0,1}'
-            . '$/u';
-        if ($value && !preg_match($pattern, $value)) {
+        if ($value && !preg_match($this->pattern, $value)) {
             return ['域名格式不正确。', []];
         }
         return null;

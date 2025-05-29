@@ -51,14 +51,17 @@ class MegaTtsUpload extends Base
         'pt' => 5,
     ];
 
-    const languages = [
-        ['id' => 'cn', 'name' => '中文'],
-        ['id' => 'en', 'name' => '英文'],
-        ['id' => 'ja', 'name' => '日语'],
-        ['id' => 'es', 'name' => '西班牙语'],
-        ['id' => 'id', 'name' => '印尼语'],
-        ['id' => 'pt', 'name' => '葡萄牙语'],
-    ];
+    public static function languageList()
+    {
+        return [
+            ['id' => 'cn', 'name' => \Yii::t('voice', '中文')],
+            ['id' => 'en', 'name' => \Yii::t('voice', '英语')],
+            ['id' => 'ja', 'name' => \Yii::t('voice', '日语')],
+            ['id' => 'es', 'name' => \Yii::t('voice', '西班牙语')],
+            ['id' => 'id', 'name' => \Yii::t('voice', '印尼语')],
+            ['id' => 'pt', 'name' => \Yii::t('voice', '葡萄牙语')],
+        ];
+    }
 
     public function getMethodName()
     {

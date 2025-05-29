@@ -48,17 +48,14 @@ class RequestForm extends BaseObject
             }
             $queryParams['Action'] = $this->object->action;
             $queryParams['Version'] = $this->object->version;
-            $query = '';
-            ksort($queryParams);
-            foreach ($queryParams as $k => $v) {
-                $query .= rawurlencode($k) . '=' . rawurlencode($v) . '&';
-            }
-            $query = substr($query, 0, -1);
+            $path = '/';
             // 组装请求头
-            $header = $this->object->getHeader($this->secretId, $this->secretKey, $httpBody, $query);
-            $url = 'https://' . $this->object->host . "/" . ($query ? "?{$query}" : '');
+            $header = $this->object->getHeader($this->secretId, $this->secretKey, $httpBody, $path, $queryParams);
             $res = $this->getClient ($header)
-                ->post ($url, ['body' => $httpBody]);
+                ->request($this->object->method, 'https://' . $this->object->host . $path, [
+                    'query' => http_build_query($queryParams),
+                    'body' => $httpBody
+                ]);
             $body = $res->getBody()->getContents();
         }catch (\Exception $e){
             if ($e instanceof RequestException && $e->hasResponse()) {

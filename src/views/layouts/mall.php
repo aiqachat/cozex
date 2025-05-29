@@ -22,9 +22,12 @@ if (!Yii::$app->user->isGuest) {
     }
 }
 $currentRoute = Yii::$app->controller->route;
-$indSetting = (new ConfigForm())->config();
-$siteName = $indSetting['name'];
-$coze_set = (new IndexForm())->page();
+try {
+    $indSetting = (new ConfigForm())->config ();
+    $siteName = $indSetting['name'];
+    $coze_html = (new IndexForm())->page();
+}catch (\Exception $e){}
+$adminSetting = (new \app\forms\admin\ConfigForm())->config();
 ?>
 <?php $this->beginPage(); ?>
     <!DOCTYPE html>
@@ -35,10 +38,11 @@ $coze_set = (new IndexForm())->page();
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
         <meta name="format-detection" content="telephone=no,email=no,address=no">
-        <title><?= $siteName ?></title>
+        <title><?= $siteName ?? '' ?></title>
         <link rel="stylesheet" href="<?= Yii::$app->request->baseUrl ?>/statics/unpkg/element-ui@2.12.0/lib/theme-chalk/index.css">
         <link rel="stylesheet" href="<?= Yii::$app->request->baseUrl ?>/statics/css/flex.css">
         <link rel="stylesheet" href="<?= Yii::$app->request->baseUrl ?>/statics/css/common.css">
+        <link rel="stylesheet" href="<?= Yii::$app->request->baseUrl ?>/statics/svg/bootstrap-icons.min.css"><!-- icon地址：https://icons.getbootstrap.com/ -->
         <link href="//at.alicdn.com/t/font_353057_qq5xo4ymtf.css" rel="stylesheet">
         <link href="//at.alicdn.com/t/font_1861175_6hlb1v8lw9r.css" rel="stylesheet">
         <link href="<?= Yii::$app->request->baseUrl ?>/../favicon.ico" mce_href="<?= Yii::$app->request->baseUrl ?>/../favicon.ico" rel="shortcut icon"/>
@@ -51,16 +55,17 @@ $coze_set = (new IndexForm())->page();
         <script>
             let _layout = null;
             let _aside = null;
-            const _csrf = '<?=Yii::$app->request->csrfToken?>';
+            let _csrf = '<?=Yii::$app->request->csrfToken?>';
             const _scriptUrl = '<?=Yii::$app->request->scriptUrl?>';
             const _baseUrl = '<?= \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl ?>';
             const _requestRoute = '<?=Yii::$app->requestedRoute?>';
             let _isAdmin = <?=$isAdmin ? 'true' : 'false'?>;
             let _isSuperAdmin = <?=$isSuperAdmin ? 'true' : 'false'?>;
+            setInterval(function () {
+                _csrf = '<?=Yii::$app->request->csrfToken?>';
+            }, 60000);
         </script>
         <script src="<?= Yii::$app->request->baseUrl ?>/statics/js/common.js?v=4.3.2"></script>
-        <script src="<?= Yii::$app->request->baseUrl ?>/statics/js/dayjs.min.js"></script>
-        <script src="<?= Yii::$app->request->baseUrl ?>/statics/js/echarts.min.js"></script>
         <style>
             /* https://github.com/ElemeFE/element/pull/15359 */
             .el-input .el-input__count .el-input__count-inner {
@@ -310,6 +315,16 @@ $coze_set = (new IndexForm())->page();
                 margin-right: 5px;
             }
 
+            .el-footer {
+                color: #ACACAC;
+                text-align: center;
+                line-height: 50px;
+            }
+
+            .el-footer a {
+                color: #909399;
+                text-decoration: none;
+            }
         </style>
     </head>
     <body>
@@ -400,6 +415,12 @@ $coze_set = (new IndexForm())->page();
                 <main class="el-main" style="background: #f3f3f3;display:flex;flex-direction: row;">
                     <?= $content ?>
                 </main>
+                <footer class="el-footer">
+                    <?php if (!empty($adminSetting['copyright'])) : ?>
+                        <a style="color: #000;" href="<?= $adminSetting['copyright_url'] ?? '' ?>"
+                           target="_blank"><?= $adminSetting['copyright'] ?></a>
+                    <?php endif; ?>
+                </footer>
             </div>
         </div>
     </div>
@@ -466,7 +487,7 @@ $coze_set = (new IndexForm())->page();
                     let self = this;
                     this.$request({
                         params: {
-                            r: 'mall/menus/index'
+                            r: 'netb/menus/index'
                         },
                         method: 'post',
                         data: {
@@ -533,12 +554,6 @@ $coze_set = (new IndexForm())->page();
                             }
                         }
                         navigateTo(args)
-
-                        // if (menu.route.indexOf('plugin/') != -1 && menu.route != 'mall/plugin/index') {
-                        //     navigateTo(args, true)
-                        // } else {
-                        //     navigateTo(args)
-                        // }
                     }
                 },
                 setMenus() {
@@ -672,23 +687,13 @@ $coze_set = (new IndexForm())->page();
         new Vue({el: '#_header'});
     </script>
 
-    <?php if (!empty($coze_set['bot_id'])) : ?>
-        <script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/<?= $coze_set['version'] ?>/libs/cn/index.js"></script>
-        <script>
-            new CozeWebSDK.WebChatClient({
-                config: {
-                    bot_id: '<?= $coze_set['bot_id'] ?>',
-                },
-                componentProps: {
-                    title: '<?= $coze_set['title'] ?>',
-                    icon: '<?= $coze_set['icon'] ?>',
-                    lang: '<?= $coze_set['lang'] ?>',
-                    layout: '<?= $coze_set['layout'] ?>',
-                    width:  <?php if(!$coze_set['width']):?> null <?php else:?><?=$coze_set['width']?><?php endif;?>,
-                },
-            });
-        </script>
+    <?php if (!empty($coze_html)) : ?>
+        <?= $coze_html ?>
     <?php endif; ?>
+
+    <div style="display: none">
+        <?= $adminSetting['ai_code'] ?? '' ?>
+    </div>
 
     <?php $this->endBody() ?>
     </body>

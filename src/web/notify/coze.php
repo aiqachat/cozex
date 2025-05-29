@@ -1,6 +1,6 @@
 <?php
 
-$_GET['r'] = 'notify/coze';
+$_GET['r'] = 'system/notify/coze';
 
 error_reporting(E_ALL);
 

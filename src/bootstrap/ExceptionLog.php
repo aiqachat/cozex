@@ -48,7 +48,13 @@ class ExceptionLog
     public function create($title, array $content, $level)
     {
         try {
+            $mallId = \Yii::$app->mall->id;
+        } catch (\Exception $e) {
+            $mallId = 0;
+        }
+        try {
             $log = new CoreExceptionLog();
+            $log->mall_id = $mallId;
             $log->level = $level;
             $log->title = $title;
             $log->content = \Yii::$app->serializer->encode($content);

@@ -25,44 +25,41 @@ abstract class Basics
         $this->setIdent();
     }
 
-    public function getHeader($ak, $sk, $body, $query, $path = null): array
+    public function getHeader($ak, $sk, $body, $path, $query = []): array
     {
-        if (!$path) {
-            $path = '/';
-        }
-        $headers = [];
-
-        $ldt = gmdate('Ymd\THis\Z');
-        $sdt = substr($ldt, 0, 8);
-        $headers['X-Date'] = $ldt;
-
-        $bodyHash = hash('sha256', $body);
-        $headers['X-Content-Sha256'] = $bodyHash;
-
-        $signedHeaders = [];
-        foreach ($headers as $key => $value) {
-            $signedHeaders[strtolower($key)] = $value;
-        }
-        ksort($signedHeaders);
-
-        $signed_str = '';
-        foreach ($signedHeaders as $k => $v) {
-            $signed_str .= $k . ':' . $v . "\n";
-        }
-
-        $credentialScope = "$sdt/$this->region/$this->service/request";
-        $signedHeadersString = implode(';', array_keys($signedHeaders));
-        $canon = implode("\n", array($this->method, $path, $query, $signed_str, $signedHeadersString, $bodyHash));
-        $hash = hash('sha256', $canon);
-        $toSign = implode("\n", array("HMAC-SHA256", $ldt, $credentialScope, $hash));
-        $dateKey = hash_hmac('sha256', $sdt, $sk, true);
-        $regionKey = hash_hmac('sha256', $this->region, $dateKey, true);
-        $serviceKey = hash_hmac('sha256', $this->service, $regionKey, true);
-        $signingKey = hash_hmac('sha256', 'request', $serviceKey, true);
-        $signature = hash_hmac('sha256', $toSign, $signingKey);
-        $credential = $ak . '/' . $credentialScope;
-        $headers['Authorization'] = "HMAC-SHA256 Credential={$credential}, SignedHeaders={$signedHeadersString}, Signature={$signature}";
-        return $headers;
+        $contentType = 'application/json';
+        $header = [];
+        // 初始化签名结果的结构体
+        $xDate = gmdate('Ymd\THis\Z');
+        $shortXDate = substr($xDate, 0, 8);
+        $xContentSha256 = hash('sha256', $body);
+        $signResult = [
+            'Host' => $this->host,
+            'X-Content-Sha256' => $xContentSha256,
+            'X-Date' => $xDate,
+            'Content-Type' => $contentType
+        ];
+        // 第四步：计算 Signature 签名。
+        $signedHeaderStr = join(';', ['content-type', 'host', 'x-content-sha256', 'x-date']);
+        $canonicalRequestStr = join("\n", [
+            $this->method,
+            $path,
+            http_build_query($query),
+            join("\n", ['content-type:' . $contentType, 'host:' . $this->host, 'x-content-sha256:' . $xContentSha256, 'x-date:' . $xDate]),
+            '',
+            $signedHeaderStr,
+            $xContentSha256
+        ]);
+        $hashedCanonicalRequest = hash("sha256", $canonicalRequestStr);
+        $credentialScope = join('/', [$shortXDate, $this->region, $this->service, 'request']);
+        $stringToSign = join("\n", ['HMAC-SHA256', $xDate, $credentialScope, $hashedCanonicalRequest]);
+        $kDate = hash_hmac("sha256", $shortXDate, $sk, true);
+        $kRegion = hash_hmac("sha256", $this->region, $kDate, true);
+        $kService = hash_hmac("sha256", $this->service, $kRegion, true);
+        $kSigning = hash_hmac("sha256", 'request', $kService, true);
+        $signature = hash_hmac("sha256", $stringToSign, $kSigning);
+        $signResult['Authorization'] = sprintf("HMAC-SHA256 Credential=%s, SignedHeaders=%s, Signature=%s", $ak . '/' . $credentialScope, $signedHeaderStr, $signature);
+        return array_merge($header, $signResult);
     }
 
     public function getAttribute(): array

@@ -47,6 +47,10 @@ class PreSignedURLInput
      * @var string
      */
     private $alternativeEndpoint;
+    /**
+     * @var bool|null
+     */
+    private $isCustomDomain = null;
 
     /**
      * @param string $httpMethod
@@ -172,6 +176,22 @@ class PreSignedURLInput
     public function setAlternativeEndpoint($alternativeEndpoint)
     {
         $this->alternativeEndpoint = $alternativeEndpoint;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isCustomDomain()
+    {
+        return $this->isCustomDomain;
+    }
+
+    /**
+     * @param bool|null $isCustomDomain
+     */
+    public function setCustomDomain($isCustomDomain)
+    {
+        $this->isCustomDomain = $isCustomDomain;
     }
 
 }

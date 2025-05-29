@@ -46,6 +46,7 @@ class ListForm extends Model
         $query = Knowledge::find()->where([
             'is_delete' => 0,
             'account_id' => $this->account_id,
+            'mall_id' => \Yii::$app->mall->id
         ]);
         if ($this->keyword) {
             $query->andWhere(['or', ['like', 'name', $this->keyword]]);
@@ -72,7 +73,7 @@ class ListForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = Knowledge::findOne($this->id);
+        $model = Knowledge::find()->where(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id])->one();
         if(!$model){
             return [
                 'code' => ApiCode::CODE_ERROR,

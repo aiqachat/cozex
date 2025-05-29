@@ -8,6 +8,7 @@ use Yii;
  * This is the model class for table "{{%core_action_log}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property int $user_id 操作人ID
  * @property string $model 模型名称
  * @property int $model_id 模型ID
@@ -36,7 +37,7 @@ class CoreActionLog extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'model_id', 'before_update', 'after_update', 'created_at'], 'required'],
+            [['mall_id', 'user_id', 'model_id', 'before_update', 'after_update', 'created_at'], 'required'],
             [['user_id', 'model_id', 'is_delete'], 'integer'],
             [['before_update', 'after_update', 'model'], 'string'],
             [['created_at'], 'safe'],

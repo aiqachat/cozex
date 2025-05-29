@@ -78,10 +78,10 @@
                         return 'text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
                     }
                     if (this.type === 2) {
-                        return 'image/png,image/jpeg,image/jpeg';
+                        return 'image/png,image/jpeg';
                     }
                     if (this.type === 3) {
-                        return 'audio/wav,audio/mp3,audio/mp4a-latm,audio/mpeg';
+                        return 'audio/wav,audio/mp3,audio/mp4a-latm,audio/x-m4a,audio/mpeg';
                     }
                     return '*/*';
                 },

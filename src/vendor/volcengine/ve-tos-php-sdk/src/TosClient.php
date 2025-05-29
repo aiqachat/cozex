@@ -727,25 +727,27 @@ class TosClient
         } else {
             $input = $args[0];
         }
+
         $transFn = 'trans' . $method . 'Input';
         $parseFn = 'parse' . $method . 'Output';
+        $request = null;
         if (is_callable(__CLASS__ . '::' . $transFn) && is_callable(__CLASS__ . '::' . $parseFn)) {
             $body = null;
             $closeBody = false;
             try {
                 if ($method === 'GetObjectToFile') {
-                    list($request, $filePath, $doMkdir, $bucket, $key) = self::$transFn($input);
+                    list($request, $filePath, $doMkdir, $bucket, $key) = self::$transFn($input, $this->cp);
                     $response = $this->doRequest($request, !$doMkdir && $input->isStreamMode());
                     return self::$parseFn($response, $filePath, $doMkdir, $bucket, $key, $input->isStreamMode());
                 }
 
                 if ($method === 'GetObject') {
-                    $request = self::$transFn($input);
+                    $request = self::$transFn($input, $this->cp);
                     $response = $this->doRequest($request, $input->isStreamMode());
                     return self::$parseFn($response, $input->isStreamMode());
                 }
 
-                $request = self::$transFn($input);
+                $request = self::$transFn($input, $this->cp);
                 if ($method === 'PutObjectFromFile' || $method === 'UploadPartFromFile') {
                     $closeBody = true;
                 } else if ($method === 'PutObject' || $method === 'AppendObject' || $method === 'UploadPart') {
@@ -766,9 +768,17 @@ class TosClient
             } catch (TosServerException $ex) {
                 throw $ex;
             } catch (TransferException $ex) {
-                throw new TosClientException(sprintf('do http request for %s error, %s', $this->cp->getEndpoint($request->bucket, $request->key), $ex->getMessage()), $ex);
+                if($request){
+                    throw new TosClientException(sprintf('do http request for %s error, %s', $this->cp->getEndpoint($request->bucket, $request->key, '', '', true), $ex->getMessage()), $ex);
+                }else{
+                    throw new TosClientException(sprintf('do http request error, %s', $ex->getMessage()), $ex);
+                }
             } catch (GuzzleException $ex) {
-                throw new TosClientException(sprintf('do http request for %s error, %s', $this->cp->getEndpoint($request->bucket, $request->key), $ex->getMessage()), $ex);
+                if($request){
+                    throw new TosClientException(sprintf('do http request for %s error, %s', $this->cp->getEndpoint($request->bucket, $request->key, '', '', true), $ex->getMessage()), $ex);
+                }else{
+                    throw new TosClientException(sprintf('do http request error, %s', $ex->getMessage()), $ex);
+                }
             } catch (\Exception $ex) {
                 throw new TosClientException(sprintf('unknown error, %s', $ex->getMessage()), $ex);
             } finally {
@@ -837,7 +847,7 @@ class TosClient
         $headers = $request->headers;
         $headers[Constant::HeaderUserAgent] = $this->cp->getUserAgent();
         $headers[Constant::HeaderConnection] = 'Keep-Alive';
-        $requestUri = $this->cp->getEndpoint($request->bucket, $request->key);
+        $requestUri = $this->cp->getEndpoint($request->bucket, $request->key, '', '', true);
         $queries = $request->queries;
         $body = $request->body;
 
@@ -906,9 +916,9 @@ class TosClient
                 $request->headers = [];
             }
 
-            $request->headers[Constant::HeaderHost] = $this->cp->getHost($request->bucket, $domain);
+            $request->headers[Constant::HeaderHost] = $this->cp->getHost($request->bucket, $domain, $input->isCustomDomain());
             $signedHeaders = null;
-            $canonicalHeaders = self::getCanonicalHeaders($request, $signedHeaders, $signedHeader);
+            list($canonicalHeaders, $contentSha256) = self::getCanonicalHeaders($request, $signedHeaders, $signedHeader);
 
             $longDate = null;
             $shortDate = null;
@@ -924,14 +934,14 @@ class TosClient
             if ($securityToken = $this->cp->getSecurityToken()) {
                 $request->queries['X-Tos-Security-Token'] = $securityToken;
             }
-            $canonicalRequest = self::getCanonicalRequest($request, $canonicalHeaders, $signedHeaders, true);
+            $canonicalRequest = self::getCanonicalRequest($request, $canonicalHeaders, $signedHeaders, true, $contentSha256);
 
             $stringToSign = self::getStringToSign($canonicalRequest, $longDate, $credentialScope);
             $signature = self::getSignature($stringToSign, $shortDate, $sk, $region);
             $request->queries['X-Tos-Signature'] = rawurlencode($signature);
         }
 
-        $signedUrl = $this->cp->getEndpoint($request->bucket, $request->key, $schema, $domain, true);
+        $signedUrl = $this->cp->getEndpoint($request->bucket, $request->key, $schema, $domain, true, $input->isCustomDomain());
         if (count($request->queries) > 0) {
             $signedUrl .= '?';
             if (count($signedHeader) > 0) {

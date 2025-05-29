@@ -1,10 +1,12 @@
 <?php
+
 namespace GuzzleHttp\Command\Guzzle\RequestLocation;
 
 use GuzzleHttp\Command\CommandInterface;
 use GuzzleHttp\Command\Guzzle\Operation;
 use GuzzleHttp\Command\Guzzle\Parameter;
 use GuzzleHttp\Psr7;
+use GuzzleHttp\Utils;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 
@@ -22,7 +24,7 @@ class JsonLocation extends AbstractLocation
     /**
      * @param string $locationName Name of the location
      * @param string $contentType  Content-Type header to add to the request if
-     *     JSON is added to the body. Pass an empty string to omit.
+     *                             JSON is added to the body. Pass an empty string to omit.
      */
     public function __construct($locationName = 'json', $contentType = 'application/json')
     {
@@ -31,10 +33,6 @@ class JsonLocation extends AbstractLocation
     }
 
     /**
-     * @param CommandInterface $command
-     * @param RequestInterface $request
-     * @param Parameter        $param
-     *
      * @return RequestInterface
      */
     public function visit(
@@ -47,14 +45,10 @@ class JsonLocation extends AbstractLocation
             $param
         );
 
-        return $request->withBody(Psr7\stream_for(\GuzzleHttp\json_encode($this->jsonData)));
+        return $request->withBody(Psr7\Utils::streamFor(Utils::jsonEncode($this->jsonData)));
     }
 
     /**
-     * @param CommandInterface $command
-     * @param RequestInterface $request
-     * @param Operation        $operation
-     *
      * @return MessageInterface
      */
     public function after(
@@ -80,6 +74,6 @@ class JsonLocation extends AbstractLocation
             $request = $request->withHeader('Content-Type', $this->jsonContentType);
         }
 
-        return $request->withBody(Psr7\stream_for(\GuzzleHttp\json_encode($data)));
+        return $request->withBody(Psr7\Utils::streamFor(Utils::jsonEncode($data)));
     }
 }

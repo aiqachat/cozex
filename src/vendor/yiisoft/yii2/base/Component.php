@@ -190,7 +190,11 @@ class Component extends BaseObject
             $name = trim(substr($name, 3));
             if ($value instanceof Behavior) {
                 $this->attachBehavior($name, $value);
-            } elseif (isset($value['class']) && is_subclass_of($value['class'], Behavior::class, true)) {
+            } elseif ($value instanceof \Closure) {
+                $this->attachBehavior($name, call_user_func($value));
+            } elseif (isset($value['__class']) && is_subclass_of($value['__class'], Behavior::class)) {
+                $this->attachBehavior($name, Yii::createObject($value));
+            } elseif (!isset($value['__class']) && isset($value['class']) && is_subclass_of($value['class'], Behavior::class)) {
                 $this->attachBehavior($name, Yii::createObject($value));
             } elseif (is_string($value) && is_subclass_of($value, Behavior::class, true)) {
                 $this->attachBehavior($name, Yii::createObject($value));

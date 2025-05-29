@@ -28,6 +28,16 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->redirect(\Yii::$app->urlManager->createUrl(['mall/statistic/index']));
+        $baseName = pathinfo(\Yii::$app->request->scriptUrl, PATHINFO_BASENAME);
+        if($baseName == "index.php"){
+            return '';
+        }
+        return $this->redirect(\Yii::$app->urlManager->createUrl(['admin/index/index']));
+    }
+
+    public function actionQrCode()
+    {
+        $url = urldecode(\Yii::$app->request->get("url"));
+        \QRcode::png($url);
     }
 }

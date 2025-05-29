@@ -6,6 +6,7 @@ namespace app\models;
  * This is the model class for table "{{%knowledge_file}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property string $document_id  文档id
  * @property string $name
  * @property string $content
@@ -31,7 +32,7 @@ class KnowledgeFile extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['created_at', 'updated_at', 'knowledge_id', 'document_id'], 'required'],
+            [['mall_id', 'created_at', 'updated_at', 'knowledge_id', 'document_id'], 'required'],
             [['is_delete', 'knowledge_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'content', 'document_id'], 'string'],

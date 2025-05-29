@@ -6,6 +6,7 @@ namespace app\models;
  * This is the model class for table "{{%coze_account}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property string $name
  * @property string $remark
  * @property string $client_id
@@ -35,7 +36,7 @@ class CozeAccount extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['coze_secret', 'created_at', 'updated_at',], 'required'],
+            [['mall_id', 'coze_secret', 'created_at', 'updated_at',], 'required'],
             [['is_delete', 'type', 'expires_in'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['coze_secret', 'name', 'remark', 'client_id', 'client_secret', 'refresh_token'], 'string'],

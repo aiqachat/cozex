@@ -11,6 +11,9 @@
 namespace app\controllers\api;
 
 use app\controllers\api\filters\LoginFilter;
+use app\forms\api\user\UserEditForm;
+use app\forms\api\user\UserInfoForm;
+use app\forms\api\volcengine\IndexForm;
 
 class UserController extends ApiController
 {
@@ -19,8 +22,26 @@ class UserController extends ApiController
         return array_merge(parent::behaviors(), [
             'login' => [
                 'class' => LoginFilter::class,
-                'ignore' => ['config']
             ],
         ]);
+    }
+
+    public function actionUserInfo()
+    {
+        $form = new UserInfoForm();
+        return $form->getInfo();
+    }
+
+    public function actionUpdateUser()
+    {
+        $form = new UserEditForm();
+        $form->attributes = \Yii::$app->request->post();
+        return $form->update();
+    }
+
+    public function actionVolcengineAccount()
+    {
+        $form = new IndexForm();
+        return $this->asJson($form->getVolcengineAccount());
     }
 }

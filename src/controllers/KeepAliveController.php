@@ -10,7 +10,7 @@
 
 namespace app\controllers;
 
-use app\controllers\mall\behaviors\LoginFilter;
+use app\controllers\behaviors\LoginFilter;
 
 class KeepAliveController extends Controller
 {

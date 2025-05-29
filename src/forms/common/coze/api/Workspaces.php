@@ -9,6 +9,7 @@ namespace app\forms\common\coze\api;
 
 use app\forms\common\coze\Base;
 
+// https://www.coze.cn/open/docs/developer_guides/list_workspace
 class Workspaces extends Base
 {
     /** @var int 分页查询时的页码。默认为 1 */

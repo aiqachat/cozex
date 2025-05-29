@@ -50,7 +50,7 @@ class SoundReprintForm extends Model
             return $this->getErrorResponse();
         }
         try {
-            $account = VolcengineAccount::findOne ($this->account_id);
+            $account = VolcengineAccount::findOne (['id' => $this->account_id, 'mall_id' => \Yii::$app->mall->id]);
             if (!$account) {
                 throw new \Exception('账号不存在');
             }

@@ -5,7 +5,7 @@
  * author: wstianxia
  */
 
-$urlManager = Yii::$app->urlManager->createUrl('mall/statistic/index');
+$urlManager = Yii::$app->urlManager->createUrl('netb/statistic/index');
 ?>
 
 <style>

@@ -54,4 +54,38 @@ class WebApplication extends \yii\web\Application
         }
         \Yii::$app->set('db', $db);
     }
+
+    public function setSessionMallId($id)
+    {
+        if (!is_numeric($id)) {
+            return;
+        }
+        $key1 = md5('Mall_Id_Key_1_' . date('Ym'));
+        $value1 = base64_encode(\Yii::$app->security->encryptByPassword($id, 'key' . $key1));
+        $this->getSession()->set($key1, $value1);
+    }
+
+    public function getSessionMallId($defaultValue = null)
+    {
+        $key1 = md5('Mall_Id_Key_1_' . date('Ym'));
+        $encodeDataBase64 = $this->getSession()->get($key1);
+        if ($encodeDataBase64 === null) {
+            return $defaultValue;
+        }
+        $encodeData = base64_decode($encodeDataBase64);
+        if (!$encodeData) {
+            return $defaultValue;
+        }
+        $value = \Yii::$app->security->decryptByPassword($encodeData, 'key' . $key1);
+        if (!$value) {
+            return $defaultValue;
+        }
+        return $value;
+    }
+
+    public function removeSessionMallId()
+    {
+        $key1 = md5('Mall_Id_Key_1_' . date('Ym'));
+        \Yii::$app->session->remove($key1);
+    }
 }

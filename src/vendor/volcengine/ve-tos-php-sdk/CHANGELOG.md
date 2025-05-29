@@ -1,5 +1,11 @@
 # ChangeLog of TOS SDK for PHP
 
+## 版本号：v2.1.12 日期：2025-01-10
+
+### 变更内容
+
+- 客户端初始化参数新增 isCustomDomain
+
 ## 版本号：v2.1.11 日期：2024-06-28
 
 ### 变更内容
@@ -20,7 +26,7 @@
     - PutObjectTagging
     - GetObjectTagging
     - DeleteObjectTagging
-- 客户端初始化参数新增 AutoRecognizeContentType
+- 客户端初始化参数新增 autoRecognizeContentType
 
 ## 版本号：v2.1.8 日期：2023-09-26
 

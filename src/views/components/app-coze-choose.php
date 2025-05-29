@@ -4,6 +4,7 @@
  * @link https://www.netbcloud.com/
  * Created by IntelliJ IDEA
  */
+$mallId = Yii::$app->mall->id;
 ?>
 <style>
     .space_img{
@@ -62,7 +63,7 @@ Vue.component('app-coze-choose', {
             loading: false,
             account: [],
             space: [],
-            cookieName: 'cozex-account-choose',
+            cookieName: 'cozex-account-choose-' + '<?=$mallId?>',
         }
     },
     watch: {
@@ -99,7 +100,7 @@ Vue.component('app-coze-choose', {
             this.loading = true;
             request({
                 params: {
-                    r: 'mall/index/coze-account',
+                    r: 'netb/index/coze-account',
                 },
                 method: 'get',
             }).then(e => {
@@ -126,7 +127,7 @@ Vue.component('app-coze-choose', {
             this.loading = true;
             request({
                 params: {
-                    r: 'mall/index/coze-space',
+                    r: 'netb/index/coze-space',
                     id: this.search.account_id
                 },
                 method: 'get',

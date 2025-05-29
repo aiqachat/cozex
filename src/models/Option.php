@@ -6,6 +6,7 @@ namespace app\models;
  * This is the model class for table "{{%option}}".
  *
  * @property int $id
+ * @property int $mall_id
  * @property string $group
  * @property string $name
  * @property string $value
@@ -31,7 +32,7 @@ class Option extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['name', 'value', 'created_at', 'updated_at',], 'required'],
+            [['mall_id', 'name', 'value', 'created_at', 'updated_at',], 'required'],
             [['created_at', 'updated_at'], 'safe'],
             [['value'], 'string'],
             [['group', 'name'], 'string', 'max' => 255],

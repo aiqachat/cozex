@@ -9,12 +9,13 @@ use Yii;
  *
  * @property int $id
  * @property int $user_id
- * @property int $app_max_count 创建小程序最大数量
+ * @property int $app_max_count 创建最大数量
  * @property string $permissions 账户权限
  * @property string $remark 备注
  * @property string $is_delete 是否删除
  * @property string $expired_at 账户过期时间
- * @property int $is_default 是否使用默认权限
+ * @property string $secondary_permissions 二级权限
+ * @property string $mobile
  * @property User $user
  * @property UserIdentity $identity
  */
@@ -35,8 +36,8 @@ class AdminInfo extends ModelActiveRecord
     {
         return [
             [['user_id', 'permissions'], 'required'],
-            [['user_id', 'app_max_count', 'is_delete', 'is_default'], 'integer'],
-            [['permissions'], 'string'],
+            [['user_id', 'app_max_count', 'is_delete'], 'integer'],
+            [['permissions', 'secondary_permissions', 'mobile'], 'string'],
             [['expired_at'], 'safe'],
             [['remark'], 'string', 'max' => 255],
         ];
@@ -53,9 +54,10 @@ class AdminInfo extends ModelActiveRecord
             'app_max_count' => 'App Max Count',
             'permissions' => '用户权限',
             'remark' => 'Remark',
+            'mobile' => 'mobile',
+            'secondary_permissions' => '二级权限',
             'is_delete' => 'Is Delete',
             'expired_at' => 'Expired At',
-            'is_default' => '是否使用默认权限',
         ];
     }
 

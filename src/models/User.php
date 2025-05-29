@@ -8,14 +8,13 @@ use yii\web\IdentityInterface;
  * This is the model class for table "{{%user}}".
  *
  * @property int $id
+ * @property int $mall_id
+ * @property string $uid
  * @property string $username
  * @property string $password
  * @property string $nickname
  * @property string $auth_key
  * @property string $access_token
- * @property string $mobile
- * @property string $email
- * @property string $unionid
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
@@ -23,6 +22,8 @@ use yii\web\IdentityInterface;
  * @property UserIdentity $identity
  * @property UserInfo $userInfo
  * @property AdminInfo $adminInfo
+ * @property UserPlatform $platform
+ * @property Mall[] $mall
  */
 class User extends ModelActiveRecord implements IdentityInterface
 {
@@ -43,12 +44,12 @@ class User extends ModelActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            [['is_delete'], 'integer'],
+            [['mall_id', 'is_delete'], 'integer'],
             [['username', 'password', 'auth_key', 'access_token'], 'required'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['username', 'unionid'], 'string', 'max' => 64],
+            [['username'], 'string', 'max' => 64],
             [['password', 'auth_key', 'access_token'], 'string', 'max' => 128],
-            [['nickname'], 'string', 'max' => 45],
+            [['nickname', 'uid'], 'string', 'max' => 45],
         ];
     }
 
@@ -59,17 +60,30 @@ class User extends ModelActiveRecord implements IdentityInterface
     {
         return [
             'id' => 'ID',
+            'uid' => 'uid',
             'username' => 'Username',
             'password' => 'Password',
             'nickname' => 'Nickname',
             'auth_key' => 'Auth Key',
             'access_token' => 'Access Token',
-            'unionid' => 'Unionid',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
             'deleted_at' => 'Deleted At',
             'is_delete' => 'Is Delete',
         ];
+    }
+
+    public function generateUid(){
+        if(!$this->id || $this->uid){
+            return;
+        }
+        $this->isLog = false;
+        $number = strval($this->id);
+        if(strlen($number) < 10) {
+            $number = str_pad("1", 10 - strlen($number), 0, STR_PAD_RIGHT).$number;
+        }
+        $this->uid = $number;
+        $this->save();
     }
 
     /**
@@ -125,7 +139,9 @@ class User extends ModelActiveRecord implements IdentityInterface
      */
     public function getIdentity()
     {
-        return $this->hasOne(UserIdentity::className(), ['user_id' => 'id']);
+        return $this->hasOne(UserIdentity::className(), ['user_id' => 'id'])
+            ->alias("userIdentity")
+            ->andWhere(['userIdentity.is_delete' => 0]);
     }
 
     public function getAdminInfo()
@@ -135,6 +151,41 @@ class User extends ModelActiveRecord implements IdentityInterface
 
     public function getUserInfo()
     {
-        return $this->hasOne(UserInfo::className(), ['user_id' => 'id']);
+        return $this->hasOne(UserInfo::className(), ['user_id' => 'id'])
+            ->alias("userInfo")
+            ->andWhere(['userInfo.is_delete' => 0]);
+    }
+
+    public function getMall()
+    {
+        return $this->hasMany(Mall::className(), ['user_id' => 'id']);
+    }
+
+    public function getPlatform()
+    {
+        return $this->hasOne(UserPlatform::className(), ['user_id' => 'id']);
+    }
+
+    const LOGIN_ADMIN = 'admin'; // 管理员和超管
+
+    public function setLoginData($loginType, $routeUrl = ''){
+        if($loginType != self::LOGIN_ADMIN){
+            \Yii::$app->setSessionMallId($this->mall_id);
+        }
+        setcookie('__login_role', $loginType);
+        setcookie('__login_token', $this->access_token);
+        if(!$routeUrl){
+            $routeUrl = \Yii::$app->requestedRoute;
+        }
+        setcookie('__login_route', $routeUrl);
+    }
+
+    public function clearLogin()
+    {
+        #设置cookie失效
+        setcookie('__login_role', '', time() - 3600);
+        setcookie('__login_token', '', time() - 3600);
+        setcookie('__login_route', '', time() - 3600);
+        \Yii::$app->removeSessionMallId();
     }
 }

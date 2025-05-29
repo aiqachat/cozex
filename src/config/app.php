@@ -1,8 +1,9 @@
 <?php
 
-$local = file_exists(__DIR__ . '/local.php') ? require(__DIR__ . '/local.php') : [];
-$params = file_exists(__DIR__ . '/params.php') ? require(__DIR__ . '/params.php') : [];
-$db = file_exists(__DIR__ . '/db.php') ? require(__DIR__ . '/db.php') : [
+$il8n = file_exists(__DIR__ . '/il8n.php') ? require (__DIR__ . '/il8n.php') : [];
+$local = file_exists(__DIR__ . '/local.php') ? require (__DIR__ . '/local.php') : [];
+$params = file_exists(__DIR__ . '/params.php') ? require (__DIR__ . '/params.php') : [];
+$db = file_exists(__DIR__ . '/db.php') ? require (__DIR__ . '/db.php') : [
     'host' => null,
     'port' => null,
     'dbname' => null,
@@ -10,17 +11,21 @@ $db = file_exists(__DIR__ . '/db.php') ? require(__DIR__ . '/db.php') : [
     'password' => null,
     'tablePrefix' => null,
 ];
+if (isset($local['queue'])) {
+    $local['queue1'] = $local['queue'];
+    $local['queue1']['channel'] = $local['queue']['channel'] . '_other';
+}
 
 $config = [
     'id' => 'wstx_mall',
     'basePath' => dirname(__DIR__),
     'language' => 'zh-CN',
     'timeZone' => 'Asia/Shanghai',
-    'bootstrap' => ['log', 'queue'],
+    'bootstrap' => ['log', 'queue', 'queue1'],
     'components' => [
         'cache' => $local['cache'] ?? [
-                'class' => 'yii\caching\FileCache',
-            ],
+            'class' => 'yii\caching\FileCache',
+        ],
         'db' => [
             'class' => 'yii\db\Connection',
             'dsn' => 'mysql:host=' . $db['host'] . ';port=' . $db['port'] . ';dbname=' . $db['dbname'],
@@ -45,16 +50,16 @@ $config = [
             },
         ],
         'log' => $local['log'] ?? [
-                'traceLevel' => YII_DEBUG ? 3 : 0,
-                'targets' => [
-                    [
-                        'class' => 'yii\log\FileTarget',
-                        'levels' => ['error', 'warning',],
-                        'logVars' => ['_GET', '_POST', '_FILES',],
-                        'logFile' => "@runtime/logs/" . date('Ym') . '/' . date("d") . "/app.log",
-                    ],
+            'traceLevel' => YII_DEBUG ? 3 : 0,
+            'targets' => [
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['error', 'warning',],
+                    'logVars' => ['_GET', '_POST', '_FILES',],
+                    'logFile' => "@runtime/logs/" . date('Ym') . '/' . date("d") . "/app.log",
                 ],
             ],
+        ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
             'viewPath' => '@app/bootstrap/mail',
@@ -73,22 +78,27 @@ $config = [
             'class' => \yii\mutex\MysqlMutex::class,
         ],
         'queue' => $local['queue'] ?? [
-                'class' => \yii\queue\db\Queue::class,
-                'tableName' => '{{%core_queue}}',
-            ],
+            'class' => \yii\queue\db\Queue::class,
+            'tableName' => '{{%core_queue}}',
+        ],
+        'queue1' => $local['queue1'] ?? [
+            'class' => \yii\queue\db\Queue::class,
+            'tableName' => '{{%core_queue}}',
+        ],
         'serializer' => [
             'class' => '\app\bootstrap\Serializer',
         ],
         'session' => $local['session'] ?? [
-                'name' => 'WS_SESSION_ID_110',
-                'class' => 'yii\web\DbSession',
-                'sessionTable' => '{{%core_session}}',
-            ],
+            'name' => 'WS_SESSION_ID_110',
+            'class' => 'yii\web\DbSession',
+            'sessionTable' => '{{%core_session}}',
+        ],
         'user' => [
             'class' => 'yii\web\User',
             'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
         ],
+        'i18n' => $il8n,
     ],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',

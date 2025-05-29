@@ -11,7 +11,7 @@ namespace app\forms\install;
 
 use app\bootstrap\response\ApiCode;
 use app\forms\common\CommonOption;
-use app\forms\mall\setting\QueueForm;
+use app\forms\QueueForm;
 use app\helpers\CurlHelper;
 use app\models\Model;
 use yii\db\Connection;
@@ -206,15 +206,15 @@ EOF;
 
             $userSql = <<<EOF
 INSERT INTO `{$this->tablePrefix}user`
- (`id`,`username`,`password`,`nickname`,`auth_key`,`access_token`,`mobile`)
+ (`id`,`mall_id`,`username`,`password`,`nickname`,`auth_key`,`access_token`)
 VALUES (
 1,
+0,
 '{$this->admin_username}',
 '{$password}',
 '{$this->admin_username}',
 '{$authKey}',
-'{$accessToken}',
-''
+'{$accessToken}'
 );
 EOF;
             $this->getDb()->createCommand($userSql)->execute();
@@ -247,8 +247,9 @@ EOF;
             $optionVersionKey = CommonOption::NAME_VERSION;
             $versionInfoSql = <<<EOF
 INSERT INTO `{$this->tablePrefix}option`
- (`name`,`value`)
+ (`mall_id`,`name`,`value`)
 VALUES (
+0,
 '{$optionVersionKey}',
 '{$optionVersionValue}'
 );

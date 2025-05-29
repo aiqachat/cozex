@@ -21,8 +21,8 @@ use Qiniu\Auth;
 use Qiniu\Storage\UploadManager;
 use Tos\Model\PutObjectInput;
 use Tos\TosClient;
+use yii\helpers\FileHelper;
 use yii\web\UploadedFile;
-use function GuzzleHttp\Psr7\mimetype_from_filename;
 
 class AttachmentUpload extends Model
 {
@@ -30,6 +30,8 @@ class AttachmentUpload extends Model
     public $file;
     public $attachment_group_id;
     public $type;
+    public $mall_id;
+    public $user_id;
 
     public $saveFileFolder;
     public $saveThumbFolder;
@@ -43,7 +45,11 @@ class AttachmentUpload extends Model
 
     public function getMallFolder()
     {
-        return '';
+        if ($this->mall_id) {
+            return "mall{$this->mall_id}/";
+        } else {
+            return '';
+        }
     }
 
     /**
@@ -86,7 +92,7 @@ class AttachmentUpload extends Model
     {
         $attachment = new Attachment();
         $attachment->storage_id = $this->storage ? $this->storage->id : 0;
-        $attachment->user_id = 0;
+        $attachment->user_id = $this->user_id ?: 0;
         $attachment->name = $this->file->name;
         $attachment->size = $this->file->size;
         $attachment->is_delete = 0;
@@ -94,6 +100,7 @@ class AttachmentUpload extends Model
         $attachment->thumb_url = $this->thumbUrl;
         $attachment->attachment_group_id = $this->attachment_group_id;
         $attachment->type = $this->type;
+        $attachment->mall_id = $this->mall_id;
         if (!$attachment->save()) {
             throw new \Exception($this->getErrorMsg($attachment));
         }
@@ -239,7 +246,7 @@ class AttachmentUpload extends Model
         $pathInfo = pathinfo($localFilePath);
         $name = $pathInfo['basename'];
         $size = filesize($localFilePath);
-        $type = mimetype_from_filename($localFilePath);
+        $type = FileHelper::getMimeTypeByExtension($localFilePath);
         return new UploadedFile([
             'name' => $name,
             'type' => $type,

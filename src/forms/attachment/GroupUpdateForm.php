@@ -19,6 +19,7 @@ class GroupUpdateForm extends Model
 {
     public $id;
     public $name;
+    public $mall_id;
     public $type;
 
     public function rules()
@@ -26,7 +27,7 @@ class GroupUpdateForm extends Model
         return [
             [['name',], 'trim'],
             [['name'], 'required'],
-            [['id', 'type'], 'integer',],
+            [['id', 'type', 'mall_id'], 'integer',],
             [['name',], 'string', 'max' => 64,],
         ];
     }
@@ -38,10 +39,12 @@ class GroupUpdateForm extends Model
         }
         $model = AttachmentGroup::findOne([
             'id' => $this->id,
+            'mall_id' => $this->mall_id,
             'is_delete' => 0,
         ]);
         if (!$model) {
             $model = new AttachmentGroup();
+            $model->mall_id = $this->mall_id;
             $model->type = $this->type;
         }
         $model->name = $this->name;
