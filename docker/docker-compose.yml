@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    image: cozex-app:latest  # 自定义命名
+    container_name: cozex-app
+    user: "33:33"  # 使用www-data用户(UID:GID = 33:33)，避免权限问题
+    ports:
+      - "80:80"  # 可自定义端口
+    volumes:
+      - /home/cozex:/var/www/html
+      - /home/cozex/uploads:/var/www/html/web/uploads
+      - /home/cozex/runtime:/var/www/html/runtime
+      - /home/cozex/apache.conf:/etc/apache2/sites-available/000-default.conf
+    environment:
+      YII_ENV: prod
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: 123456
+      DB_NAME: wstx_mall
+      DB_PORT: 3306
+      DB_PREFIX: hjmall_
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: mysql:5.7
+    container_name: cozex-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: wstx_mall
+    volumes:
+      - /home/mysql:/var/lib/mysql
+      - db_data:/var/lib/mysql
+
+  redis:
+    image: redis:6-alpine
+    container_name: cozex-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /home/redis:/data
+      - redis_data:/data
+
+volumes:
+  db_data:
+  redis_data:

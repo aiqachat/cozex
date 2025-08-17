@@ -58,6 +58,7 @@ class BotConf extends ModelActiveRecord
     {
         return [
             'id' => 'ID',
+            'account_id' => 'Account ID',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

@@ -51,8 +51,13 @@ class CozeAccount extends ModelActiveRecord
         return [
             'id' => 'ID',
             'coze_secret' => '访问令牌',
+            'client_id' => 'Client ID',
+            'client_secret' => 'Client Secret',
+            'type' => '类型',
             'name' => 'Name',
             'remark' => 'remark',
+            'expires_in' => '有效期',
+            'refresh_token' => 'Refresh Token',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

@@ -68,6 +68,8 @@ MySQL扩展库：数据存储
 
 ## 程序安装使用
 
+### 直接安装
+
 1.下载安装程序源码解压到本地目录;
 
 2.上传程序目录中的`/src/`全部文件到网站根目录，输入网址；
@@ -82,6 +84,24 @@ MySQL扩展库：数据存储
   <?php  header('location: web/index.php');
   ```
 ![alt text](/docs/index22.png)
+
+### Docker 安装
+
+切换到Docker目录下，执行以下命令编译镜像
+
+```shell
+docker build -t cozex-app:latest .
+```
+
+在服务器上建立对应映射目录，参考注释，执行命令启动docker容器。
+
+```shell
+docker compose up -d
+```
+
+打开浏览器输入：http://(your ip):80/wsroot.php 进入安装页面。
+
+配置时，参考 docker-compose.yaml 的配置填写数据库信息，然后点击安装，安装成功后，即可进入登录页面。
 
 ## 关于说明
 
