@@ -1,0 +1,85 @@
+services:
+  nginx:
+    image: "nginx"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "6380:80"    # 左边可以改成任意没使用的端口
+      - "63443:443"    # 左边可以改成任意没使用的端口
+    volumes:
+      - src_data:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - php
+      - db
+      - redis
+    networks:
+      - web
+  php:
+    build: php
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    expose:
+      - "9000"       # 不暴露公网，故没有写9000:9000
+    volumes:
+      - src_data:/var/www/html
+      - ./logs/php:/usr/local/var/log
+    depends_on:
+      - db
+      - redis
+    networks:
+      - web
+  db:
+    image: mysql:5.7
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/my.cnf
+      - ./logs/mysql:/var/log/mysql
+    env_file:
+      - mysql.env
+    networks:
+      - web
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - web
+  queue:
+    build: queue
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - src_data:/var/www/html
+      - ./logs/queue:/usr/local/var/log
+    depends_on:
+      - db
+      - redis
+    networks:
+      - web
+networks:
+  web:
+    name: cozex_network
+volumes:
+  db_data:
+  redis_data:
+  src_data: # 添加代码卷
+    name: cozex_volume
+    external: true
