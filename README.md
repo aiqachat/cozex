@@ -83,6 +83,48 @@ MySQL扩展库：数据存储
   ```
 ![alt text](/docs/index22.png)
 
+# docker快速启动
+```
+git clone https://github.com/aiqachat/cozex.git
+cd cozex/docker
+chmod +x docker-init.sh
+./docker-init.sh  #初始化代码存储
+docker-compose up -d
+```
+# docker环境下安装
+```
+访问地址: http://ip:6380 或http://域名:6380，会自动跳转到安装页面
+
+数据库填"db"  ##会自动解析到对应的容器中
+数据库端口"3306"
+数据库用户"cozex"  数据库默认账号
+数据库密码"cozex"  数据库默认密码
+数据库名称"cozex"  默认数据库名
+```
+```
+Redis服务器"redis"  ##会自动解析到对应的容器中
+Redis端口"6379"
+Redis密码留空即可
+```
+管理员账号 自行设置
+管理员密码 自行设置
+
+安装程序执行完以后需要重启队列服务
+```
+docker compose down && docker compose up -d  
+或
+docker restart docker-queue-1 
+```
+
+# docker目录说明
+
+## 目录说明
+- logs/, 各个程序的日志
+- nginx/conf.d/, 虚拟主机配置，多应用同上
+- php/, php 相关配置
+- queue/，php的yii队列
+- redis/, redis 相关配置
+
 ## 关于说明
 
 这个软件是免费给大家使用的开源，所有商业用途不承担任何责任。
