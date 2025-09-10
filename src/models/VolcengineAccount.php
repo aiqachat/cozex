@@ -11,6 +11,7 @@ namespace app\models;
  * @property string $app_id
  * @property string $access_token  访问token
  * @property int $is_default  1：是默认账户
+ * @property int $type 1：国内站；2：国际站
  * @property int $is_delete
  * @property string $created_at
  * @property string $updated_at
@@ -34,7 +35,7 @@ class VolcengineAccount extends ModelActiveRecord
     {
         return [
             [['mall_id', 'access_token', 'created_at', 'updated_at',], 'required'],
-            [['is_delete', 'is_default'], 'integer'],
+            [['is_delete', 'is_default', 'type'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['access_token', 'name', 'app_id'], 'string'],
         ];

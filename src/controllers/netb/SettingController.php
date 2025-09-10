@@ -34,6 +34,13 @@ class SettingController extends AdminController
             return $this->render('index');
         }
     }
+    public function actionVoice()
+    {
+        if (\Yii::$app->request->isAjax) {
+        } else {
+            return $this->render('voice');
+        }
+    }
 
     public function actionUser()
     {
@@ -148,10 +155,29 @@ class SettingController extends AdminController
                 $form->attributes = \Yii::$app->request->post();
                 return $this->asJson($form->save());
             }else{
+                $form->attributes = \Yii::$app->request->get();
                 return $this->asJson($form->get());
             }
         } else {
-            return $this->render('price');
+            $data = (new ConfigForm())->config();
+            return $this->render('price', ['data' => $data]);
+        }
+    }
+
+    public function actionSubtitle()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new ConfigForm();
+            if (\Yii::$app->request->isPost) {
+                $form->attributes = \Yii::$app->request->post();
+                return $this->asJson($form->save());
+            }else{
+                $form->attributes = \Yii::$app->request->get();
+                return $this->asJson($form->get());
+            }
+        } else {
+            $data = (new ConfigForm())->config();
+            return $this->render('subtitle', ['data' => $data]);
         }
     }
 }

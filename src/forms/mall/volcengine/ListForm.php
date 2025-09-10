@@ -127,10 +127,6 @@ class ListForm extends Model
                 'msg' => '数据不存在'
             ];
         }
-        $model->is_delete = 1;
-        if(!$model->save()){
-            return $this->getErrorResponse($model);
-        }
         $model->isLog = false;
         $model->deleteData();
         return [

@@ -8,6 +8,7 @@
 namespace app\forms\common\volcengine\data;
 
 use app\bootstrap\response\ApiCode;
+use app\forms\common\attachment\AttachmentRemove;
 use app\forms\common\volcengine\api\AtaQuery;
 use app\forms\common\volcengine\api\AtaSubmit;
 use app\forms\common\volcengine\api\AucBigModelQuery;
@@ -15,9 +16,11 @@ use app\forms\common\volcengine\api\AucBigModelSubmit;
 use app\forms\common\volcengine\api\VcQuery;
 use app\forms\common\volcengine\api\VcSubmit;
 use app\forms\common\volcengine\ApiForm;
+use app\forms\mall\setting\ConfigForm;
 use app\jobs\CommonJob;
 use app\models\Attachment;
 use app\models\AvData;
+use app\models\User;
 use yii\helpers\Json;
 use yii\web\UploadedFile;
 
@@ -32,12 +35,14 @@ class SubtitleBaseForm extends BaseForm
     public $user_id;
     public $format;
 
+    public $duration;
+
     public function rules()
     {
         return [
             [['file', 'text', 'format'], 'string'],
             [['data'], 'safe'],
-            [['id', 'type', 'account_id', 'user_id'], 'integer'],
+            [['id', 'type', 'account_id', 'user_id', 'duration'], 'integer'],
         ];
     }
 
@@ -52,10 +57,13 @@ class SubtitleBaseForm extends BaseForm
         if (!$model->save()) {
             throw new \Exception($this->getErrorMsg($model));
         }
+        if($this->user_id) {
+            $this->pay($model, true);
+        }
         \Yii::$app->queue->delay(0)->push(new CommonJob([
             'type' => 'handle_subtitle',
             'mall' => \Yii::$app->mall,
-            'data' => ['id' => $model->id]
+            'data' => ['id' => $model->id, 'duration' => $this->duration]
         ]));
     }
 
@@ -82,6 +90,9 @@ class SubtitleBaseForm extends BaseForm
                 throw new \Exception('数据不存在');
             }
             $data = $model->data ? Json::decode($model->data) : [];
+            if($model->user_id){
+                $this->pay($model);
+            }
             $api = ApiForm::common(['account' => $model->account]);
             if ($model->type == $this->auc) {
                 $obj = new AucBigModelSubmit();
@@ -126,7 +137,7 @@ class SubtitleBaseForm extends BaseForm
                 $text .= "{$k}\r\n" . $this->times($item['start_time']) . " --> "
                     . $this->times($item['end_time']) . "\r\n" . $item['text'] . "\r\n\r\n";
             }
-            $fileRes = file_uri('/web/uploads/av_file/' . date("Y-m-d") . "/");
+            $fileRes = file_uri(AvData::FILE_DIR . date("Y-m-d") . "/");
             do {
                 $name = uniqid() . ".srt";
                 $file = $fileRes['local_uri'] . $name;
@@ -134,7 +145,6 @@ class SubtitleBaseForm extends BaseForm
             file_put_contents($file, $text);
             $model->result = $fileRes['web_uri'] . $name;
             $model->status = 2;
-            $model->is_data_deleted = 0;
             $return = [
                 'code' => ApiCode::CODE_SUCCESS,
                 'msg' => '成功'
@@ -146,6 +156,9 @@ class SubtitleBaseForm extends BaseForm
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => $e->getMessage() . $e->getLine() . $e->getFile()
             ];
+            if($model->user_id){
+                $this->refund($model);
+            }
         }
         if (!empty($data['is_del'])) {
             if (isset($obj) && file_exists($obj->url)) {
@@ -158,7 +171,7 @@ class SubtitleBaseForm extends BaseForm
                 'mall_id' => \Yii::$app->mall->id
             ]);
             if ($attachment) {
-                $attachment->delete();
+                AttachmentRemove::getCommon($attachment)->handle();
             }
         }
         if (!$model->save()) {
@@ -174,6 +187,65 @@ class SubtitleBaseForm extends BaseForm
             ]));
         }
         return $return;
+    }
+
+    public function pay(AvData $model, $check = false)
+    {
+        $data = $model->data ? Json::decode($model->data) : [];
+        $user = User::findOne($model->user_id);
+        $currency = \Yii::$app->currency->setUser($user)->integral;
+        if(empty($data['cost'])) {
+            if (!$this->duration && $currency->select () <= 0) {
+                throw new \Exception('账户积分不足');
+            }
+            $data = (new ConfigForm(['tab' => ConfigForm::TAB_SUBTITLE]))->config();
+            $price = 0;
+            if ($model->type == $this->vc) {
+                $price = $data['vc_price'] * $this->duration;
+            } elseif ($model->type == $this->auc) {
+                $price = $data['auc_price'] * $this->duration;
+            } elseif ($model->type == $this->ata) {
+                $price = $data['ata_price'] * $this->duration;
+            }
+        }else{
+            $price = $data['cost'];
+        }
+        $price = floatval($price);
+        if (!$price) {
+            throw new \Exception('未设置字幕价格');
+        }
+        if ($currency->select () < $price) {
+            throw new \Exception('账户积分不足');
+        }
+        if(!$check) {
+            $currency->sub(
+                $price,
+                "字幕技术支付：" . $price,
+                \Yii::$app->serializer->encode ([
+                    'id' => $model->id,
+                    'name' => $this->textName($model->type) . '-生成消耗'
+                ])
+            );
+            $data['cost'] = $price;
+            $model->data = Json::encode($data, JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    public function refund(AvData $model)
+    {
+        $data = $model->data ? Json::decode($model->data) : [];
+        if(!empty($data['cost'])){
+            $user = User::findOne($model->user_id);
+            $currency = \Yii::$app->currency->setUser($user);
+            $currency->integral->add(
+                floatval($data['cost']),
+                "字幕技术退款：" . $data['cost'],
+                \Yii::$app->serializer->encode([
+                    'id' => $model->id,
+                    'name' => $this->textName($model->type) . '-生成消耗退款'
+                ])
+            );
+        }
     }
 
     function times($milliseconds): string

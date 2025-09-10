@@ -6,7 +6,7 @@
     <br>
 </p>
 
-This extension provides a debugger for [Yii framework 2.0](http://www.yiiframework.com) applications. When this extension is used,
+This extension provides a debugger for [Yii framework 2.0](https://www.yiiframework.com) applications. When this extension is used,
 a debugger toolbar will appear at the bottom of every page. The extension also provides
 a set of standalone pages to display more detailed debug information.
 
@@ -16,13 +16,13 @@ Documentation is at [docs/guide/README.md](docs/guide/README.md).
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/yii2-debug/v/stable.png)](https://packagist.org/packages/yiisoft/yii2-debug)
 [![Total Downloads](https://poser.pugx.org/yiisoft/yii2-debug/downloads.png)](https://packagist.org/packages/yiisoft/yii2-debug)
-[![Build Status](https://travis-ci.org/yiisoft/yii2-debug.svg?branch=master)](https://travis-ci.org/yiisoft/yii2-debug)
+[![Build Status](https://github.com/yiisoft/yii2-debug/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-debug/actions)
 
 
 Installation
 ------------
 
-The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
+The preferred way to install this extension is through [composer](https://getcomposer.org/download/).
 
 Either run
 
@@ -33,7 +33,7 @@ php composer.phar require --prefer-dist yiisoft/yii2-debug
 or add
 
 ```
-"yiisoft/yii2-debug": "~2.0.0"
+"yiisoft/yii2-debug": "~2.1.0"
 ```
 
 to the require section of your `composer.json` file.
@@ -91,22 +91,24 @@ You must make some changes to your OS. See these examples:
 
 #### Virtualized or dockerized
 
-If your application is run under a virtualized or dockerized environment, it is often the case that the application's base path is different inside of the virtual machine or container than on your host machine. For the links work in those situations, you can configure `traceLine` like this (change the path to your app):
+If your application is run under a virtualized or dockerized environment, it is often the case that the application's 
+base path is different inside of the virtual machine or container than on your host machine. For the links work in those
+ situations, you can configure `tracePathMappings` like this (change the path to your app):
 
 ```php
-'traceLine' => function($options, $panel) {
-    $filePath = str_replace(Yii::$app->basePath, '~/path/to/your/app', $options['file']);
-    return strtr('<a href="ide://open?url=file://{file}&line={line}">{text}</a>', ['{file}' => $filePath]);
-},
+'tracePathMappings' => [
+    '/app' => '/path/to/your/app',
+],
 ```
-You can add all posible path like this (valid for advanced template backend main-local.php config):
+
+Or you can create a callback for `traceLine` for even more control:
 
 ```php
 'traceLine' => function($options, $panel) {
     $filePath = $options['file'];
-    $filePath = str_replace(Yii::$app->basePath, 'file://~/path/to/your/backend', $filePath);
-    $filePath = str_replace(dirname(Yii::$app->basePath) . '/common' , 'file://~/path/to/your/common', $filePath);
-    $filePath = str_replace(Yii::$app->vendorPath, 'file://~/path/to/your/vendor', $filePath);
-    return strtr('<a href="phpstorm://open?url={file}&line={line}">{file}:{line}</a>', ['{file}' => $filePath]);
+    if (StringHelper::startsWith($filePath, Yii::$app->basePath)) {
+        $filePath = '/path/to/your/app' . substr($filePath, strlen(Yii::$app->basePath));
+    }
+    return strtr('<a href="ide://open?url=file://{file}&line={line}">{text}</a>', ['{file}' => $filePath]);
 },
 ```

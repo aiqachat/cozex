@@ -17,6 +17,11 @@ class ModelActiveRecord extends \yii\db\ActiveRecord
     public $isLog = true; // 单独开关
     public static $log = true; // 全局开关
 
+    public function reset()
+    {
+        \Yii::$app->db->createCommand('ALTER TABLE ' . $this->tableName() . ' AUTO_INCREMENT = 1')->execute();
+    }
+
     /**
      * 有sql添加、更新操作时自动追加添加时间、更新时间
      * @return bool

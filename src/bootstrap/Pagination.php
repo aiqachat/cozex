@@ -23,6 +23,8 @@ class Pagination extends \yii\data\Pagination
         parent::init();
         if (!$this->pageSize) {
             $this->pageSize = $this->defaultPageSize;
+        }else{
+            $this->pageSize = intval($this->pageSize);
         }
         $this->totalCount = $this->totalCount ? intval($this->totalCount) : 0;
         $this->total_count = $this->totalCount;

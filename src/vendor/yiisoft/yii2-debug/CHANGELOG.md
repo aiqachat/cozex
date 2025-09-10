@@ -1,6 +1,220 @@
 Yii Framework 2 debug extension Change Log
 ==========================================
 
+2.1.27 June 08, 2025
+--------------------
+
+- no changes in this release.
+
+
+2.1.26 February 13, 2025
+------------------------
+
+- Bug #528: Fix `yii\debug\Panel::getTraceLine()` to handle backtrace for internal PHP functions (zymeli)
+- Enh #430: Allow to configure toolbar position via `Module::$toolbarPosition` property (sasha-x)
+- Enh #459: Add `yii\debug\Module::$authManager` to select RBAC manager used by UserPanel (default is `authManager`) (jafaripur)
+
+
+2.1.25 September 26, 2023
+-------------------------
+
+- Bug #503: Fix accessing toolbar data if it's not available (xepozz)
+
+
+2.1.24 July 10, 2023
+--------------------
+
+- Bug #504: Reduced db panel warnings for "critical query threshold" and "excessive callers" (rhertogh)
+- Bug #506: Correctly handle null values for `DbPanel::$criticalQueryThreshold` and `::$excessiveCallerThreshold` (MarkoNV, rhertogh)
+- Bug #507: Convert Symfony mailer headers to string in Mail panel (squio)
+- Enh #512: Changed default value for `yii\debug\panels\DbPanel::$excessiveCallerThreshold` to `null` (rhertogh)
+
+
+2.1.23 May 22, 2023
+-------------------
+
+- Enh #498: Add yii2-symfonymailer Support in src/panels/MailPanel.php (vansari)
+- Enh #501: Show DB query call location in DB panel (rhertogh)
+
+
+2.1.22 November 18, 2022
+------------------------
+
+- Enh #493: Extend variable masking to `requestBody` (yus-ham)
+
+
+2.1.21 September 06, 2022
+-------------------------
+
+- Enh #490: Allow debugging of console apps (chicuongit913)
+
+
+2.1.20 September 04, 2022
+-------------------------
+
+- Bug #461: Do not crash on empty panel data (przepompownia)
+- Enh #484: Allow `logTarget` config to be set as either a string, an array, or an `LogTarget` object (Sarke)
+- Enh #486: Allow to configure debugger as a submodule (achretien)
+
+2.1.19 April 05, 2022
+---------------------
+
+- Bug #466: Remove opis\closure dependency for PHP 8.1 compatibility. Closures in logs still working (sartor)
+- Bug #470: Fix PHP 8.1 warnings about implicit conversion from float to int loses precision (mishamosher)
+- Enh #469: Add option to change default LogTarget (laxity7)
+- Enh #478: Add option to censor variables in the request panel (dbx12)
+
+
+2.1.18 August 09, 2021
+----------------------
+
+- Enh #458: Added CIDR support for allowedIPs (rhertogh)
+
+
+2.1.17 May 05, 2021
+-------------------
+
+- Enh #454: Add `yii\debug\panels\DbPanel::$dbEventNames` that allows specifying event names used to get profile logs for db panel (atiline)
+
+
+2.1.16 December 23, 2020
+------------------------
+
+- Bug #446: Fix bug with simple action config detection (bizley)
+- Bug #449: Fix bug with scanned controllers being unnecessarily initiated (bizley)
+- Enh #441: Added PHP 7.4 and 8.0 compatibility for tests (bizley)
+
+
+2.1.15 November 13, 2020
+------------------------
+
+- Bug #443: Fix bug with fetching wrong URL rule name (bizley)
+
+
+2.1.14 November 10, 2020
+------------------------
+
+- Bug #434: Toolbar logo could have the wrong size (brandonkelly)
+- Enh #428: Extra routing data in Router panel (bizley)
+- Enh #433: Add ability for toolbar to skip URLs of AJAX requests from being displayed (naduvko)
+
+
+2.1.13 January 17, 2020
+-----------------------
+
+- Bug #427: Fix missing import yii\helpers\Html in DumpPanel (zhukovra)
+
+
+2.1.12 November 19, 2019
+------------------------
+
+- Bug #424: Fixes missing timeline panel tooltips (My6UoT9)
+- Enh #425: Add warning message related to `traceLevel` on db panel (kjusupov)
+
+
+2.1.11 November 05, 2019
+------------------------
+
+- Bug #325: Remove staled data files i.e. files that are not in the current index file (zhukovra)
+- Bug #329: Fix logging AJAX request if URL has domain (zhukovra)
+- Bug #423: Fix duplicated toolbar when loading the iframe from a different origin (My6UoT9, samdark)
+- Enh #202: Add buttons for navigation between requests (zhukovra)
+
+
+2.1.10 October 22, 2019
+-----------------------
+
+- Enh #412: Improved layout of the Logs panel (machour, pistej)
+
+
+2.1.9 September 18, 2019
+------------------------
+
+- Bug #409: Fixed "Since previous" column's value calculation (Ir00man)
+
+
+2.1.8 August 20, 2019
+---------------------
+
+- Bug #333: Ignore normalizer in debug bar URL rules (simialbi)
+- Bug #347: Fixed "Cannot read property 'addEventListener' of null" bug of user switch (simialbi)
+
+
+2.1.7 July 30, 2019
+-------------------
+
+- Bug #401: Partial revert of #390, use var dumper on dump panel as serializer to deal with closures in SPL Objects (Sarke)
+- Bug #404: Fix insufficient data escaping in debugger views (0xbug, Artem Myshenkov, samdark)
+- Enh #40: Add "since previous" and sequential number to "logs" panel detail view (Deele, samdark)
+
+
+2.1.6 July 23, 2019
+-------------------
+
+- Enh #167: Add total request processing time and peak memory consumption on index page (pistej)
+- Enh #379: Better error message when no debug data is found (Sarke)
+- Enh #380: Enhanced browser compatibility (samdark)
+- Enh #390: Use opis/closure to serialize data (Sarke)
+- Enh #392: Add `tracePathMappings` property to module (Sarke)
+
+
+2.1.5 June 04, 2019
+-------------------
+
+- Enh #391: Dispatching event when toolbar is added to DOM, and added class that allows clicks in toolbar block (rhertogh)
+
+
+2.1.4 May 14, 2019
+------------------
+
+- Bug #376: Fixed user panel when using custom user component (iridance)
+- Bug #377: Fixed serialization of Closure error in `DumpPanel` (Sarke)
+- Bug #381: Fixed text wrapping inside tables (machour)
+- Bug #388: Fixed tooltip display in timeline (machour)
+- Enh #376: Allow setting user panel title (iridance)
+
+
+2.1.3 April 30, 2019
+--------------------
+
+- Enh #375: Made var dumper in `DumpPanel` extensible with `varDumpCallback` (Sarke)
+
+
+2.1.2 April 23, 2019
+--------------------
+
+- Bug: ⚠️ in MailPanel was not a string (samdark)
+
+
+2.1.1 March 30, 2019
+--------------------
+
+- Bug #237: Delay attaching to `View` events until action takes place (machour)
+- Bug #275: Avoid initialization errors in `AssetPanel` (machour)
+- Bug #298: Fix keyboard navigation when bar is collapsed/hidden (machour)
+- Bug #354: Fixed the formatting of data in table cells (machour)
+- Bug #355: Fixed color highlighting on debug index (Sarke)
+- Bug #358: Enhance error message if `index.data` file is not accessible (machour)
+- Bug #359: Fixed the console warning about sourcemaps (machour)
+- Enh #103: Allow customizing the `UrlRule` class used to generate rules in bootstrap (machour)
+- Enh #213: Made the debug panel resizeable, and allowed setting default height in configuration (machour)
+- Enh #353: Added module `pageTitle` property that allows setting page title to be used (m-wardany)
+- Enh #371: Improved toolbar accessibility (machour)
+
+
+2.1.0 March 17, 2019
+--------------------
+
+- Bug #342: Toolbar animates on every page load in Chrome 70 (ricpelo)
+- Bug #343: Fixed errors on "Roles and permissions" tab (simialbi)
+- Bug #352: Fixed failure to serialize emails causing summary and thus all panels not to render (sammousa)
+- Enh #88: Allow custom module access check (simialbi)
+- Enh #247: Added dump panel that collects and displays debug messages with `Logger::LEVEL_TRACE` (pistej, simialbi)
+- Enh #296, #326, #340: Removed bootstrap as dependency, bundled Bootstrap 4 (simialbi)
+- Enh #349: Router link is now separated (rustamwin)
+- Enh #350: Use smaller padding for tables cells (machour)
+
+
 2.0.14 September 24, 2018
 -------------------------
 

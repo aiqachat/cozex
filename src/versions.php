@@ -1,6 +1,7 @@
 <?php
 
 use app\forms\common\CommonOption;
+use app\forms\QueueForm;
 
 return [
     '1.0.0' => function () {
@@ -530,5 +531,289 @@ EOF;
         }catch (Exception $e){
             Yii::error($e);
         }
+    },
+    '1.0.19' => function () {
+        $v = (new \app\forms\common\volcengine\data\VoiceForm())->data();
+        $sql = <<<EOF
+CREATE TABLE `wstx_voice_list` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT '' COMMENT '名称',
+  `voice_id` varchar(150) DEFAULT '' COMMENT '音色id',
+  `voice_type` varchar(50) DEFAULT '' COMMENT '音色类型',
+  `audio` varchar(250) DEFAULT '' COMMENT '试听地址',
+  `pic` varchar(250) DEFAULT '' COMMENT '封面图',
+  `sex` tinyint(1) DEFAULT 1 COMMENT '1男；2女',
+  `age` tinyint(1) DEFAULT 1 COMMENT '1青年；2少年/少女；3中年；4老年',
+  `language` varchar(50) DEFAULT '中文' COMMENT '语言',
+  `language_data` text DEFAULT NULL COMMENT '多语言数据',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='音色列表';
+alter table wstx_voice_list add `status` tinyint(1) DEFAULT 1 COMMENT '1:启用，0:禁用';
+$v
+CREATE TABLE `wstx_visual_image` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `mall_id` int(11) NOT NULL COMMENT '商城',
+  `key_id` int(10) NULL DEFAULT 0 COMMENT '授权key',
+  `user_id` int(10) NULL DEFAULT 0 COMMENT '用户id',
+  `prompt` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '提示词',
+  `width` int(1) NOT NULL COMMENT '图片宽度',
+  `height` int(1) NOT NULL COMMENT '图片高度',
+  `use_pre_llm` tinyint(1) NOT NULL COMMENT '开启文本扩写',
+  `use_sr` tinyint(1) NOT NULL COMMENT 'AIGC超分',
+  `err_msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '失败原因',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '图片地址',
+  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '数据，包括配置等等',
+  `is_delete` int(11) NOT NULL DEFAULT 0,
+  `is_data_deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '数据是否删除',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `mall_id` (`mall_id`),
+  KEY `user_id` (`user_id`),
+  KEY `is_delete` (`is_delete`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片生成列表';
+CREATE TABLE `wstx_visual_video` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `mall_id` int(11) NOT NULL COMMENT '商城',
+  `key_id` int(10) NULL DEFAULT 0 COMMENT '授权key',
+  `user_id` int(10) NULL DEFAULT 0 COMMENT '用户id',
+  `prompt` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '提示词',
+  `image_urls` text DEFAULT NULL COMMENT '图片链接数组',
+  `aspect_ratio` varchar(100) NOT NULL COMMENT '视频尺寸',
+  `task_id` varchar(100) DEFAULT '' COMMENT '任务id',
+  `err_msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '失败原因',
+  `video_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '视频地址',
+  `data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '数据等等',
+  `is_delete` int(11) NOT NULL DEFAULT 0,
+  `is_data_deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '数据是否删除',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `mall_id` (`mall_id`),
+  KEY `user_id` (`user_id`),
+  KEY `is_delete` (`is_delete`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='视频生成列表';
+alter table wstx_visual_video add `seed` int(10) DEFAULT -1 COMMENT '随机种子';
+alter table wstx_visual_video add `mode` varchar(50) DEFAULT '' COMMENT '模式';
+alter table wstx_visual_video add `status` tinyint(1) NOT NULL DEFAULT 2 COMMENT '状态；1-进行中；2-已完成；3-失败';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.20' => function () {
+        $sql = <<<EOF
+alter table wstx_visual_image add `seed` int(10) DEFAULT -1 COMMENT '随机种子';
+alter table wstx_voice_list modify column `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00';
+alter table wstx_voice_list add `emotion` varchar(250) DEFAULT '' COMMENT '情感列表';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.22' => function () {
+        $sql = <<<EOF
+alter table `wstx_volcengine_keys` add `is_default` tinyint(1) DEFAULT 0 COMMENT '默认账户';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.23' => function () {
+        $sql = <<<EOF
+alter table `wstx_visual_image` drop column `width`;
+alter table `wstx_visual_image` drop column `height`;
+alter table `wstx_visual_image` drop column `use_pre_llm`;
+alter table `wstx_visual_image` drop column `use_sr`;
+alter table `wstx_visual_image` drop column `seed`;
+alter table `wstx_visual_image` add `type` tinyint(1) DEFAULT 1 COMMENT '1：即梦AI 2：火山方舟';
+alter table wstx_visual_image add index (`type`);
+alter table `wstx_visual_video` add `type` tinyint(1) DEFAULT 1 COMMENT '1：即梦AI 2：火山方舟';
+alter table wstx_visual_video add index (`type`);
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.24' => function () {
+        $sql = <<<EOF
+alter table `wstx_mail_setting` CHANGE `send_name` `subject_name` varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '' COMMENT '邮件主题名';
+alter table `wstx_mail_setting` add `send_name` varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '' COMMENT '发件人名称';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.25' => function () {
+        $sql = <<<EOF
+CREATE TABLE `wstx_user_level` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `mall_id` int(11) NOT NULL,
+  `name` varchar(65) NOT NULL DEFAULT '' COMMENT '等级名称',
+  `promotion_commission_ratio` decimal(11,2) NOT NULL DEFAULT '0.00' COMMENT '推广佣金比例',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 0--禁用 1--启用',
+  `is_default` tinyint(1) DEFAULT 0 COMMENT '默认账户',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL,
+  `is_delete` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `mall_id` (`mall_id`),
+  KEY `is_default` (`is_default`),
+  KEY `is_delete` (`is_delete`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+alter table `wstx_user_identity` add `member_level` int(10) DEFAULT 0 COMMENT '用户等级';
+alter table `wstx_user_info` add `invite_code` varchar(10) DEFAULT '' COMMENT '推荐码';
+alter table `wstx_user_info` add `parent_id` int(11) NOT NULL DEFAULT '0' COMMENT '上级id';
+alter table `wstx_volcengine_account` add `type` tinyint(1) DEFAULT '1' COMMENT '1：国内站；2：国际站';
+alter table `wstx_visual_image` add `is_home` tinyint(1) DEFAULT '1' COMMENT '1：国内站；2：国际站';
+alter table `wstx_visual_video` add `is_home` tinyint(1) DEFAULT '1' COMMENT '1：国内站；2：国际站';
+alter table `wstx_av_data` add `is_home` tinyint(1) DEFAULT '1' COMMENT '1：国内站；2：国际站';
+alter table wstx_visual_image modify column `prompt` varchar(1000) NOT NULL DEFAULT '' COMMENT '提示词';
+alter table wstx_visual_video modify column `prompt` varchar(1000) NOT NULL DEFAULT '' COMMENT '提示词';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.26' => function () {
+        $sql = <<<EOF
+alter table `wstx_user_level` add `promotion_desc` text DEFAULT null COMMENT '推广说明';
+alter table `wstx_user_level` add `promotion_status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '推广状态 0--禁用 1--启用';
+alter table `wstx_user_info` add `award_money` decimal(11,2) NOT NULL DEFAULT '0.00' COMMENT '推广奖励';
+alter table `wstx_user_info` add `register_time` timestamp NULL DEFAULT NULL;
+alter table `wstx_user_level` add `language_data` text DEFAULT NULL COMMENT '多语言数据';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.27' => function () {
+        $sql = <<<EOF
+alter table `wstx_volcengine_keys` drop column `is_default`;
+alter table `wstx_volcengine_keys` add `type` tinyint(1) DEFAULT 1 COMMENT '1：国内站；2：国际站';
+alter table `wstx_volcengine_keys` add `account_id` int(10) DEFAULT null COMMENT '账号id';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.28' => function () {
+        $sql = <<<EOF
+alter table wstx_volcengine_keys modify column `account_id` varchar(15) DEFAULT '' COMMENT '账号id';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.29' => function () {
+        $sql = <<<EOF
+alter table `wstx_visual_image` drop column `err_msg`;
+alter table `wstx_visual_image` add `is_user_public` tinyint(1) DEFAULT 1 COMMENT '是否公开';
+alter table `wstx_visual_image` add `is_admin_public` tinyint(1) DEFAULT 0 COMMENT '是否公开';
+alter table `wstx_visual_video` add `is_user_public` tinyint(1) DEFAULT 1 COMMENT '是否公开';
+alter table `wstx_visual_video` add `is_admin_public` tinyint(1) DEFAULT 0 COMMENT '是否公开';
+alter table `wstx_user_info` add `set_data` text DEFAULT null COMMENT '用户设置';
+alter table `wstx_visual_image` add `is_permanent_public` tinyint(1) DEFAULT 0 COMMENT '是否永久通过公开';
+DELETE from wstx_visual_image where is_delete = 1;
+DELETE from wstx_visual_video where is_delete = 1;
+EOF;
+        sql_execute($sql);
+        (new QueueForm())->queueFile();
+    },
+    '1.0.30' => function () {
+        $sql = <<<EOF
+DELETE from wstx_option where name = 'delAction';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.31' => function () {
+        $sql = <<<EOF
+alter table `wstx_visual_image` modify column `is_user_public` tinyint(1) DEFAULT 0 COMMENT '是否公开';
+alter table `wstx_visual_video` modify column `is_user_public` tinyint(1) DEFAULT 0 COMMENT '是否公开';
+alter table `wstx_av_data` drop column `is_data_deleted`;
+alter table `wstx_visual_image` drop column `is_data_deleted`;
+alter table `wstx_visual_video` drop column `is_data_deleted`;
+alter table `wstx_visual_image` add `is_saved` tinyint(1) DEFAULT 0 COMMENT '0：不保存，1：长期保存';
+alter table `wstx_visual_video` add `is_saved` tinyint(1) DEFAULT 0 COMMENT '0：不保存，1：长期保存';
+alter table `wstx_visual_video` add `is_permanent_public` tinyint(1) DEFAULT 0 COMMENT '是否永久通过公开';
+
+alter table `wstx_mail_setting` add `desc` text DEFAULT null COMMENT '描述';
+alter table `wstx_mail_setting` add `language_data` text DEFAULT NULL COMMENT '多语言数据';
+alter table `wstx_user_info` modify column `parent_id` int(11) DEFAULT '0' COMMENT '上级id';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.32' => function () {
+        $sql = <<<EOF
+alter table `wstx_integral_exchange` add `give_integral` int(10) NOT NULL DEFAULT '0' COMMENT '赠送积分';
+alter table `wstx_integral_exchange` add `buy_num` int(10) NOT NULL DEFAULT '0' COMMENT '可购买次数';
+alter table `wstx_integral_exchange` add `period` int(10) NOT NULL DEFAULT '0' COMMENT '有效期';
+alter table `wstx_integral_exchange` add `serial_num` int(10) NOT NULL DEFAULT '0' COMMENT '序号';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.33' => function () {
+        $sql = <<<EOF
+alter table `wstx_balance_log` add `recharge_type` tinyint(1) NOT NULL DEFAULT '1' COMMENT '充值类型：1=在线充值，2=后台充值' after `type`;
+CREATE TABLE `wstx_member_permission` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `mall_id` int(11) NOT NULL COMMENT '商城ID',
+  `name` varchar(100) NOT NULL COMMENT '权限名称',
+  `permission_type` varchar(100) NOT NULL COMMENT '权限类型：system系统权限，custom自定义权限',
+  `description` varchar(500) DEFAULT NULL COMMENT '权限描述',
+  `code` varchar(100) NOT NULL COMMENT '权限代码',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态：1启用，0禁用',
+  `sort_order` int(11) NOT NULL DEFAULT '0' COMMENT '排序',
+  `language_data` text CHARACTER SET utf8mb4 COMMENT '多语言数据',
+  `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `permission_type` (`permission_type`),
+  KEY `status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员权限表';
+
+BEGIN;
+INSERT INTO `wstx_member_permission` VALUES (1, 1, '自定义图片水印', 'system', '设置图片视频生成的logo', 'custom_image_watermark', 1, 1, NULL, 0, '2025-08-16 09:04:18', '2025-08-16 22:22:55');
+INSERT INTO `wstx_member_permission` VALUES (2, 1, '自定义视频水印', 'system', '设置图片视频生成的logo', 'custom_video_watermark', 1, 2, NULL, 0, '2025-08-16 09:05:02', '2025-08-16 22:22:58');
+INSERT INTO `wstx_member_permission` VALUES (3, 1, '图片资源保存', 'system', '不删除图片权限', 'image_resource_save', 1, 3, NULL, 0, '2025-08-16 09:05:24', '2025-08-16 22:23:02');
+INSERT INTO `wstx_member_permission` VALUES (4, 1, '视频资源保存', 'system', '不删除视频权限', 'video_resource_save', 1, 4, NULL, 0, '2025-08-16 09:06:16', '2025-08-16 22:23:06');
+INSERT INTO `wstx_member_permission` VALUES (5, 1, '隐私图片保护', 'system', '生成的图片公开', 'private_image_protection', 1, 5, NULL, 0, '2025-08-16 09:06:50', '2025-08-16 22:23:10');
+INSERT INTO `wstx_member_permission` VALUES (6, 1, '隐私视频保护', 'system', '生成的视频公开', 'private_video_protection', 1, 6, NULL, 0, '2025-08-16 09:07:17', '2025-08-16 22:23:14');
+COMMIT;
+
+CREATE TABLE `wstx_member_level` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `mall_id` int(11) NOT NULL COMMENT '商城ID',
+  `name` varchar(255) NOT NULL COMMENT '名称',
+  `slogan` varchar(255) DEFAULT NULL COMMENT '宣传语',
+  `monthly_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '月付价',
+  `monthly_discount_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '月付优惠价',
+  `yearly_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '年付价',
+  `yearly_discount_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '年付优惠价',
+  `monthly_points_refresh` int(11) NOT NULL DEFAULT '0' COMMENT '每月积分刷新(Token)',
+  `daily_points_refresh` int(11) NOT NULL DEFAULT '0' COMMENT '每日积分刷新(Token)',
+  `storage_space_mb` int(11) NOT NULL DEFAULT '0' COMMENT '存储空间大小(MB)',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态：1启用，0禁用',
+  `sort_order` int(11) NOT NULL DEFAULT '0' COMMENT '排序',
+  `language_data` text CHARACTER SET utf8mb4 COMMENT '多语言数据',
+  `is_default` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否默认等级',
+  `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `mall_id` (`mall_id`),
+  KEY `status` (`status`),
+  KEY `sort_order` (`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员等级表';
+
+CREATE TABLE `wstx_member_level_permission` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `level_id` int(11) NOT NULL COMMENT '会员等级ID',
+  `permission_id` int(11) NOT NULL COMMENT '权限ID',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `level_permission_unique` (`level_id`,`permission_id`),
+  KEY `level_id` (`level_id`),
+  KEY `permission_id` (`permission_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员等级权限关联表';
+
+alter table `wstx_user_identity` add `member_level` int(10) DEFAULT '0' COMMENT '会员等级';
+alter table `wstx_user_identity` CHANGE column `member_level` `user_level` int(10) DEFAULT 0 COMMENT '用户等级';
+EOF;
+        sql_execute($sql);
+    },
+    '1.0.34' => function () {
+        $sql = <<<EOF
+alter table `wstx_user_info` drop column `set_data`;
+alter table wstx_visual_image add `status` tinyint(1) NOT NULL DEFAULT 2 COMMENT '状态；1-进行中；2-已完成；3-失败';
+alter table wstx_visual_image add `err_msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '失败原因';
+EOF;
+        sql_execute($sql);
     },
 ];

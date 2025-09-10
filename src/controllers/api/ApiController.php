@@ -9,6 +9,7 @@
 
 namespace app\controllers\api;
 
+use app\bootstrap\response\ApiCode;
 use app\controllers\api\filters\MallDisabledFilter;
 use app\controllers\Controller;
 use app\models\Mall;
@@ -45,6 +46,7 @@ class ApiController extends Controller
 
     public function init()
     {
+        $this->lang();
         // 获取已附加的 Cors 行为
         $corsBehavior = $this->getBehavior('corsFilter');
         $corsBehavior->beforeAction(new Action($this->id, $this));
@@ -52,15 +54,17 @@ class ApiController extends Controller
 
         parent::init();
         $this->enableCsrfValidation = false;
+
         if (!\Yii::$app->request->isOptions) {
-            $this->setMall()->login()->lang();
+            $this->setMall();
+            $this->login();
         }
     }
 
     private function setMall()
     {
         $headers = \Yii::$app->request->headers;
-        $mallId = $headers['x-mall-id'] ?? \Yii::$app->request->get('_mall_id');
+        $mallId = $headers['x-netb-id'] ?? \Yii::$app->request->get('_netb_id');
         if (empty($mallId)) {
             throw new NotFoundHttpException('缺失商城id');
         }
@@ -70,7 +74,7 @@ class ApiController extends Controller
             'is_recycle' => 0,
         ]);
         if (!$mall) {
-            throw new NotFoundHttpException('商城不存在，id = ' . $mallId);
+            throw new NotFoundHttpException(\Yii::t("common", "系统不存在").'，id = ' . $mallId);
         }
         \Yii::$app->setMall($mall);
         return $this;
@@ -83,7 +87,7 @@ class ApiController extends Controller
         $accountId = $headers['x-account-id'] ?? null;
 
         if (!$accessToken) {
-            return $this;
+            return true;
         }
         /** @var User $user */
         $user = User::find()->where([
@@ -97,11 +101,16 @@ class ApiController extends Controller
 
         if ($user) {
             if ($user->userInfo->is_blacklist) {
-                throw new NotFoundHttpException('账号已禁用，请联系管理员');
+                \Yii::$app->response->data = [
+                    'code' => ApiCode::CODE_ACCOUNT_DISABLED,
+                    'msg' => \Yii::t("common", "账号已禁用"),
+                ];
+                \Yii::$app->response->send();
+                return false;
             }
             \Yii::$app->user->login($user);
         }
-        return $this;
+        return true;
     }
 
     private function lang()

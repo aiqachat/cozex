@@ -11,6 +11,7 @@ namespace app\forms\api\user;
 
 use app\bootstrap\response\ApiCode;
 use app\events\UserEvent;
+use app\forms\common\CommonUser;
 use app\models\Model;
 use app\models\ModelActiveRecord;
 use app\models\User;
@@ -19,6 +20,8 @@ use app\models\UserInfo;
 
 abstract class LoginForm extends Model
 {
+    public $invite;
+
     /**
      * @return LoginUserInfo
      */
@@ -77,7 +80,10 @@ abstract class LoginForm extends Model
             if($userInfo->mobile){
                 $uInfo->mobile = $userInfo->mobile;
             }
+            $uInfo->register_time = mysql_timestamp();
             $uInfo->is_delete = 0;
+            $uInfo->code();
+            $uInfo->invite($this->invite);
             if (!$uInfo->save()) {
                 $t->rollBack();
                 return $this->getErrorResponse($uInfo);
@@ -89,23 +95,25 @@ abstract class LoginForm extends Model
         if (!$userIdentity) {
             $userIdentity = new UserIdentity();
             $userIdentity->user_id = $user->id;
+            $userIdentity->setLevel();
             if (!$userIdentity->save()) {
                 $t->rollBack();
                 return $this->getErrorMsg($userIdentity);
             }
         }
 
-        if($register){
-            $userInfo->userPlatform->user_id = $user->id;
-            if(!$userInfo->userPlatform->save()){
-                $t->rollBack();
-                return $this->getErrorMsg($userInfo->userPlatform);
-            }
+        $userInfo->userPlatform->user_id = $user->id;
+        if(!$userInfo->userPlatform->save()){
+            $t->rollBack();
+            return $this->getErrorMsg($userInfo->userPlatform);
         }
         $t->commit();
 
         if($uInfo->is_blacklist){
-            throw new \Exception('账号已禁用，请联系管理员');
+            if(!\Yii::$app->request->isAjax){
+                return \Yii::$app->response->redirect(CommonUser::userWebUrl('login', ['msg' => \Yii::t('common', '账号已禁用')]));
+            }
+            throw new \Exception(\Yii::t( 'common', '账号已禁用'));
         }
         $this->triggerEvent($user, $register);
         return [
@@ -114,7 +122,7 @@ abstract class LoginForm extends Model
             'data' => [
                 'access_token' => $user->access_token,
                 'id' => $userInfo->userPlatform->id,
-                'route' => '/voice/ttsModel'
+//                'route' => '/voice/ttsModel'
             ],
         ];
     }

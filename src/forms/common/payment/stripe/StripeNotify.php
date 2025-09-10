@@ -110,6 +110,7 @@ class StripeNotify extends Model
                 'amount' => (float)$paymentOrder->amount,
                 'title' => $paymentOrder->title,
                 'notifyClass' => $paymentOrder->notify_class,
+                'pay_type' => $paymentOrder->pay_type,
             ]);
             $notify->notify($po);
         }

@@ -54,11 +54,11 @@ $form = new VoiceForm();
             </div>
             <div class="input-item">
                 <el-select size="small" v-model="searchData.type" @change='search'>
-                    <el-option key="" label="全部" value=""></el-option>
-                    <el-option key="4" label="大模型语音合成" value="4"></el-option>
-                    <el-option key="5" label="精品长文本语音" value="5"></el-option>
-                    <el-option key="6" label="语音复刻" value="6"></el-option>
-                    <el-option key="7" label="语音合成" value="7"></el-option>
+                    <el-option label="全部" value=""></el-option>
+                    <el-option label="<?= $form->textName($form->ttsBig) ?>" value="<?= $form->ttsBig ?>"></el-option>
+                    <el-option label="<?= $form->textName($form->ttsLong) ?>" value="<?= $form->ttsLong ?>"></el-option>
+                    <el-option label="<?= $form->textName($form->ttsMega) ?>" value="<?= $form->ttsMega ?>"></el-option>
+                    <el-option label="<?= $form->textName($form->tts) ?>" value="<?= $form->tts ?>"></el-option>
                 </el-select>
             </div>
             <div style="float: right;">
@@ -69,7 +69,7 @@ $form = new VoiceForm();
                 <div style="padding-left: 4px;">生成的文件和批量上传的文本将在<span style="font-weight: bold">3天</span>后自动删除，请及时下载保存重要文件。</div>
             </el-alert>
             <el-table :data="form" border style="width: 100%" v-loading="listLoading" @selection-change="selectionChange">
-                <el-table-column type="selection" width="55"></el-table-column>
+                <el-table-column type="selection" width="55" :selectable="selectableRow"></el-table-column>
                 <el-table-column prop="text" label="文本">
                     <template slot-scope="scope">
                         <span style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">
@@ -101,19 +101,18 @@ $form = new VoiceForm();
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
                 <el-table-column label="操作" width="200" fixed="right">
                     <template slot-scope="scope">
-                        <el-tooltip effect="dark" content="播放" placement="top" v-if="scope.row.status == 2 && !scope.row.is_data_deleted">
+                        <el-tooltip effect="dark" content="播放" placement="top" v-if="scope.row.status == 2">
                             <el-button circle type="text" size="mini" @click="playMusic(scope.row.result)">
                                 <i class="bi bi-play-circle"></i>
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip effect="dark" :content="scope.row.is_data_deleted ? '文件已删除' : '下载'" placement="top"
+                        <el-tooltip effect="dark" :content="'下载'" placement="top"
                                     v-if="scope.row.status == 2">
-                            <el-button circle type="text" size="mini" @click="down(scope.row)"
-                                       :disabled="!!scope.row.is_data_deleted">
+                            <el-button circle type="text" size="mini" @click="down(scope.row)">
                                 <i class="bi bi-download"></i>
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip effect="dark" content="重试" placement="top" v-if="scope.row.status == 3 || scope.row.is_data_deleted == 1">
+                        <el-tooltip effect="dark" content="重试" placement="top" v-if="scope.row.status == 3">
                             <el-button circle type="text" size="mini" @click="refresh(scope.row)">
                                 <i class="bi bi-arrow-repeat"></i>
                             </el-button>
@@ -232,6 +231,9 @@ $form = new VoiceForm();
             },
         },
         methods: {
+            selectableRow(row, index) {
+                return row.result;
+            },
             closeDialog() {
                 this.newDialog = false;
             },
@@ -304,7 +306,7 @@ $form = new VoiceForm();
                 this.voices = [];
                 if (this.data.type === 5 && this.data.data.version === 2) { // 情感预测版
                     this.options[this.data.type].forEach(item => {
-                        if (item.id === 'yousheng') {
+                        if (item.id === '有声阅读') {
                             list.push(item)
                         }
                     });

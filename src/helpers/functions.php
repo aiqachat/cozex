@@ -240,81 +240,6 @@ if (!function_exists('mysql_timestamp')) {
     }
 }
 
-if (!function_exists('new_date')) {
-    function new_date($date)
-    {
-        if ($date == '0000-00-00 00:00:00') {
-            return '';
-        }
-
-        $time = strtotime($date);
-        $Y = date('Y', $time) . '.';
-        $m = date('m', $time) . '.';
-        $d = date('d', $time) . ' ';
-        $His = date('H:i:s', $time);
-        return $Y . $m . $d . $His;
-    }
-}
-
-if (!function_exists('get_request_uri')) {
-    /**
-     * 获取当前请求的uri
-     * @return string|string[]|null
-     * @throws Exception
-     */
-    function get_request_uri()
-    {
-        if (isset($_SERVER['X-Rewrite-Url'])) { // IIS
-            $requestUri = $_SERVER['X-Rewrite-Url'];
-        } elseif (isset($_SERVER['REQUEST_URI'])) {
-            $requestUri = $_SERVER['REQUEST_URI'];
-            if ($requestUri !== '' && $requestUri[0] !== '/') {
-                $requestUri = preg_replace('/^(http|https):\/\/[^\/]+/i', '', $requestUri);
-            }
-        } elseif (isset($_SERVER['ORIG_PATH_INFO'])) { // IIS 5.0 CGI
-            $requestUri = $_SERVER['ORIG_PATH_INFO'];
-            if (!empty($_SERVER['QUERY_STRING'])) {
-                $requestUri .= '?' . $_SERVER['QUERY_STRING'];
-            }
-        } else {
-            throw new Exception('Unable to determine the request URI.');
-        }
-        return $requestUri;
-    }
-}
-
-if (!function_exists('RGBToHex')) {
-    /**
-     * RGB转 十六进制
-     * @param $rgb RGB颜色的字符串 如：rgb(255,255,255);
-     * @return string 十六进制颜色值 如：#FFFFFF
-     */
-    function RGBToHex($rgb)
-    {
-        $regexp = "/^rgb\(([0-9]{0,3})\,\s*([0-9]{0,3})\,\s*([0-9]{0,3})\)/";
-        $re = preg_match($regexp, $rgb, $match);
-        $re = array_shift($match);
-        $hexColor = "#";
-        $hex = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F');
-        for ($i = 0; $i < 3; $i++) {
-            $r = null;
-            $c = $match[$i];
-            $hexAr = array();
-            while ($c >= 16) {
-                $r = $c % 16;
-                $c = ($c / 16) >> 0;
-                array_push($hexAr, $hex[$r]);
-            }
-            array_push($hexAr, $hex[$c]);
-            $ret = array_reverse($hexAr);
-            $item = implode('', $ret);
-            $item = str_pad($item, 2, '0', STR_PAD_LEFT);
-            $hexColor .= $item;
-        }
-        return $hexColor;
-    }
-}
-
 if (!function_exists('get_supported_image_lib')) {
     /**
      * 获取支持的图片处理库
@@ -331,34 +256,6 @@ if (!function_exists('get_supported_image_lib')) {
                 return ['Gd'];
         }
         throw new Exception('找不到可处理图片的扩展，请检查PHP是否正确安装了GD或Imagick扩展。');
-    }
-}
-
-if (!function_exists('hex2rgb')) {
-    /**
-     * 十六进制 转 RGB
-     */
-    function hex2rgb($hexColor)
-    {
-        $color = str_replace('#', '', $hexColor);
-        if (strlen($color) > 3) {
-            $rgb = array(
-                'r' => hexdec(substr($color, 0, 2)),
-                'g' => hexdec(substr($color, 2, 2)),
-                'b' => hexdec(substr($color, 4, 2))
-            );
-        } else {
-            $color = $hexColor;
-            $r = substr($color, 0, 1) . substr($color, 0, 1);
-            $g = substr($color, 1, 1) . substr($color, 1, 1);
-            $b = substr($color, 2, 1) . substr($color, 2, 1);
-            $rgb = array(
-                'r' => hexdec($r),
-                'g' => hexdec($g),
-                'b' => hexdec($b)
-            );
-        }
-        return $rgb;
     }
 }
 
@@ -567,27 +464,6 @@ if (!function_exists('generate_order_no')) {
     }
 }
 
-if (!function_exists('sha256')) {
-    /**
-     * @param string $data 要进行哈希运算的消息。
-     * @param bool $raw_output 设置为 TRUE 输出原始二进制数据， 设置为 FALSE 输出小写 16 进制字符串。
-     * @return string
-     * 进行sha256加密
-     */
-    function sha256($data, $raw_output = false)
-    {
-        return hash('sha256', $data, $raw_output);
-    }
-}
-
-if (!function_exists('array_insert')) {
-    function array_insert(&$array, $position, $item)
-    {
-        $first_array = array_splice($array, 0, $position);
-        $array = array_merge($first_array, [$item], $array);
-    }
-}
-
 if (!function_exists('filter_emoji')) {
     /**
      * 过滤emoji字符
@@ -604,60 +480,6 @@ if (!function_exists('filter_emoji')) {
             $str);
 
         return $str;
-    }
-}
-
-if (!function_exists('utf8_str_split')) {
-    /**
-     * 字符串转数组，支持UTF8中文
-     * @param $str
-     * @param int $split_len
-     * @return array|bool|mixed
-     */
-    function utf8_str_split($str, $split_len = 1)
-    {
-        if (!preg_match('/^[0-9]+$/', $split_len) || $split_len < 1)
-            return FALSE;
-
-        $len = mb_strlen($str, 'UTF-8');
-        if ($len <= $split_len)
-            return array($str);
-
-        preg_match_all('/.{' . $split_len . '}|[^x00]{1,' . $split_len . '}$/us', $str, $ar);
-
-        return $ar[0];
-    }
-}
-
-if (!function_exists('address_handle')) {
-    /**
-     * 地址串处理，输出省市区，支持 中国省市区详细地址 或 省市区详细地址的转换
-     * 例：中国浙江省嘉兴市南湖区中环南路1882号 输出 浙江省 嘉兴市 南湖区
-     * @param $address
-     * @return string
-     */
-    function address_handle($address)
-    {
-        $new_address = '';
-        $arr = utf8_str_split($address);
-        $num = 0;
-        $address_num = 0;
-        foreach ($arr as $item) {
-            if (($num < 2 && $item != '中' && $item != '国') || $num >= 2) {
-                $new_address .= $item;
-                if ($item == '省' || $item == '市' || $item == '区') {
-                    if ($address_num < 2) {
-                        $new_address .= ' ';
-                    }
-                    $address_num++;
-                }
-                $num++;
-                if ($address_num >= 3) {
-                    break;
-                }
-            }
-        }
-        return $new_address;
     }
 }
 
@@ -688,23 +510,15 @@ if (!function_exists('file_uri')) {
     }
 }
 
-if (!function_exists('get_client_ip')) {
-    /**
-     * 获取客户端ip
-     * @return array|false|mixed|string
-     */
-    function get_client_ip()
+if (!function_exists('web_url')) {
+    function web_url()
     {
-        $ip = 'unknown';
-        if (isset(Yii::$app->request->remoteIP)) {
-            $ip = Yii::$app->request->remoteIP;
+        if (Yii::$app instanceof \yii\web\Application) {
+            $webRoot = Yii::$app->request->hostInfo . Yii::$app->request->baseUrl;
+        }else{
+            $webRoot = Yii::$app->hostInfo . Yii::$app->baseUrl;
         }
-        if ($_SERVER['REMOTE_ADDR']) {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        } elseif (getenv('REMOTE_ADDR')) {
-            $ip = getenv('REMOTE_ADDR');
-        }
-        return $ip;
+        return $webRoot;
     }
 }
 
@@ -792,5 +606,19 @@ if (!function_exists('app_version')) {
             return '0.0.0';
         }
         return $versionData['version'] ?? '0.0.0';
+    }
+}
+
+if (!function_exists('utc_time')) {
+    /**
+     * @return string
+     */
+    function utc_time($time = null)
+    {
+        $default = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+        $utcNow = date('Y-m-d H:i:s', $time ?: time());
+        date_default_timezone_set($default);
+        return $utcNow;
     }
 }

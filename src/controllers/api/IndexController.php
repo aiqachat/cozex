@@ -13,6 +13,7 @@ use app\controllers\api\filters\LoginFilter;
 use app\forms\api\index\ConfigForm;
 use app\forms\api\index\MailForm;
 use app\forms\api\index\SmsForm;
+use app\forms\api\index\SquareForm;
 use app\forms\permission\menu\MenusForm;
 
 class IndexController extends ApiController
@@ -22,7 +23,7 @@ class IndexController extends ApiController
         return array_merge(parent::behaviors(), [
             'login' => [
                 'class' => LoginFilter::class,
-                'ignore' => ['config', 'send-email-code', 'send-sms-code']
+                'ignore' => ['config', 'send-email-code', 'send-sms-code', 'square', 'download']
             ],
             'limiter' => [
                 'class' => LimiterFilter::class,
@@ -45,7 +46,7 @@ class IndexController extends ApiController
         $res = $form->getMenus('user');
         return [
             'code' => 0,
-            'data' => $form->handleUserMenu($res['menus'] ?? [], true)
+            'data' => $form->handleUserMenu($res['menus'] ?? [], true),
         ];
     }
 
@@ -61,5 +62,19 @@ class IndexController extends ApiController
         $form = new SmsForm();
         $form->attributes = \Yii::$app->request->get ();
         return $form->send();
+    }
+
+    public function actionSquare()
+    {
+        $form = new SquareForm();
+        $form->attributes = \Yii::$app->request->get();
+        return $form->get();
+    }
+
+    public function actionDownload()
+    {
+        $form = new SquareForm();
+        $form->attributes = \Yii::$app->request->get();
+        return $form->down();
     }
 }

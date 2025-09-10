@@ -1,17 +1,16 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug\panels;
 
 use Yii;
-use yii\debug\Panel;
-use yii\helpers\VarDumper;
-use yii\log\Logger;
 use yii\debug\models\search\Log;
+use yii\debug\Panel;
+use yii\log\Logger;
 
 /**
  * Debugger panel that collects and displays logs.
@@ -63,23 +62,12 @@ class LogPanel extends Panel
      */
     public function save()
     {
-        $target = $this->module->logTarget;
         $except = [];
         if (isset($this->module->panels['router'])) {
             $except = $this->module->panels['router']->getCategories();
         }
-        
-        $messages = $target->filterMessages($target->messages, Logger::LEVEL_ERROR | Logger::LEVEL_INFO | Logger::LEVEL_WARNING | Logger::LEVEL_TRACE, [], $except);
-        foreach ($messages as &$message) {
-            if (!is_string($message[0])) {
-                // exceptions may not be serializable if in the call stack somewhere is a Closure
-                if ($message[0] instanceof \Throwable || $message[0] instanceof \Exception) {
-                    $message[0] = (string) $message[0];
-                } else {
-                    $message[0] = VarDumper::export($message[0]);
-                }
-            }
-        }
+
+        $messages = $this->getLogMessages(Logger::LEVEL_ERROR | Logger::LEVEL_INFO | Logger::LEVEL_WARNING | Logger::LEVEL_TRACE, [], $except, true);
 
         return ['messages' => $messages];
     }
@@ -96,14 +84,30 @@ class LogPanel extends Panel
         if ($this->_models === null || $refresh) {
             $this->_models = [];
 
+            $previousId = null;
+            $previousTime = null;
+            $id = 1;
             foreach ($this->data['messages'] as $message) {
-                $this->_models[] = [
+                if (is_null($previousTime)) {
+                    $previousTime = $message[3];
+                } else {
+                    $this->_models[$previousId]['id_of_next'] = $id;
+                }
+                $this->_models[$id] = [
+                    'id' => $id,
                     'message' => $message[0],
                     'level' => $message[1],
                     'category' => $message[2],
                     'time' => $message[3] * 1000, // time in milliseconds
+                    'time_of_previous' => $previousTime * 1000, // time in milliseconds
+                    'time_since_previous' => $message[3] - $previousTime,
+                    'id_of_previous' => $previousId,
+                    'id_of_next' => null,
                     'trace' => isset($message[4]) ? $message[4] : [],
                 ];
+                $previousId = $id;
+                $previousTime = $message[3];
+                $id++;
             }
         }
 

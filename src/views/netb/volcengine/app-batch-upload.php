@@ -46,9 +46,9 @@ $url = Yii::$app->urlManager->createUrl([$r]);
             <el-button size="small" type="primary" :loading="loading" class="batch-btn"
                 @click="handleAction('handle', '合成')">合成</el-button>
             <el-button size="small" type="primary" :loading="loading" class="batch-btn"
-                @click="handleAction('delete', '删除')">删除</el-button>
+                       @click="handleAction('down', '下载')">批量下载</el-button>
             <el-button size="small" type="primary" :loading="loading" class="batch-btn"
-                @click="handleAction('down', '下载')">批量下载</el-button>
+                @click="handleAction('delete', '删除')">删除</el-button>
         </div>
         <el-alert title="温馨提示" type="warning" :closable="false" show-icon class="batch-alert">
             <div class="batch-alert-content">生成的文件和批量上传的文本将在<span style="font-weight: bold">3天</span>后自动删除，请及时下载保存重要文件。

@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\Json;
 
 /**
  * This is the model class for table "{{%mail_setting}}".
@@ -12,7 +13,10 @@ use Yii;
  * @property string $send_platform  发送平台
  * @property string $send_mail 发件人邮箱
  * @property string $send_pwd 授权码
+ * @property string $subject_name 邮件主题
  * @property string $send_name 发件人名称
+ * @property string $desc
+ * @property string $language_data
  * @property int $is_delete
  * @property string $created_at
  * @property string $updated_at
@@ -35,10 +39,10 @@ class MailSetting extends ModelActiveRecord
     {
         return [
             [['mall_id', 'is_delete'], 'integer'],
-            [['send_mail', 'send_platform'], 'string'],
+            [['send_mail', 'send_platform', 'desc', 'language_data'], 'string'],
             [['created_at', 'updated_at', 'deleted_at'], 'required'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['send_pwd', 'send_name'], 'string', 'max' => 255],
+            [['send_pwd', 'send_name', 'subject_name'], 'string', 'max' => 255],
         ];
     }
 
@@ -58,5 +62,18 @@ class MailSetting extends ModelActiveRecord
             'updated_at' => 'Updated At',
             'deleted_at' => 'Deleted At',
         ];
+    }
+
+    public function switchData()
+    {
+        if(is_string($this->language_data)) {
+            $this->language_data = Json::decode($this->language_data);
+        }
+        if(\Yii::$app->language != 'zh'){
+            $data = $this->language_data[\Yii::$app->language] ?? [];
+            $this->subject_name = !empty($data['subject_name']) ? $data['subject_name'] : $this->subject_name;
+            $this->send_name = !empty($data['send_name']) ? $data['send_name'] : $this->send_name;
+            $this->desc = !empty($data['desc']) ? $data['desc'] : $this->desc;
+        }
     }
 }

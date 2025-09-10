@@ -7,6 +7,7 @@
 
 namespace app\forms;
 
+use app\models\UserIdentity;
 use Yii;
 
 class Menus
@@ -23,6 +24,7 @@ class Menus
         'overrun',
         'queue_service',
         'message_remind',
+        'voice_manage',
     ];
 
     /**
@@ -81,6 +83,25 @@ class Menus
                         'name' => '语音技术配置',
                         'route' => 'netb/setting/volcengine',
                     ],
+                    [
+                        'name' => '基础设置',
+                        'route' => 'netb/setting/voice',
+                    ],
+                    [
+                        'name' => '价格设置',
+                        'route' => 'netb/setting/price',
+                    ],
+                ],
+            ],
+            [
+                'name' => '视觉智能',
+                'key' => 'visual',
+                'icon' => 'statics/img/mall/nav/plugins.png',
+                'children' => [
+                    [
+                        'name' => '基础设置',
+                        'route' => 'netb/visual/setting',
+                    ],
                 ],
             ],
             [
@@ -111,6 +132,10 @@ class Menus
                                 'route' => 'netb/volcengine/auc',
                             ],
                         ],
+                    ],
+                    [
+                        'name' => '字幕配置',
+                        'route' => 'netb/setting/subtitle',
                     ],
                 ],
             ],
@@ -181,6 +206,16 @@ class Menus
                                     ],
                                 ],
                             ],
+                            [
+                                'name' => '用户等级',
+                                'route' => 'netb/level/index',
+                                'action' => [
+                                    [
+                                        'name' => '编辑',
+                                        'route' => 'netb/level/edit',
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                     [
@@ -195,10 +230,6 @@ class Menus
                                 'name' => '菜单设置',
                                 'route' => 'netb/user/menu',
                             ],
-                            [
-                                'name' => '价格设置',
-                                'route' => 'netb/setting/price',
-                            ],
                         ],
                     ],
                 ],
@@ -209,31 +240,21 @@ class Menus
                 'icon' => 'statics/img/mall/nav/plugins.png',
                 'children' => [
                     [
-                        'name' => '余额',
+                        'name' => '资金管理',
                         'route' => '',
                         'children' => [
                             [
                                 'name' => '充值设置',
                                 'route' => 'netb/recharge/config',
                             ],
-//                            [
-//                                'name' => '充值管理',
-//                                'route' => 'netb/recharge/index',
-//                                'action' => [
-//                                    [
-//                                        'name' => '充值编辑',
-//                                        'route' => 'netb/recharge/edit',
-//                                    ],
-//                                ],
-//                            ],
                             [
-                                'name' => '余额收支',
+                                'name' => '余额明细',
                                 'route' => 'netb/user/balance-log',
                             ],
                         ],
                     ],
                     [
-                        'name' => '积分',
+                        'name' => '积分管理',
                         'route' => '',
                         'children' => [
                             [
@@ -251,6 +272,20 @@ class Menus
                             [
                                 'name' => '积分收支',
                                 'route' => 'netb/statistic/integral',
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => '会员管理',
+                        'route' => '',
+                        'children' => [
+                            [
+                                'name' => '会员等级',
+                                'route' => 'netb/member/level-index',
+                            ],
+                            [
+                                'name' => '会员权限',
+                                'route' => 'netb/member/permission-index',
                             ],
                         ],
                     ],
@@ -310,6 +345,24 @@ class Menus
                     [
                         'name' => '素材管理',
                         'route' => 'netb/material/index',
+                    ],
+                ],
+            ],
+            [
+                'name' => '内容审核',
+                'icon' => 'statics/img/mall/nav/mall-manage.png',
+                'children' => [
+                    [
+                        'name' => '图片审核',
+                        'route' => 'netb/content/image',
+                    ],
+                    [
+                        'name' => '视频审核',
+                        'route' => 'netb/content/video',
+                    ],
+                    [
+                        'name' => '内容设置',
+                        'route' => 'netb/content/setting',
                     ],
                 ],
             ],
@@ -436,6 +489,14 @@ class Menus
                             '_layout' => 'admin',
                         ],
                     ],
+                    [
+                        'key' => 'voice_manage',
+                        'name' => '音色管理',
+                        'route' => 'admin/setting/voice',
+                        'params' => [
+                            '_layout' => 'admin',
+                        ],
+                    ],
                 ],
             ],
             [
@@ -472,103 +533,299 @@ class Menus
      */
     public static function getUserMenus()
     {
+        // 解释查看根目录《用户菜单创建指南.md》
+        $dashboard = [
+            [
+                'name' => 'dashboard.person',
+                'path' => '/dashboard/person',
+                'view' => 'dashboard/Person',
+                'meta' => [
+                    'title' => Yii::t('menu', '个人中心'),
+                ],
+            ],
+            [
+                'name' => 'user.edit',
+                'path' => '/user/edit',
+                'view' => 'user/Edit',
+                'meta' => [
+                    'hidden' => true,
+                ],
+            ],
+        ];
+        if(!Yii::$app->user->isGuest){
+            /** @var UserIdentity $userIdentity */
+            $userIdentity = Yii::$app->user->identity->identity;
+            if($userIdentity->level->promotion_status){
+                $dashboard[] = [
+                    'name' => 'dashboard.promote',
+                    'path' => '/dashboard/promote',
+                    'view' => 'dashboard/Promote',
+                    'meta' => [
+                        'title' => Yii::t('menu', '推广中心'),
+                    ],
+                ];
+            }
+        }
         return [
             [
-                'name' => 'voice', // 路由名称
-                'key' => 'voice', // 用于判断权限
+                'name' => 'voice',
+                'key' => 'voice',
                 'meta' => [
-                    'title' => Yii::t('menu', 'voice'), // 菜单名
-                    'icon' => 'bi-1-circle-fill',
+                    'title' => Yii::t('menu', '语音技术'),
+                    'icon' => 'bi-mic-fill',
                 ],
                 'children' => [
                     [
-                        'name' => 'voice.ttsModel', // 路由名称
-                        'path' => '/voice/ttsModel', // url地址，再#/后面
-                        'view' => 'voice/TtsModel', // 页面目录views下目录名+文件名
+                        'name' => 'voice.list',
                         'meta' => [
-                            'title' => Yii::t('menu', 'voice.ttsModel'), // 菜单名
-                            'icon' => 'bi-house-fill',
+                            'title' => Yii::t('menu', '国内版'),
                         ],
+                        'children' => [
+                            [
+                                'name' => 'voice.ttsModel',
+                                'path' => '/voice/ttsModel',
+                                'view' => 'voice/TtsModel',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '大模型语音合成'),
+                                ],
+                            ],
+                            [
+                                'name' => 'voice.ttsMega',
+                                'path' => '/voice/ttsMega',
+                                'view' => 'voice/TtsMega',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '大模型声音复刻'),
+                                ],
+                            ],
+                            [
+                                'name' => 'voice.ttsLong',
+                                'path' => '/voice/ttsLong',
+                                'view' => 'voice/TtsLong',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '语音合成长文本'),
+                                ],
+                            ],
+                            [
+                                'name' => 'voice.tts',
+                                'path' => '/voice/tts',
+                                'view' => 'voice/Tts',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '语音合成短文本'),
+                                ],
+                            ],
+                        ]
                     ],
                     [
-                        'name' => 'voice.ttsMega', // 路由名称
-                        'path' => '/voice/ttsMega', // url地址，再#/后面
-                        'view' => 'voice/TtsMega', // 页面目录views下目录名+文件名
+                        'name' => 'voice.listInter',
                         'meta' => [
-                            'title' => Yii::t('menu', 'voice.ttsMega'), // 菜单名
-                            'icon' => 'bi-house-fill',
+                            'title' => Yii::t('menu', '国际版'),
                         ],
-                    ],
-                    [
-                        'name' => 'voice.ttsLong', // 路由名称
-                        'path' => '/voice/ttsLong', // url地址，再#/后面
-                        'view' => 'voice/TtsLong', // 页面目录views下目录名+文件名
-                        'meta' => [
-                            'title' => Yii::t('menu', 'voice.ttsLong'), // 菜单名
-                            'icon' => 'bi-house-fill',
-                        ],
-                    ],
-                    [
-                        'name' => 'voice.tts', // 路由名称
-                        'path' => '/voice/tts', // url地址，再#/后面
-                        'view' => 'voice/Tts', // 页面目录views下目录名+文件名
-                        'meta' => [
-                            'title' => Yii::t('menu', 'voice.tts'), // 菜单名
-                            'icon' => 'bi-house-fill',
-                        ],
+                        'children' => [
+                            [
+                                'name' => 'voice.ttsModelAbroad',
+                                'path' => '/voice/ttsModelAbroad',
+                                'view' => 'voice/TtsModelAbroad',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '大模型语音合成'),
+                                ],
+                            ],
+                        ]
                     ],
                 ]
             ],
             [
-                'name' => 'subtitles', // 路由名称
+                'name' => 'visual',
+                'key' => 'visual',
+                'meta' => [
+                    'title' => Yii::t('menu', '视觉智能'),
+                    'icon' => 'bi-camera-fill',
+                ],
+                'children' => [
+                    [
+                        'name' => 'visual.dream',
+                        'path' => '/visual/dream',
+                        'view' => 'visual/Dream',
+                        'meta' => [
+                            'title' => Yii::t('menu', '即梦AI'),
+                        ],
+                    ],
+                    [
+                        'name' => 'visualArk.ark',
+                        'path' => '/visual/ark',
+                        'view' => 'visual/Ark',
+                        'meta' => [
+                            'title' => Yii::t('menu', '火山方舟'),
+                        ],
+                    ],
+                    [
+                        'name' => 'visualArk.arkAbroad',
+                        'path' => '/visual/arkAbroad',
+                        'view' => 'visual/ArkAbroad',
+                        'meta' => [
+                            'title' => Yii::t('menu', '火山方舟国际版'),
+                        ],
+                    ],
+                    [
+                        'name' => 'visual.jimeng',
+                        'meta' => [
+                            'title' => Yii::t('menu', '即梦AI'),
+                        ],
+                        'children' => [
+                            [
+                                'name' => 'visual.image',
+                                'path' => '/visual/image',
+                                'view' => 'visual/Image',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '图片生成'),
+                                ],
+                            ],
+                            [
+                                'name' => 'visual.video',
+                                'path' => '/visual/video',
+                                'view' => 'visual/Video',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '视频生成'),
+                                ],
+                            ],
+                            [
+                                'name' => 'visual.editImage',
+                                'path' => '/visual/editImage',
+                                'view' => 'visual/EditImage',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '图生图'),
+                                ],
+                            ],
+                        ]
+                    ],
+                    [
+                        'name' => 'visual.ark',
+                        'meta' => [
+                            'title' => Yii::t('menu', '火山方舟'),
+                        ],
+                        'children' => [
+                            [
+                                'name' => 'visualArk.image',
+                                'path' => '/visual/arkImage',
+                                'view' => 'visual/ArkImage',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '图片生成'),
+                                ],
+                            ],
+                            [
+                                'name' => 'visualArk.video',
+                                'path' => '/visual/arkVideo',
+                                'view' => 'visual/ArkVideo',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '视频生成'),
+                                ],
+                            ],
+                            [
+                                'name' => 'visualArk.editImage',
+                                'path' => '/visual/arkEditImage',
+                                'view' => 'visual/ArkEditImage',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '图生图'),
+                                ],
+                            ],
+                        ]
+                    ],
+                    [
+                        'name' => 'visual.arkInter',
+                        'meta' => [
+                            'title' => Yii::t('menu', '火山方舟国际版'),
+                        ],
+                        'children' => [
+                            [
+                                'name' => 'visualArk.imageAbroad',
+                                'path' => '/visual/arkImageAbroad',
+                                'view' => 'visual/ArkImageAbroad',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '图片生成'),
+                                ],
+                            ],
+                            [
+                                'name' => 'visualArk.videoAbroad',
+                                'path' => '/visual/arkVideoAbroad',
+                                'view' => 'visual/ArkVideoAbroad',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '视频生成'),
+                                ],
+                            ],
+                            [
+                                'name' => 'visualArk.editImageAbroad',
+                                'path' => '/visual/arkEditImageAbroad',
+                                'view' => 'visual/ArkEditImageAbroad',
+                                'meta' => [
+                                    'title' => Yii::t('menu', '图生图'),
+                                ],
+                            ],
+                        ]
+                    ],
+                ]
+            ],
+            [
+                'name' => 'subtitles',
                 'key' => 'subtitle', // 用于判断权限
                 'meta' => [
-                    'title' => Yii::t('menu', 'subtitles'), // 菜单名
-                    'icon' => 'bi-2-circle-fill',
+                    'title' => Yii::t('menu', '字幕技术'),
+                    'icon' => 'bi-chat-square-text',
                 ],
                 'children' => [
                     [
-                        'name' => 'subtitles.generate', // 路由名称
-                        'path' => '/subtitles/generate', // url地址，再#/后面
-                        'view' => 'subtitles/Index', // 页面目录views下目录名+文件名
+                        'name' => 'subtitles.generate',
+                        'path' => '/subtitles/generate',
+                        'view' => 'subtitles/Index',
                         'meta' => [
-                            'title' => Yii::t('menu', 'subtitles.generate'), // 菜单名
-                            'icon' => 'bi-house-fill',
+                            'title' => Yii::t('menu', '字幕生成'),
                         ],
                     ],
                     [
-                        'name' => 'subtitles.titling', // 路由名称
-                        'path' => '/subtitles/titling', // url地址，再#/后面
-                        'view' => 'subtitles/Titling', // 页面目录views下目录名+文件名
+                        'name' => 'subtitles.titling',
+                        'path' => '/subtitles/titling',
+                        'view' => 'subtitles/Titling',
                         'meta' => [
-                            'title' => Yii::t('menu', 'subtitles.titling'), // 菜单名
-                            'icon' => 'bi-house-fill',
+                            'title' => Yii::t('menu', '字幕打轴'),
                         ],
                     ],
                     [
-                        'name' => 'subtitles.auc', // 路由名称
-                        'path' => '/subtitles/auc', // url地址，再#/后面
-                        'view' => 'subtitles/Auc', // 页面目录views下目录名+文件名
+                        'name' => 'subtitles.auc',
+                        'path' => '/subtitles/auc',
+                        'view' => 'subtitles/Auc',
                         'meta' => [
-                            'title' => Yii::t('menu', 'subtitles.auc'), // 菜单名
-                            'icon' => 'bi-house-fill',
+                            'title' => Yii::t('menu', '大模型语音识别'),
                         ],
                     ],
                 ]
             ],
             [
-                'name' => 'finance', // 路由名称
+                'name' => 'finance',
                 'meta' => [
-                    'title' => Yii::t('menu', 'finance'), // 菜单名
+                    'title' => Yii::t('menu', '财务管理'),
                     'icon' => 'bi-coin',
                 ],
                 'children' => [
                     [
-                        'name' => 'finance.index', // 路由名称
-                        'path' => '/finance/index', // url地址，再#/后面
-                        'view' => 'finance/Index', // 页面目录views下目录名+文件名
+                        'name' => 'finance.index',
+                        'path' => '/finance/index',
+                        'view' => 'finance/Index',
                         'meta' => [
-                            'title' => Yii::t('menu', 'finance.index'), // 菜单名
+                            'title' => Yii::t('menu', '财务信息'),
+                        ],
+                    ],
+                    [
+                        'name' => 'finance.integralRecord',
+                        'path' => '/finance/integralRecord',
+                        'view' => 'finance/IntegralRecord',
+                        'meta' => [
+                            'hidden' => true,
+                        ],
+                    ],
+                    [
+                        'name' => 'finance.balanceRecord',
+                        'path' => '/finance/balanceRecord',
+                        'view' => 'finance/BalanceRecord',
+                        'meta' => [
+                            'hidden' => true,
                         ],
                     ],
                     [
@@ -576,35 +833,18 @@ class Menus
                         'path' => '/finance/integral',
                         'view' => 'finance/Integral',
                         'meta' => [
-                            'title' => Yii::t('menu', 'finance.integral'),
+                            'title' => Yii::t('menu', '积分管理'),
                         ],
                     ],
                 ]
             ],
             [
-                'name' => 'dashboard', // 路由名称
+                'name' => 'dashboard',
                 'meta' => [
-                    'title' => Yii::t('menu', 'dashboard'), // 菜单名
-                    'icon' => 'bi-house-fill',
+                    'title' => Yii::t('menu', '控制面板'),
+                    'icon' => 'bi-speedometer2',
                 ],
-                'children' => [
-                    [
-                        'name' => 'dashboard.person', // 路由名称
-                        'path' => '/dashboard/person', // url地址，再#/后面
-                        'view' => 'dashboard/Person', // 页面目录views下目录名+文件名
-                        'meta' => [
-                            'title' => Yii::t('menu', 'dashboard.person'), // 菜单名
-                        ],
-                    ],
-                    [
-                        'name' => 'user.edit', // 路由名称
-                        'path' => '/user/edit', // url地址，再#/后面
-                        'view' => 'user/Edit', // 页面目录views下目录名+文件名
-                        'meta' => [
-                            'hidden' => true,
-                        ],
-                    ]
-                ]
+                'children' => $dashboard
             ],
         ];
     }

@@ -36,11 +36,32 @@ class TtsGenerate extends Base
     /** @var string 音色，见音色列表 */
     public $voice_type;
 
+    /** @var string 音色情感 */
+    public $emotion;
+
+    /** @var float 情绪值设置 */
+    public $emotion_scale;
+
+    /** @var boolean 开启音色情感 */
+    public $enable_emotion;
+
     /** @var float 语速，[0.8,2]，默认为1，通常保留一位小数即可 */
     public $speed_ratio = 1;
 
     /** @var string 请求标识  需要保证每次调用传入值唯一，建议使用 UUID */
     public $reqid;
+
+    /** @var int 音频采样率 */
+    public $rate;
+
+    /** @var int 比特率 */
+    public $bitrate;
+
+    /** @var float 音量调节 */
+    public $loudness_ratio;
+
+    /** @var string 语言类型 */
+    public $language;
 
     public function getMethodName()
     {
@@ -48,14 +69,14 @@ class TtsGenerate extends Base
     }
 
     public function getParams(){
-        return [
+        $param = [
             'app' => [
                 'appid' => $this->api->appid,
                 'token' => $this->api->token,
                 'cluster' => $this->cluster,
             ],
             'user' => [
-                'uid' => $this->uid ?: "coze-".date("Ymd"),
+                'uid' => $this->uid ?: "cozex-".date("Ymd"),
             ],
             'audio' => [
                 'voice_type' => $this->voice_type,
@@ -68,6 +89,29 @@ class TtsGenerate extends Base
                 'operation' => $this->operation
             ],
         ];
+        if($this->emotion){
+            $param['audio']['emotion'] = $this->emotion;
+        }
+        if($this->language){
+            $param['audio']['language'] = $this->language;
+        }
+        if($this->enable_emotion){
+            $param['audio'] = array_merge($param['audio'], [
+                'emotion' => $this->emotion,
+                'emotion_scale' => $this->emotion_scale,
+                'enable_emotion' => true,
+            ]);
+        }
+        if($this->rate){
+            $param['audio']['rate'] = $this->rate;
+        }
+        if($this->bitrate){
+            $param['audio']['bitrate'] = $this->bitrate;
+        }
+        if($this->loudness_ratio){
+            $param['audio']['loudness_ratio'] = $this->loudness_ratio;
+        }
+        return $param;
     }
 
     public function response($response){

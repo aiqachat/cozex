@@ -25,13 +25,17 @@ class SpeechBaseForm extends BaseForm
     public $data;
     public $account_id;
     public $user_id;
+    public $file;
+    public $is_home;
 
     public function rules()
     {
         return [
-            [['text'], 'string'],
-            [['id', 'type', 'account_id', 'user_id'], 'integer'],
+            [['text', 'file'], 'string'],
+            [['id', 'type', 'account_id', 'user_id', 'is_home'], 'integer'],
             [['data'], 'safe'],
+            [['file'], 'default', 'value' => ''],
+            [['is_home'], 'default', 'value' => 1],
         ];
     }
 
@@ -73,28 +77,6 @@ class SpeechBaseForm extends BaseForm
     {
     }
 
-    public function check($data)
-    {
-        if (!empty($data['payment_type'])) {
-            $currency = \Yii::$app->currency->setUser($this->user);
-            switch ($data['payment_type']) {
-                case \Yii::$app->payment::PAY_TYPE_INTEGRAL:
-                    $amount = $currency->integral->select();
-                    $text = '积分';
-                    break;
-                case \Yii::$app->payment::PAY_TYPE_BALANCE:
-                    $amount = $currency->balance->select();
-                    $text = '余额';
-                    break;
-                default:
-                    throw new \Exception('错误的支付方式');
-            }
-            if ($amount < $data['cost'] ?? 0) {
-                throw new \Exception($text . '不足');
-            }
-        }
-    }
-
     public function pay($id, $data)
     {
         if (!empty($data['payment_type'])) {
@@ -131,6 +113,7 @@ class SpeechBaseForm extends BaseForm
     public function handle()
     {
         $model = AvData::findOne(['id' => $this->id, 'mall_id' => \Yii::$app->mall->id]);
+        $t = \Yii::$app->db->beginTransaction();
         try {
             if (!$model || !$model->account) {
                 throw new \Exception('数据不存在');
@@ -143,7 +126,7 @@ class SpeechBaseForm extends BaseForm
             } else {
                 $text = $model->text;
             }
-            $this->check($data);
+            $this->pay($model->id, $data);
             $api = ApiForm::common([
                 'appid' => $data['app_id'] ?? '',
                 'token' => $data['access_token'] ?? '',
@@ -159,13 +142,35 @@ class SpeechBaseForm extends BaseForm
             } else {
                 $obj = new TtsGenerate();
                 $obj->speed_ratio = floatval($data['speed'] ?? 1);
+                if(!empty($data['style'])){
+                    $obj->emotion = $data['style'];
+                }
+                if(!empty($data['language'])){
+                    $obj->language = $data['language'];
+                }
+                if(isset($data['enable_emotion']) && $data['enable_emotion'] == 'true'){
+                    $obj->enable_emotion = true;
+                    $obj->emotion = $data['emotion'];
+                    $obj->emotion_scale = floatval($data['emotion_scale']);
+                }
+                if(isset($data['encoding'])){
+                    $obj->encoding = $data['encoding'];
+                }
+                if(isset($data['rate'])){
+                    $obj->rate = intval($data['rate']);
+                }
+                if(isset($data['bitrate'])){
+                    $obj->bitrate = intval($data['bitrate']);
+                }
+                if(isset($data['loudness_ratio'])){
+                    $obj->loudness_ratio = floatval($data['loudness_ratio']);
+                }
             }
             if ($model->type == $this->ttsMega) {
                 $obj->cluster = TtsGenerate::TWO;
             }
             $obj->voice_type = $data['voice_type'];
             $obj->text = $text;
-
             $res = $api->setObject($obj)->request();
 
             if ($model->type == $this->ttsLong) {
@@ -184,7 +189,7 @@ class SpeechBaseForm extends BaseForm
                 $content = base64_decode($res['data']);
             }
 
-            $fileRes = file_uri('/web/uploads/av_file/' . date("Y-m-d") . "/");
+            $fileRes = file_uri(AvData::FILE_DIR . date("Y-m-d") . "/");
             if ($model->file) {
                 $pathInfo = pathinfo($model->file);
                 $baseName = $pathInfo['filename'];
@@ -204,14 +209,13 @@ class SpeechBaseForm extends BaseForm
             file_put_contents($file, $content);
             $model->result = $fileRes['web_uri'] . $name;
             $model->status = 2;
-            $model->is_data_deleted = 0;
-            $this->user = User::findOne($model->user_id);
-            $this->pay($model->id, $data);
             $return = [
                 'code' => ApiCode::CODE_SUCCESS,
                 'msg' => '成功'
             ];
+            $t->commit();
         } catch (\Exception $e) {
+            $t->rollBack();
             if($model) {
                 $model->status = 3;
                 $model->err_msg = $e->getMessage ();

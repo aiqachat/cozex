@@ -1,4 +1,4 @@
-# CozeX1.0.18
+# CozeX
 CozeX扣子API封装的一套coze智能体管理saas软件，火山方舟平台大模型语音技术SAAS软件。
 
 ### 主要功能目前集成

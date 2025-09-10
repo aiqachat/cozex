@@ -64,8 +64,11 @@ class UserConfigForm extends BasicConfigForm
     {
         return [
             'title' => \Yii::$app->mall->name,
+            'title_en' => '',
             'keywords' => '',
+            'keywords_en' => '',
             'description' => '',
+            'description_en' => '',
         ];
     }
 }

@@ -11,6 +11,8 @@
 namespace app\forms\api\user;
 
 use app\bootstrap\response\ApiCode;
+use app\forms\mall\member\MemberLevelForm;
+use app\models\MemberLevel;
 use app\models\Model;
 use app\models\User;
 
@@ -25,14 +27,26 @@ class UserInfoForm extends Model
         /** @var User $user */
         $user = \Yii::$app->user->identity;
         $userInfo = $user->userInfo;
+        if ($userInfo && !$userInfo->invite_code) {
+            $userInfo->code();
+            $userInfo->save();
+        }
+
+        // 获取会员权限
+        $memberLevelForm = new MemberLevelForm();
+        $memberLevelForm->id = $user->identity->member_level;
+        $member_permission = $memberLevelForm->getPermissions();
+
         $result = [
             'id' => $user->id,
             'username' => $user->username,
             'nickname' => $user->nickname,
             'uid' => $user->uid,
             'info' => $userInfo,
-            'platform_account' => $user->platform->platform_account ?? $user->username,
-            'platform_id' => $user->platform->platform_id ?? '',
+            'level_name' => $user->identity->level->name ?? '--',
+            'promotion_ratio' => $user->identity->level->promotion_commission_ratio ?? 0,
+            'member_level' => $user->identity->memberLevel->name ?? '--',
+            'member_permission' => $member_permission
         ];
 
         return [

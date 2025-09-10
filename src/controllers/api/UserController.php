@@ -11,6 +11,7 @@
 namespace app\controllers\api;
 
 use app\controllers\api\filters\LoginFilter;
+use app\forms\api\user\PromoteForm;
 use app\forms\api\user\UserEditForm;
 use app\forms\api\user\UserInfoForm;
 use app\forms\api\volcengine\IndexForm;
@@ -43,5 +44,18 @@ class UserController extends ApiController
     {
         $form = new IndexForm();
         return $this->asJson($form->getVolcengineAccount());
+    }
+
+    public function actionPromoteInfo()
+    {
+        $form = new PromoteForm();
+        return $this->asJson($form->getInfo());
+    }
+
+    public function actionPromoteUser()
+    {
+        $form = new PromoteForm();
+        $form->attributes = \Yii::$app->request->get();
+        return $this->asJson($form->getUser());
     }
 }

@@ -12,6 +12,8 @@ use GuzzleHttp\Client;
 
 abstract class BasicForm extends Model
 {
+    public $invite;
+
     /**
      * @var string 回调地址
      */

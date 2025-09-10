@@ -19,6 +19,6 @@ class BatchForm extends BatchDataForm
             $account = VolcengineAccount::findOne (['mall_id' => \Yii::$app->mall->id, 'is_default' => 1, 'is_delete' => 0]);
             $this->account_id = $account->id ?? 0;
         }
-        return parent::save ();
+        return parent::save();
     }
 }

@@ -39,7 +39,7 @@ class PassportForm extends LoginForm
 
         $userPlatform = CommonUser::userAccount($this->type, $this->username);
         if (!$userPlatform || !$userPlatform->user) {
-            throw new \Exception('账号未注册');
+            throw new \Exception(\Yii::t('common', '账号未注册'));
         }
 
         $this->attemptsKey = 'login_attempts_' . \Yii::$app->mall->id . '_' . $this->type . '_' . $this->username;
@@ -50,7 +50,7 @@ class PassportForm extends LoginForm
         if (!\Yii::$app->getSecurity()->validatePassword($this->password, $userPlatform->password)) {
             // 记录密码错误次数
             $this->recordFailedAttempt();
-            throw new \Exception('密码错误');
+            throw new \Exception(\Yii::t('common', '密码错误'));
         }
         
         // 密码正确，清除错误记录
@@ -59,7 +59,7 @@ class PassportForm extends LoginForm
         $userInfo = new LoginUserInfo();
         $userInfo->userPlatform = $userPlatform;
         $userInfo->username = $this->username;
-        $userInfo->nickname = $this->username;
+        $userInfo->nickname = $userPlatform->user->nickname ?? '昵称';
         return $userInfo;
     }
     
@@ -76,14 +76,7 @@ class PassportForm extends LoginForm
             $remainingSeconds = $lockTime - time();
             if ($remainingSeconds > 0) {
                 $remainingMinutes = ceil($remainingSeconds / 60);
-                $remainingHours = floor($remainingMinutes / 60);
-                $remainingMinutes = $remainingMinutes % 60;
-                
-                if ($remainingHours > 0) {
-                    throw new \Exception("账户已锁定，请{$remainingHours}小时{$remainingMinutes}分钟后再试");
-                } else {
-                    throw new \Exception("账户已锁定，请{$remainingMinutes}分钟后再试");
-                }
+                throw new \Exception(sprintf(\Yii::t("common", '账户已锁定'), $remainingMinutes));
             }
         }
     }

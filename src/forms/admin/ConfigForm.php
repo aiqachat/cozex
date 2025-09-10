@@ -21,7 +21,6 @@ class ConfigForm extends Model
     public $keywords;
     public $logo;
     public $manage_bg;
-    public $edition;
     public $copyright;
     public $copyright_url;
     public $passport_bg;
@@ -43,7 +42,7 @@ class ConfigForm extends Model
     public function rules()
     {
         return [
-            [['description', 'name', 'description', 'keywords', 'logo', 'manage_bg', 'edition',
+            [['description', 'name', 'keywords', 'logo', 'manage_bg',
                 'copyright', 'copyright_url', 'passport_bg', 'passport_box_bg', 'registered_bg',
                 'register_protocol', 'ai_code'], 'string'],
             [['open_register', 'open_verify', 'open_sms', 'use_days', 'create_num', 'is_required',
@@ -65,7 +64,7 @@ class ConfigForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $this->copyright = trim (HtmlPurifier::process ($this->copyright));
+        $this->copyright = trim (HtmlPurifier::process($this->copyright));
         CommonOption::set(CommonOption::NAME_IND_SETTING, $this->attributes, 0,  CommonOption::GROUP_ADMIN);
         return [
             'code' => ApiCode::CODE_SUCCESS,
@@ -98,20 +97,20 @@ class ConfigForm extends Model
 
     public function defaultValue()
     {
-        $host = \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . "/";
+        $host = web_url();
         return [
             'name' => 'CozeX-扣子X',
-            'logo' => $host . 'statics/img/admin/login-logo.png',
-            'manage_bg' => $host . 'statics/img/admin/d.png',
-            'passport_bg' => $host . 'statics/img/admin/BG.png',
-            'registered_bg' => $host . 'statics/img/admin/B.png',
+            'logo' => $host . '/statics/img/admin/login-logo.png',
+            'manage_bg' => $host . '/statics/img/admin/d.png',
+            'passport_bg' => $host . '/statics/img/admin/BG.png',
+            'registered_bg' => $host . '/statics/img/admin/B.png',
             'copyright' => 'Powered by Netbcloud',
             'copyright_url' => 'https://www.netbcloud.com',
             'mall_permissions' => [],
             'secondary_permissions' => [
                 'attachment' => []
             ],
-            'edition' => app_version (),
+            'edition' => app_version(),
             'open_sms' => 0,
             'is_required' => 0,
             'open_register' => 0,

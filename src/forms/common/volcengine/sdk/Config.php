@@ -27,10 +27,39 @@ trait Config
     /** @var string 方法名 */
     private $action;
 
+    /** @var string 请求内容类型 */
+    private $content_type = 'application/json';
+
+    /** @var integer 1：国内站；2：国际站 */
+    private $type;
+
+    // 语音技术
     public function speech(): void
     {
         $this->service = 'speech_saas_prod';
         $this->version = '2023-11-07';
+        $this->region = 'cn-north-1';
+        if($this->type == 2) { // 国际站信息
+            $this->host = "open.byteplusapi.com";
+            $this->region = 'ap-southeast-1';
+        }
+    }
+
+    // 方舟大模型
+    public function ark(): void
+    {
+        $this->service = 'ark';
+        $this->version = '2024-01-01';
+        $this->region = 'ap-southeast-1';
+//        $this->region = 'cn-beijing';
+    }
+
+    // 智能视觉
+    public function visual(): void
+    {
+        $this->host = 'visual.volcengineapi.com';
+        $this->service = 'cv';
+        $this->version = '2022-08-31';
         $this->region = 'cn-north-1';
     }
 }

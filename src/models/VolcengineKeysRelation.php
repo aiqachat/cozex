@@ -15,6 +15,8 @@ namespace app\models;
  */
 class VolcengineKeysRelation extends ModelActiveRecord
 {
+    public $isLog = false; // 单独开关
+
     /**
      * {@inheritdoc}
      */

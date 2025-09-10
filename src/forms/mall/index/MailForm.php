@@ -18,7 +18,10 @@ class MailForm extends Model
     public $send_mail;
     public $send_pwd;
     public $send_name;
+    public $subject_name;
     public $send_platform;
+    public $desc;
+    public $language_data;
 
     /** @var MailSetting */
     public $model;
@@ -30,8 +33,9 @@ class MailForm extends Model
     {
         return [
             [['test'], 'integer'],
-            [['send_mail', 'send_pwd', 'send_name', 'send_platform', 'receive_mail'], 'string'],
-            [['send_mail', 'send_pwd', 'send_name'], 'trim'],
+            [['send_mail', 'send_pwd', 'send_name', 'send_platform', 'receive_mail', 'desc'], 'string'],
+            [['send_mail', 'send_pwd', 'send_name', 'subject_name'], 'trim'],
+            [['language_data'], 'safe'],
         ];
     }
 
@@ -48,6 +52,9 @@ class MailForm extends Model
         if ($this->model->isNewRecord) {
             $this->model->is_delete = 0;
             $this->model->mall_id = \Yii::$app->mall->id;
+        }
+        if(is_array($this->model->language_data)){
+            $this->model->language_data = json_encode($this->model->language_data, JSON_UNESCAPED_UNICODE);
         }
         if ($this->model->save()) {
             return [
@@ -82,6 +89,7 @@ class MailForm extends Model
         if (!$model->send_platform) {
             $model->send_platform = 'smtp.qq.com';
         }
+        $model->language_data = $model->language_data ? json_decode($model->language_data, true) : [];
         $this->model = $model;
         return $model;
     }

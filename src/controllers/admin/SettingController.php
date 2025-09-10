@@ -14,6 +14,7 @@ use app\forms\admin\mall\MallOverrunForm;
 use app\forms\admin\MessageRemindSettingEditForm;
 use app\forms\admin\MessageRemindSettingForm;
 use app\forms\admin\UploadForm;
+use app\forms\admin\VoiceForm;
 use app\forms\common\attachment\CommonAttachment;
 use app\forms\QueueForm;
 use yii\web\UploadedFile;
@@ -48,6 +49,22 @@ class SettingController extends AdminController
             }
         } else {
             return $this->render('index');
+        }
+    }
+
+    public function actionVoice()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new VoiceForm();
+            if (\Yii::$app->request->isPost) {
+                $form->attributes = \Yii::$app->request->post();
+                return $this->asJson($form->save());
+            }else{
+                $form->attributes = \Yii::$app->request->get();
+                return $this->asJson($form->get());
+            }
+        } else {
+            return $this->render('voice');
         }
     }
 

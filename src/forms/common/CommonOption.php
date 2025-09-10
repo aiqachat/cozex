@@ -24,11 +24,18 @@ class CommonOption
     const NAME_STRIPE_PAY = 'stripe_pay_config'; // 全球支付设置
     const NAME_USER_INTEGRAL_SETTING = 'user_integral_setting'; // 积分设置
     const NAME_VOLCENGINE_PRICE = 'volcengine_price'; // 价格设置
+    const NAME_VOLCENGINE_ABROAD_PRICE = 'volcengine_abroad_price'; // 价格设置
     const NAME_SMS_SETTING = 'sms_setting'; // 短信设置
     const NAME_USER_REGISTER_LOGIN = 'user_register_login'; // 用户注册登录
     const NAME_USER_SETTING = 'user_global_setting'; // 用户全局设置
     const NAME_USER_MENU_SETTING = 'user_menu_setting'; // 用户菜单设置
     const NAME_RECHARGE_SETTING = 'recharge_setting'; //充值相关
+    const NAME_VISUAL_PRICE = 'visual_price'; // 视觉智能价格设置
+    const NAME_VISUAL_ARK_SETTING = 'visual_ark_setting'; // 视觉智能-火山方舟设置
+    const NAME_VISUAL_ARK_GLOBAL_SETTING = 'visual_ark_global_setting'; // 视觉智能(国际版)-火山方舟设置
+    const NAME_SUBTITLE_SETTING = 'subtitle_setting'; // 字幕设置
+    const NAME_CONTENT_SETTING = 'content_setting'; // 内容设置
+    const NAME_CONTENT_SQUARE_SETTING = 'content_square_setting'; // 内容广场设置
 
     private static $loadedOptions = [];
 
@@ -120,7 +127,7 @@ class CommonOption
      * @return array
      * 处理新增的默认数据
      */
-    public static function checkDefault($data, $default, $unset = true)
+    public static function checkDefault($data, $default, $unset = true, $recursion = true)
     {
         foreach ($default as $key => $item) {
             if (!isset($data[$key])) {
@@ -128,16 +135,20 @@ class CommonOption
                 continue;
             }
             if (is_array($item)) {
-                $data[$key] = self::checkDefault((array)$data[$key], $item, $unset);
+                if($recursion) {
+                    $data[$key] = self::checkDefault((array)$data[$key], $item, $unset, $recursion);
+                }
             }else{
-                if(is_numeric($item)){
+                if(is_int($item)){
+                    $data[$key] = intval($data[$key]);
+                }elseif(is_numeric($item)){
                     $data[$key] = floatval($data[$key]);
                 }
             }
         }
         if($unset){
             foreach ($data as $key => $item){
-                if(is_numeric ($key)){
+                if(is_numeric($key)){
                     $default = null;
                     break;
                 }

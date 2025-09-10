@@ -35,6 +35,7 @@ class AttachmentController extends ApiController
         $form = new AttachmentForm();
         $form->attributes = \Yii::$app->request->post();
         $form->mall = \Yii::$app->mall;
+        $form->type = '4';
         return $this->asJson($form->delete());
     }
 
@@ -57,6 +58,7 @@ class AttachmentController extends ApiController
             }
         }
         $form->type = \Yii::$app->request->post('type', '');
+        $form->exclude = \Yii::$app->request->post('exclude', 0);
 
         return $this->asJson($form->save());
     }

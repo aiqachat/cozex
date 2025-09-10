@@ -193,6 +193,9 @@ return [
     '东方浩然' => 'DongFang HaoRan',
     '婆婆' => 'Mother-in-law',
 
+    '多情感' => 'Multiple emotions',
+    '客服场景' => 'Customer service scenario',
+
     // Multilingual
     '和音' => 'Kazune (和音)',
     'Javier或Alvaro' => 'Javier or Álvaro',
@@ -229,6 +232,10 @@ return [
     '广告' => 'Advertisement',
     '助手' => 'Assistant',
     '自然对话' => 'Natural Conversation',
+    '恐惧' => 'Fear',
+    '激动' => 'Excited',
+    '冷漠' => 'Coldness',
+    '中性' => 'Neutral',
 
     // Languages
     '中文' => 'Chinese',
@@ -257,11 +264,14 @@ return [
     '语音合成' => 'TTS (Text to Speech) can convert text into human voice. It uses a breakthrough end-to-end synthesis solution in the field of speech synthesis, providing high-fidelity, personalized audio [Online Synthesis] supporting 1024 bytes per call, <span style="font-weight: bold;color: #E6A23C">approximately equal to 300 Chinese characters using UTF-8 encoding;</span>',
 
     // Feature names
-    '音视频转字幕' => 'Audio/Video to Subtitle',
+    '字幕生成' => 'Subtitle Generation',
     '音频打轴' => 'Audio Timestamping',
-    '大模型录音文件转字幕' => 'Large Model Audio File to Subtitle',
+    '大模型语音识别' => 'Large scale Speech Recognition',
     '大模型语音合成' => 'Large Model Voice Synthesis',
     '语音合成TTS长文本' => 'TTS Long Text Synthesis',
-    '大模型声音复刻-火山引擎' => 'Large Model Voice Cloning - Volcengine',
+    '大模型声音复刻' => 'Large Model Voice Cloning',
     '语音合成TTS短文本' => 'TTS Short Text Synthesis',
+
+
+    '音色维护中' => 'The timbre is under maintenance and unavailable for use.'
 ];

@@ -58,7 +58,7 @@ class BatchDataForm extends Model
                 'msg' => '请上传文件',
             ];
         }
-        $fileRes = file_uri('/web/uploads/av_file/' . date("Y-m-d") . "/");
+        $fileRes = file_uri(AvData::FILE_DIR . date("Y-m-d") . "/");
 
         $pathInfo = pathinfo($file->name);
         $counter = 1;
@@ -102,7 +102,7 @@ class BatchDataForm extends Model
             'id' => $this->data,
             'account_id' => $this->account_id,
             'mall_id' => \Yii::$app->mall->id,
-        ])->all();
+        ])->keyword($this->user_id, ['user_id' => $this->user_id])->all();
         /** @var AvData $item */
         foreach ($list as $item) {
             if (in_array($item->status, [0, 3])) {
@@ -127,7 +127,7 @@ class BatchDataForm extends Model
             'id' => $this->data,
             'account_id' => $this->account_id,
             'mall_id' => \Yii::$app->mall->id,
-        ])->all();
+        ])->keyword($this->user_id, ['user_id' => $this->user_id])->all();
         /** @var AvData $item */
         foreach ($list as $item) {
             $item->is_delete = 1;
@@ -144,13 +144,17 @@ class BatchDataForm extends Model
     private function down()
     {
         if($this->data && is_string($this->data)) {
-            $this->data = Json::decode($this->data);
+            try {
+                $this->data = Json::decode ($this->data);
+            }catch (\Exception $e){
+                $this->data = explode(",", $this->data);
+            }
         }
         $list = AvData::find()->where([
             'id' => $this->data,
             'account_id' => $this->account_id,
             'mall_id' => \Yii::$app->mall->id,
-        ])->all();
+        ])->keyword($this->user_id, ['user_id' => $this->user_id])->all();
         $fileList = [];
         /** @var AvData $item */
         foreach ($list as $item) {

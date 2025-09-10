@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug\models\search;
@@ -73,6 +73,7 @@ class User extends Model
 
     /**
      * {@inheritdoc}
+     * @throws \yii\base\InvalidConfigException
      */
     public function search($params)
     {
@@ -87,6 +88,7 @@ class User extends Model
      * Search method for ActiveRecord
      * @param array $params the data array to load model.
      * @return ActiveDataProvider
+     * @throws \yii\base\InvalidConfigException
      */
     private function searchActiveDataProvider($params)
     {

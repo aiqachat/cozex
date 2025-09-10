@@ -27,11 +27,14 @@ class UserEditForm extends Model
     public $email;
     public $account;
     public $password;
+    public $user_level;
+    public $member_level;
+    public $parent_id;
 
     public function rules()
     {
         return [
-            [['is_blacklist', 'id'], 'integer'],
+            [['is_blacklist', 'id', 'user_level', 'parent_id', 'member_level'], 'integer'],
             [['mobile', 'remark', 'email', 'nickname', 'avatar', 'account', 'password'], 'string', 'max' => 255],
             [['email'], 'email'],
             [['mobile'], PhoneNumberValidator::className()],
@@ -54,11 +57,11 @@ class UserEditForm extends Model
             return $this->getErrorResponse();
         };
 
-        if($this->id) {
+        if ($this->id) {
             /* @var User $user */
-            $user = User::find ()->alias ('u')
-                ->where (['u.id' => $this->id])
-                ->one ();
+            $user = User::find()->alias('u')
+                ->where(['u.id' => $this->id])
+                ->one();
             if (!$user) {
                 return [
                     'code' => ApiCode::CODE_ERROR,
@@ -66,18 +69,33 @@ class UserEditForm extends Model
                 ];
             }
             $userInfo = $user->userInfo;
-        }else{
+            $userPlatform = $user->platform;
+            if ($this->email) {
+                $platform = CommonUser::userAccount($userPlatform->platform_id, $this->email, $user->id);
+                $userPlatform->platform_account = $this->email;
+            } else {
+                $platform = CommonUser::userAccount($userPlatform->platform_id, $this->mobile, $user->id);
+                $userPlatform->platform_account = $this->mobile;
+            }
+            if ($platform) {
+                return [
+                    'code' => ApiCode::CODE_ERROR,
+                    'msg' => $platform->platform_account . '已存在',
+                ];
+            }
+        } else {
             $userPlatform = new UserPlatform();
             $userPlatform->mall_id = \Yii::$app->mall->id;
             $user = new User();
             $user->mall_id = \Yii::$app->mall->id;
             $userInfo = new UserInfo();
-            if($this->account == 'email'){
+            $userInfo->register_time = mysql_timestamp();
+            if ($this->account == 'email') {
                 $platform = CommonUser::userAccount($this->account, $this->email);
                 $user->username = $this->email;
                 $userPlatform->platform_account = $this->email;
                 $userPlatform->platform_id = UserPlatform::PLATFORM_EMAIL;
-            }else{
+            } else {
                 $platform = CommonUser::userAccount($this->account, $this->mobile);
                 $user->username = $this->mobile;
                 $userPlatform->platform_account = $this->mobile;
@@ -92,14 +110,9 @@ class UserEditForm extends Model
             $user->access_token = \Yii::$app->security->generateRandomString();
             $user->auth_key = \Yii::$app->security->generateRandomString();
             $user->password = \Yii::$app->getSecurity()->generatePasswordHash($this->password);
+            $userPlatform->password = $user->password;
         }
-        $userInfo->is_blacklist = $this->is_blacklist;
-        $userInfo->remark = $this->remark;
-        if(!$this->id) {
-            $userInfo->mobile = $this->mobile ?: '';
-            $userInfo->email = $this->email ?: '';
-            $userInfo->avatar = $this->avatar ?: '';
-        }
+        $userInfo->attributes = $this->attributes;
         $user->nickname = $this->nickname;
 
         $t = \Yii::$app->db->beginTransaction();
@@ -109,23 +122,24 @@ class UserEditForm extends Model
             }
             $user->generateUid();
             $userInfo->user_id = $user->id;
+            $userInfo->code();
             if (!$userInfo->save()) {
                 throw new \Exception($this->getErrorMsg($userInfo));
             }
             $identity = $user->identity;
-            if(!$identity) {
+            if (!$identity) {
                 $identity = new UserIdentity();
                 $identity->user_id = $user->id;
-                if (!$identity->save()) {
-                    throw new \Exception($this->getErrorMsg($identity));
-                }
             }
-            if(isset($userPlatform)) {
-                $userPlatform->user_id = $user->id;
-                $userPlatform->password = $user->password;
-                if (!$userPlatform->save ()) {
-                    throw new \Exception($this->getErrorMsg($userPlatform));
-                }
+            $identity->user_level = $this->user_level;
+            $identity->member_level = $this->member_level ?: 0;
+            if (!$identity->save()) {
+                throw new \Exception($this->getErrorMsg($identity));
+            }
+            $userPlatform->user_id = $user->id;
+            $userPlatform->password = $user->password;
+            if (!$userPlatform->save()) {
+                throw new \Exception($this->getErrorMsg($userPlatform));
             }
 
             $t->commit();
@@ -135,6 +149,36 @@ class UserEditForm extends Model
             ];
         } catch (\Exception $e) {
             $t->rollBack();
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function saveRemark()
+    {
+        if (!$this->validate()) {
+            return $this->getErrorResponse();
+        }
+
+        try {
+            /** @var UserInfo $userInfo */
+            $userInfo = UserInfo::find()->where(['user_id' => $this->id])->one();
+            if (!$userInfo) {
+                throw new \Exception('用户信息不存在');
+            }
+
+            $userInfo->remark = $this->remark;
+            if (!$userInfo->save()) {
+                throw new \Exception('备注保存失败');
+            }
+
+            return [
+                'code' => ApiCode::CODE_SUCCESS,
+                'msg' => '备注保存成功'
+            ];
+        } catch (\Exception $e) {
             return [
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => $e->getMessage()

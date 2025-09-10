@@ -72,7 +72,7 @@ class CommonUser
         if($path){
             $path = "/" . trim($path, "/");
         }
-        $param['_mall_id'] = \Yii::$app->mall->id;
+        $param['_netb_id'] = \Yii::$app->mall->id;
         $indSetting = (new ConfigForm())->config();
         if(!empty($indSetting['user_domain'])){
             $url = (\Yii::$app->request->isSecureConnection ? 'https://' : 'http://') . $indSetting['user_domain'];
@@ -85,7 +85,7 @@ class CommonUser
         return $url;
     }
 
-    public static function userAccount($type, $username)
+    public static function userAccount($type, $username, $user_id = null)
     {
         switch ($type){
             case UserPlatform::PLATFORM_EMAIL:
@@ -95,10 +95,17 @@ class CommonUser
             default:
                 throw new \Exception('账号类型错误');
         }
-        return UserPlatform::findOne([
-            'mall_id' => \Yii::$app->mall->id,
-            'platform_account' => $username,
-            'platform_id' => $type,
-        ]);
+        $where = [
+            'and',
+            [
+                'mall_id' => \Yii::$app->mall->id,
+                'platform_account' => $username,
+                'platform_id' => $type,
+            ]
+        ];
+        if($user_id){
+            $where[] = ['!=', 'user_id', $user_id];
+        }
+        return UserPlatform::find()->where($where)->one();
     }
 }

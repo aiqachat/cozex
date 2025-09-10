@@ -12,11 +12,16 @@ namespace app\models;
  * @property string $total_integral 最高积分
  * @property string $balance 余额
  * @property string $total_balance 总余额
+ * @property string $award_money
  * @property int $is_blacklist 是否黑名单
- * @property string $mobile 手机号，不可随便改
- * @property string $email 邮箱，不可随便改
+ * @property int $parent_id
+ * @property string $mobile 手机号
+ * @property string $email 邮箱
+ * @property string $invite_code
  * @property string $remark 备注
+ * @property string $register_time
  * @property int $is_delete
+ * @property User $parent
  */
 class UserInfo extends ModelActiveRecord
 {
@@ -35,10 +40,9 @@ class UserInfo extends ModelActiveRecord
     {
         return [
             [['user_id'], 'required'],
-            [['user_id', 'is_blacklist', 'is_delete'], 'integer'],
-            [['balance', 'total_balance', 'integral', 'total_integral'], 'number'],
-            [['avatar', 'remark'], 'string', 'max' => 255],
-            [['mobile', 'email'], 'string', 'max' => 100],
+            [['user_id', 'is_blacklist', 'is_delete', 'parent_id'], 'integer'],
+            [['balance', 'total_balance', 'integral', 'total_integral', 'award_money'], 'number'],
+            [['avatar', 'remark', 'invite_code', 'mobile', 'email', 'register_time'], 'string'],
         ];
     }
 
@@ -62,8 +66,38 @@ class UserInfo extends ModelActiveRecord
         ];
     }
 
-    public function getIdentity()
+    public function getParent()
     {
-        return $this->hasOne(UserIdentity::className(), ['user_id' => 'user_id']);
+        return $this->hasOne(User::className(), ['id' => 'parent_id'])->andWhere(['is_delete' => 0]);
+    }
+
+    public function code()
+    {
+        if($this->invite_code){
+            return;
+        }
+        do {
+            // 生成唯一ID（时间戳 + 随机数）
+            $uniqueId = uniqid() . rand (1000, 9999);
+            // 使用CRC32哈希并取模1000000，确保结果在6位数范围内（0-999999）
+            $code = abs(crc32($uniqueId)) % 1000000;
+            // 不足6位时补零
+            $this->invite_code = str_pad($code, 6, '0', STR_PAD_LEFT);
+            $exist = self::find()
+                ->where(['invite_code' => $this->invite_code, 'is_delete' => 0])
+                ->exists();
+            if(!$exist){
+                break;
+            }
+        }while(true);
+    }
+
+    public function invite($code = null)
+    {
+        if(!$code || $this->parent_id){
+            return;
+        }
+        $info = self::findOne(['invite_code' => $code, 'is_delete' => 0]);
+        $this->parent_id = $info->user_id;
     }
 }

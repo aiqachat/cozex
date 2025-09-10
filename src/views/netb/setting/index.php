@@ -8,7 +8,6 @@
  * @link: https://www.netbcloud.com
  */
 require __DIR__ . '/index/basic.php';
-require __DIR__ . '/index/contents.php';
 ?>
 <style>
     .currency-width {
@@ -68,9 +67,6 @@ require __DIR__ . '/index/contents.php';
     <el-tabs v-model="activeName" type="border-card" @tab-click="handleClick" v-loading="loading">
         <el-tab-pane label="基础设置" name="basic">
             <basic ref="basic" :form-name="formName"></basic>
-        </el-tab-pane>
-        <el-tab-pane label="内容设置" name="content">
-            <contents ref="content" :form-name="formName"></contents>
         </el-tab-pane>
         <div class='bottom-div' flex="main:center">
             <el-button class='button-item' :loading="btnLoading" type="primary" @click="store" size="small">保存</el-button>

@@ -8,6 +8,7 @@
 namespace app\forms\api\order;
 
 use app\bootstrap\payment\PaymentNotify;
+use app\events\CommissionEvent;
 use app\forms\common\volcengine\RequestForm;
 use app\forms\common\volcengine\sdk\BatchListMegaTTSTrainStatus;
 use app\forms\common\volcengine\sdk\MegaTtsOrder;
@@ -40,13 +41,15 @@ class SpeechPayNotify extends PaymentNotify
                     if($orderData['is_renew']){
                         $obj = new RenewMegaTtsOrder([
                             'Times' => intval($orderData['time']),
-                            'SpeakerIDs' => [$orderData['speaker_id']]
+                            'SpeakerIDs' => [$orderData['speaker_id']],
+                            'type' => $account->type
                         ]);
                     }else {
                         $obj = new MegaTtsOrder([
                             'AppID' => $account->app_id,
-                            'Times' => intval ($orderData['time']),
-                            'Quantity' => intval ($orderData['num'])
+                            'Times' => intval($orderData['time']),
+                            'Quantity' => intval($orderData['num']),
+                            'type' => $account->type
                         ]);
                     }
                     $form = new RequestForm(['account' => $account->key, 'object' => $obj]);
@@ -76,6 +79,12 @@ class SpeechPayNotify extends PaymentNotify
                     'mall' => \Yii::$app->mall,
                     'data' => ['id' => $order->id]
                 ]));
+                if(in_array($paymentOrder->pay_type, [1, 4])) {
+                    \Yii::$app->trigger(CommissionEvent::EVENT_COMMISSION, new CommissionEvent([
+                        'user' => $order->user,
+                        'order_money' => $order->total_pay_price
+                    ]));
+                }
             }
         } catch (\Exception $e) {
             $t->rollBack();
@@ -87,13 +96,13 @@ class SpeechPayNotify extends PaymentNotify
     public function handle($id)
     {
         \Yii::warning ('购买声音复刻后的处理：' . $id);
-        $order = SpeechOrders::findOne ($id);
+        $order = SpeechOrders::findOne($id);
         if (!$order) {
             return;
         }
         $orderData = Json::decode($order->order_data);
         try {
-            $obj = new BatchListMegaTTSTrainStatus();
+            $obj = new BatchListMegaTTSTrainStatus(['type' => $order->account->type]);
             $obj->AppID = $order->account->app_id;
             $obj->State = 'Unknown';
             $obj->PageSize = 100;
@@ -104,7 +113,7 @@ class SpeechPayNotify extends PaymentNotify
             if(!empty($res['Statuses'])){
                 $count = 0;
                 foreach ($res['Statuses'] as $item){
-                    $exists = UserSpeaker::find ()->where([
+                    $exists = UserSpeaker::find()->where([
                         'mall_id' => $order->mall_id,
                         'account_id' => $order->account_id,
                         'speaker_id' => $item['SpeakerID'],
@@ -118,7 +127,7 @@ class SpeechPayNotify extends PaymentNotify
                     $model->mall_id = $order->mall_id;
                     $model->account_id = $order->account_id;
                     $model->speaker_id = $item['SpeakerID'];
-                    if(!$model->save ()){
+                    if(!$model->save()){
                         throw new \Exception(Json::encode($model->getErrors()));
                     }
                     $count++;

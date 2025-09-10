@@ -42,7 +42,7 @@ class SubtitleForm extends SubtitleBaseForm
 
     public function newSave()
     {
-        parent::newSave ();
+        parent::newSave();
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'msg' => '成功'

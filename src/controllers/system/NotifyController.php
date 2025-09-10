@@ -40,7 +40,6 @@ class NotifyController extends Controller
     {
         // https://developers.google.com/identity/protocols/oauth2/web-server?hl=zh-cn
         \Yii::warning('谷歌授权回调');
-        \Yii::warning(\Yii::$app->request->get());
 
         $form = new OauthForm();
         $form->attributes = \Yii::$app->request->get();

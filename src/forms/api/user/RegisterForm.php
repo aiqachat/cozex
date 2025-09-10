@@ -24,11 +24,12 @@ class RegisterForm extends Model
     public $validate_code_id;
     public $password;
     public $type;
+    public $invite;
 
     public function scenarios()
     {
         $scenarios = parent::scenarios();
-        $scenarios['register'] = ['code', 'validate_code_id', 'mobile', 'password', 'email', 'type'];
+        $scenarios['register'] = ['code', 'validate_code_id', 'mobile', 'password', 'email', 'type', 'invite'];
         return $scenarios;
     }
 
@@ -39,6 +40,7 @@ class RegisterForm extends Model
             [['validate_code_id'], 'required', 'on' => ['register'], 'message' => '请先发送验证码'],
             [['code'], 'validateCode', 'on' => ['register']],
             [['email'], 'email'],
+            [['invite'], 'string'],
             [['mobile'], PhoneNumberValidator::className()],
 //            [['pic_captcha'], 'captcha', 'captchaAction' => 'site/pic-captcha', 'on' => ['send_code']],
         ];
@@ -94,7 +96,7 @@ class RegisterForm extends Model
                 $userPlatform->platform_id = UserPlatform::PLATFORM_MOBILE;
             }
             if ($query->exists()) {
-                throw new \Exception('账号已经注册，请直接登录');
+                throw new \Exception(\Yii::t('common', '账号已注册'));
             }
 
             $user = new User();
@@ -102,7 +104,7 @@ class RegisterForm extends Model
             $user->access_token = \Yii::$app->security->generateRandomString();
             $user->auth_key = \Yii::$app->security->generateRandomString();
             $user->username = $userPlatform->platform_account;
-            $user->nickname = $user->username;
+            $user->nickname = $user->generateName();
             $user->password = \Yii::$app->getSecurity()->generatePasswordHash($this->password);
             if (!$user->save()) {
                 throw new \Exception($this->getErrorMsg($user));
@@ -113,13 +115,18 @@ class RegisterForm extends Model
             $uInfo->email = $this->email ?: '';
             $uInfo->mobile = $this->mobile ?: '';
             $uInfo->user_id = $user->id;
+            $uInfo->register_time = mysql_timestamp();
             $uInfo->is_delete = 0;
+            $uInfo->code();
+            $uInfo->invite($this->invite);
             if (!$uInfo->save()) {
                 throw new \Exception($this->getErrorMsg($uInfo));
             }
 
             $userIdentity = new UserIdentity();
             $userIdentity->user_id = $user->id;
+            $userIdentity->setLevel();
+            $userIdentity->setMemberLevel();
             if (!$userIdentity->save()) {
                 throw new \Exception($this->getErrorMsg($userIdentity));
             }
@@ -136,7 +143,7 @@ class RegisterForm extends Model
             $event->sender = $this;
             $event->user = $user;
             \Yii::$app->trigger(User::EVENT_REGISTER, $event);
-            return $this->success(['msg' => '注册成功']);
+            return $this->success(['msg' => \Yii::t('common', '注册成功'), 'access_token' => $user->access_token]);
         } catch (\Exception $exception) {
             $t->rollBack();
             return [

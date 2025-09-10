@@ -34,6 +34,14 @@ class IndexController extends AdminController
         }
     }
 
+    public function actionVolcengineAll()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new VolcanoKeyForm();
+            return $this->asJson($form->getList());
+        }
+    }
+
     public function actionVolcengineDestroy()
     {
         if (\Yii::$app->request->isAjax) {

@@ -113,7 +113,6 @@ class MallForm extends Model
                 AttachmentRemove::getCommon($attachment)->handle();
             }
             \Yii::$app->setMall($mall);
-            (new AttachmentRemove())->calculateMemory();
             return [
                 'code' => ApiCode::CODE_SUCCESS,
                 'msg' => '操作成功',

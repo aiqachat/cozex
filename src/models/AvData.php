@@ -2,11 +2,11 @@
 
 namespace app\models;
 
+use app\forms\common\attachment\AttachmentRemove;
 use app\forms\common\volcengine\data\BaseForm;
 use app\forms\common\volcengine\data\VoiceForm;
 use app\forms\mall\setting\PriceForm;
 use app\forms\mall\setting\UserConfigForm;
-use app\forms\mall\volcengine\SpeechForm;
 
 /**
  * This is the model class for table "{{%av_data}}".
@@ -23,7 +23,7 @@ use app\forms\mall\volcengine\SpeechForm;
  * @property string $data
  * @property int $type  1:转字幕；2：字幕打轴；3：大模型录音识别；4：大模型一次性语音合成；5：精品语音合成 - 异步
  * @property int $status 1:处理中；2：处理完成；3：失败
- * @property int $is_data_deleted
+ * @property int $is_home 1：国内站；2：国际站
  * @property int $is_delete
  * @property string $created_at
  * @property string $updated_at
@@ -32,6 +32,7 @@ use app\forms\mall\volcengine\SpeechForm;
 class AvData extends ModelActiveRecord
 {
     const DELETE_FILE_DAY = 3;
+    const FILE_DIR = '/web/uploads/av_file/';
 
     /**
      * {@inheritdoc}
@@ -48,7 +49,7 @@ class AvData extends ModelActiveRecord
     {
         return [
             [['mall_id', 'created_at', 'updated_at'], 'required'],
-            [['is_delete', 'status', 'type', 'account_id', 'user_id', 'is_data_deleted'], 'integer'],
+            [['is_delete', 'status', 'type', 'account_id', 'user_id', 'is_home'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['job_id', 'result', 'err_msg', 'text', 'file', 'job_id', 'data', 'file'], 'string'],
         ];
@@ -71,21 +72,29 @@ class AvData extends ModelActiveRecord
         return $this->hasOne(VolcengineAccount::className(), ['id' => 'account_id']);
     }
 
-    public function localFile($file = '')
+    public function localFile($file = '', $generate = true)
     {
         $file = $file ?: $this->file;
         if(!$file){
             return '';
         }
-        $res = file_uri('/web');
-        $resultFile = str_replace($res['web_uri'], $res['local_uri'], $file);
-        if(file_exists($resultFile)){
+
+        $path = @parse_url($file)['path'] ?? '';
+        $pos = strpos($path, '/web');
+        if($pos > 0){
+            $path = substr($path, $pos);
+        }
+        $resultFile = \Yii::$app->basePath . $path;
+
+        if(file_exists($resultFile)) {
             return $resultFile;
-        }else{
+        }else if($generate) {
             $res = file_uri('/web/temp/');
             $name = @basename($file);
             @file_put_contents($res['local_uri'] . $name, @file_get_contents($file));
             return $res['local_uri'] . $name;
+        }else{
+            return $file;
         }
     }
 
@@ -155,14 +164,11 @@ class AvData extends ModelActiveRecord
 
     public function deleteData()
     {
-        $host = \Yii::$app instanceof \yii\web\Application ? \Yii::$app->request->hostInfo : \Yii::$app->hostInfo;
-        if($this->result && strpos($this->result, $host) !== false){
-            @unlink($this->localFile($this->result));
-            $this->is_data_deleted = 1;
+        if($this->result){
+            @unlink($this->localFile($this->result, false));
         }
-        if($this->file && strpos($this->file, $host) !== false){
-            @unlink($this->localFile($this->file));
-            $this->is_data_deleted = 2;
+        if($this->file){
+            @unlink($this->localFile($this->file, false));
             $attachment = Attachment::findOne([
                 'url' => $this->file,
                 'is_delete' => 0,
@@ -170,11 +176,9 @@ class AvData extends ModelActiveRecord
                 'mall_id' => $this->mall_id
             ]);
             if ($attachment) {
-                $attachment->delete();
+                AttachmentRemove::getCommon($attachment)->handle();
             }
         }
-        if($this->is_data_deleted) {
-            $this->save();
-        }
+        $this->delete();
     }
 }

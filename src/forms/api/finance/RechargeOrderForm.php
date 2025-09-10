@@ -76,12 +76,13 @@ class RechargeOrderForm extends Model
                 'data' => array_merge($res, ["order_id" => $order->id, 'no' => $order->order_no]),
             ];
         } catch (\Exception $e) {
-            $t->rollBack ();
+            $t->rollBack();
             return [
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => $e->getMessage(),
                 'error' => [
                     'line' => $e->getLine(),
+                    'string' => $e->getTraceAsString(),
                 ]
             ];
         }

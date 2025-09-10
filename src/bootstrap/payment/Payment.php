@@ -152,6 +152,7 @@ class Payment extends Component
                     $checkout = $stripePay->checkout($paymentOrderUnion->id, $price);
                     $data = ['url' => $checkout->url];
                 } catch (\Exception $e) {
+                    \Yii::error($e);
                     if(\Yii::$app->language == 'zh') {
                         if (strpos ($e->getMessage (), 'must convert to at least 400 cents') !== false) {
                             throw new PaymentException('Stripe支付金额必须大于等于4美元');
@@ -214,6 +215,7 @@ class Payment extends Component
                     'amount' => (float) $paymentOrder->amount,
                     'title' => $paymentOrder->title,
                     'notifyClass' => $paymentOrder->notify_class,
+                    'pay_type' => $paymentOrder->pay_type,
                 ]);
                 if ($po->amount > 0) {
                     $customDesc = \Yii::$app->serializer->encode(['order_no' => $paymentOrder->order_no]);
@@ -277,6 +279,7 @@ class Payment extends Component
                     'amount' => (float) $paymentOrder->amount,
                     'title' => $paymentOrder->title,
                     'notifyClass' => $paymentOrder->notify_class,
+                    'pay_type' => $paymentOrder->pay_type,
                 ]);
                 if ($po->amount > 0) {
                     $customDesc = \Yii::$app->serializer->encode(['order_no' => $paymentOrder->order_no]);

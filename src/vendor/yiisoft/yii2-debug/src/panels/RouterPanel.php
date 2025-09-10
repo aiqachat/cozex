@@ -1,14 +1,17 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug\panels;
 
 use Yii;
-use yii\debug\models\Router;
+use yii\base\InlineAction;
+use yii\debug\models\router\ActionRoutes;
+use yii\debug\models\router\CurrentRoute;
+use yii\debug\models\router\RouterRules;
 use yii\debug\Panel;
 use yii\log\Logger;
 
@@ -65,9 +68,21 @@ class RouterPanel extends Panel
     /**
      * {@inheritdoc}
      */
+    public function getSummary()
+    {
+        return Yii::$app->view->render('panels/router/summary', ['panel' => $this]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getDetail()
     {
-        return Yii::$app->view->render('panels/router/detail', ['model' => new Router($this->data)]);
+        return Yii::$app->view->render('panels/router/detail', [
+            'currentRoute' => new CurrentRoute($this->data),
+            'routerRules' => new RouterRules(),
+            'actionRoutes' => new ActionRoutes(),
+        ]);
     }
 
     /**
@@ -75,9 +90,19 @@ class RouterPanel extends Panel
      */
     public function save()
     {
-        $target = $this->module->logTarget;
+        if (Yii::$app->requestedAction) {
+            if (Yii::$app->requestedAction instanceof InlineAction) {
+                $action = get_class(Yii::$app->requestedAction->controller) . '::' . Yii::$app->requestedAction->actionMethod . '()';
+            } else {
+                $action = get_class(Yii::$app->requestedAction) . '::run()';
+            }
+        } else {
+            $action = null;
+        }
         return [
-            'messages' => $target::filterMessages($target->messages, Logger::LEVEL_TRACE, $this->_categories)
+            'messages' => $this->getLogMessages(Logger::LEVEL_TRACE, $this->_categories),
+            'route' => Yii::$app->requestedAction ? Yii::$app->requestedAction->getUniqueId() : Yii::$app->requestedRoute,
+            'action' => $action,
         ];
     }
 }

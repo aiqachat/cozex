@@ -58,6 +58,7 @@ class ConfigForm extends BasicConfigForm
         $data = parent::config();
         if ($this->tab === self::TAB_BASIC) {
             $data['name'] = \Yii::$app->mall->name;
+            $data['currency_name'] = array_column(self::CURRENCY, null, 'id')[$data['currency']]['name'] ?? $data['currency'];
         }
         return $data;
     }
@@ -66,6 +67,7 @@ class ConfigForm extends BasicConfigForm
     const TAB_CONTENT = 'content';
     const TAB_SMS = 'sms';
     const TAB_RECHARGE = 'recharge';
+    const TAB_SUBTITLE = 'subtitle';
 
     public function getList()
     {
@@ -74,20 +76,24 @@ class ConfigForm extends BasicConfigForm
             self::TAB_CONTENT => CommonOption::NAME_MALL_CONTENT,
             self::TAB_SMS => CommonOption::NAME_SMS_SETTING,
             self::TAB_RECHARGE => CommonOption::NAME_RECHARGE_SETTING,
+            self::TAB_SUBTITLE => CommonOption::NAME_SUBTITLE_SETTING,
         ];
     }
 
     public function basic()
     {
-        $host = \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . "/";
+        $host = web_url();
         return [
-            'mall_logo_pic' => $host . 'statics/img/mall/poster-big-shop.png', //商城logo
+            'name_en' => '',
+            'mall_logo_pic' => $host . '/statics/img/mall/poster-big-shop.png', //商城logo
+            'system_name_jump_url' => '',
             'user_domain' => '',
             'is_user_domain' => 0,
             'is_wechat_pay' => 1,
             'is_stripe_pay' => 1,
             'currency' => 'CNY',
-            'currency_symbol' => '¥'
+            'currency_symbol' => '¥',
+            'is_show_menu_text' => 1
         ];
     }
 
@@ -126,6 +132,16 @@ class ConfigForm extends BasicConfigForm
             'access_key_secret' => '',
             'template_name' => '',
             'code_template_id' => '',
+        ];
+    }
+
+    public function subtitle()
+    {
+        return [
+            'account_id' => 0,
+            'vc_price' => '1',
+            'ata_price' => '1',
+            'auc_price' => '1',
         ];
     }
 }

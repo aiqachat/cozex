@@ -16,9 +16,10 @@ class VolcanoKeyForm extends Model
 {
     public $secret_key;
     public $access_id;
-    public $account;
     public $name;
     public $id;
+    public $type;
+    public $account_id;
     public $page_size;
 
     public function rules()
@@ -26,8 +27,7 @@ class VolcanoKeyForm extends Model
         return [
             [['secret_key', 'access_id', 'name'], 'string'],
             [['secret_key'], 'string', 'max' => 60],
-            [['id'], 'integer'],
-            [['account'], 'safe'],
+            [['id', 'type', 'account_id', 'page_size'], 'integer'],
             [['page_size'], 'default', 'value' => 10],
         ];
     }
@@ -45,23 +45,26 @@ class VolcanoKeyForm extends Model
             return $this->getErrorResponse();
         }
         $data = VolcengineKeys::find()->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
-            ->with("keysRelation")
             ->page($pagination, $this->page_size)
             ->asArray()
             ->all();
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'data' => [
-                'list' => array_map (function ($var){
-                    $var['account'] = array_map(function ($account){
-                        return intval($account['account_id']);
-                    }, $var['keysRelation']);
-                    unset($var['keysRelation']);
-                    return $var;
-                }, $data),
-                'accounts' => (new VolcengineForm())->data()['data']['account'] ?? [],
+                'list' => $data,
                 'pagination' => $pagination
             ]
+        ];
+    }
+
+    public function getList()
+    {
+        $data = VolcengineKeys::find()->where(['is_delete' => 0, 'mall_id' => \Yii::$app->mall->id])
+            ->asArray()
+            ->all();
+        return [
+            'code' => ApiCode::CODE_SUCCESS,
+            'data' => $data
         ];
     }
 
@@ -101,31 +104,6 @@ class VolcanoKeyForm extends Model
         $model->mall_id = \Yii::$app->mall->id;
         if(!$model->save()){
             return $this->getErrorResponse($model);
-        }
-        $exist = VolcengineKeysRelation::find()
-            ->where(['account_id' => $this->account, "is_delete" => 0])
-            ->andWhere(['!=', "key_id", $model->id])
-            ->one();
-        if($exist){
-            return [
-                'code' => ApiCode::CODE_ERROR,
-                'msg' => "应用（{$exist->account->name}）已被关联，密钥（{$exist->key->name}）"
-            ];
-        }
-        VolcengineKeysRelation::updateAll(["is_delete" => 1], ["is_delete" => 0, "key_id" => $model->id]);
-        if(is_array ($this->account)) {
-            foreach ($this->account as $account) {
-                $relation = VolcengineKeysRelation::findOne (['account_id' => $account, 'key_id' => $model->id]);
-                if (!$relation) {
-                    $relation = new VolcengineKeysRelation();
-                    $relation->account_id = $account;
-                    $relation->key_id = $model->id;
-                }
-                $relation->is_delete = 0;
-                if (!$relation->save ()) {
-                    return $this->getErrorResponse ($relation);
-                }
-            }
         }
         return [
             'code' => ApiCode::CODE_SUCCESS,

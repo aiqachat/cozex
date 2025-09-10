@@ -16,7 +16,7 @@ class MallDisabledFilter extends ActionFilter
         if (\Yii::$app->mall->is_disable) {
             \Yii::$app->response->data = [
                 'code' => ApiCode::CODE_STORE_DISABLED,
-                'msg' => '商城被禁用。',
+                'msg' => \Yii::t("common", '系统已禁用'),
             ];
             return false;
         }
@@ -26,7 +26,7 @@ class MallDisabledFilter extends ActionFilter
         || ($adminInfo->expired_at != '0000-00-00 00:00:00' && strtotime($adminInfo->expired_at) < time())) {
             \Yii::$app->response->data = [
                 'code' => ApiCode::CODE_STORE_DISABLED,
-                'msg' => '商城已过期。',
+                'msg' => \Yii::t("common", '系统已过期'),
             ];
             return false;
         }

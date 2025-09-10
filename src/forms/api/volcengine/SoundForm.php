@@ -14,21 +14,35 @@ use app\forms\common\volcengine\sdk\BatchListMegaTTSTrainStatus;
 use app\helpers\ArrayHelper;
 use app\models\Model;
 use app\models\UserSpeaker;
+use app\models\VolcengineAccount;
 
 class SoundForm extends Model
 {
+    /** @var integer 1：国内站；2：国际站 */
+    public $is_home;
+
+    public function rules()
+    {
+        return [
+            [['is_home'], 'integer'],
+            [['is_home'], 'default', 'value' => 1],
+        ];
+    }
     public function get()
     {
         $dataList = UserSpeaker::find ()->where([
             'mall_id' => \Yii::$app->mall->id,
             'user_id' => \Yii::$app->user->id,
             'is_delete' => 0,
+            'account_id' => VolcengineAccount::find()
+                ->select('id')
+                ->where(['is_delete' => 0, 'type' => $this->is_home, 'mall_id' => \Yii::$app->mall->id])
         ])->orderBy('id DESC')->page($pagination)->all();
         $list = [];
-        $dataList = ArrayHelper::index ($dataList, null, 'account_id');
+        $dataList = ArrayHelper::index($dataList, null, 'account_id');
         /** @var UserSpeaker[] $item */
         foreach ($dataList as $item){
-            $obj = new BatchListMegaTTSTrainStatus();
+            $obj = new BatchListMegaTTSTrainStatus(['type' => $item[0]->account->type]);
             $obj->AppID = $item[0]->account->app_id;
             $obj->PageSize = 100;
             $obj->SpeakerIDs = array_column($item, 'speaker_id');

@@ -27,14 +27,17 @@ class SpeechForm extends Model
     public $is_renew;
     public $account_id;
 
+    /** @var integer 1：国内站；2：国际站 */
+    public $is_home;
+
     public function rules()
     {
         return [
             [['num', 'pay_type', 'time'], 'required', 'on' => ['buy']],
             [['SpeakerID', 'pay_type', 'time'], 'required', 'on' => ['renew']],
-            [['num', 'id', 'time', 'is_renew', 'account_id'], 'integer'],
+            [['num', 'id', 'time', 'is_renew', 'account_id', 'is_home'], 'integer'],
             [['pay_type', 'SpeakerID'], 'string'],
-            [['num'], 'default', 'value' => 1],
+            [['num', 'is_home'], 'default', 'value' => 1],
         ];
     }
 
@@ -56,7 +59,8 @@ class SpeechForm extends Model
                 $account = VolcengineAccount::findOne([
                     'mall_id' => \Yii::$app->mall->id,
                     'is_default' => 1,
-                    'is_delete' => 0
+                    'is_delete' => 0,
+                    'type' => $this->is_home,
                 ]);
                 $order_no = generate_order_no('SP');
             }

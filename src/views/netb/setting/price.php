@@ -8,6 +8,7 @@
  * @link: https://www.netbcloud.com
  */
 require __DIR__ . '/price/basic.php';
+require __DIR__ . '/price/abroad.php';
 ?>
 <style>
     .currency-width {
@@ -47,8 +48,11 @@ require __DIR__ . '/price/basic.php';
 </style>
 <div id="app" v-cloak>
     <el-tabs v-model="activeName" type="border-card" @tab-click="handleClick" v-loading="loading">
-        <el-tab-pane label="基础设置" name="one">
+        <el-tab-pane label="国内设置" name="one">
             <basic ref="one" :form-name="formName"></basic>
+        </el-tab-pane>
+        <el-tab-pane label="国际设置" name="two">
+            <abroad ref="two" :form-name="formName"></abroad>
         </el-tab-pane>
         <div class='bottom-div' flex="main:center">
             <el-button class='button-item' :loading="btnLoading" type="primary" @click="store" size="small">保存</el-button>

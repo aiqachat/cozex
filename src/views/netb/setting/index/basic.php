@@ -7,12 +7,29 @@
  * @copyright: ©2024 深圳网商天下科技
  * @link: https://www.netbcloud.com
  */
+
+use app\forms\common\CommonUser;
+
 $http = Yii::$app->request->isSecureConnection ? 'https://' : 'http://';
 ?>
 <template id="basic">
-    <el-form @submit.native.prevent :model="form" :rules="rules" label-width="120px" :ref="formName">
+    <el-form @submit.native.prevent :model="form" :rules="rules" label-width="140px" :ref="formName">
         <el-form-item label="系统名称" prop="name">
-            <el-input v-model="form.name" maxlength="15" class="currency-width" placeholder="最多输入15个字符"></el-input>
+            <el-input v-model.trim="form.name" maxlength="15" class="currency-width" placeholder="最多输入15个字符">
+                <template slot="prepend">
+                    中文
+                </template>
+            </el-input>
+        </el-form-item>
+        <el-form-item prop="name_en">
+            <el-input v-model.trim="form.name_en" maxlength="15" class="currency-width" placeholder="最多输入15个字符">
+                <template slot="prepend">
+                    英文
+                </template>
+            </el-input>
+        </el-form-item>
+        <el-form-item label="系统名点击跳转网址">
+            <el-input v-model.trim="form.system_name_jump_url" class="currency-width"></el-input>
         </el-form-item>
 
         <el-form-item label="系统logo" prop="mall_logo_pic">
@@ -45,6 +62,18 @@ $http = Yii::$app->request->isSecureConnection ? 'https://' : 'http://';
             <div style="color: #BBBBBB">
                 <span>此域名设置后不可更改，保存前请确认，默认域名为:<?=Yii::$app->request->hostInfo . dirname(Yii::$app->request->baseUrl)?></span>
             </div>
+        </el-form-item>
+
+        <el-form-item label="用户端英文域名">
+            <?= CommonUser::userWebUrl('', ['lang' => 'en'])?>
+        </el-form-item>
+
+        <el-form-item label="用户端中文域名">
+            <?= CommonUser::userWebUrl('', ['lang' => 'zh'])?>
+        </el-form-item>
+
+        <el-form-item label="用户端广场">
+            <?= CommonUser::userWebUrl('/square')?>
         </el-form-item>
     </el-form>
 </template>

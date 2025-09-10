@@ -32,6 +32,7 @@ class AttachmentUpload extends Model
     public $type;
     public $mall_id;
     public $user_id;
+    public $exclude; // 用于用户端，等于 1 放特定地方，不存在到表里，然后不自动删除
 
     public $saveFileFolder;
     public $saveThumbFolder;
@@ -58,7 +59,11 @@ class AttachmentUpload extends Model
      */
     public function upload()
     {
-        $dateFolder = date('Ymd');
+        if($this->exclude){
+            $dateFolder = Attachment::USER_DIR . "/" . date('Ymd');
+        }else{
+            $dateFolder = date('Ymd');
+        }
         $this->saveFileFolder = '/uploads/' . $this->getMallFolder() . $dateFolder;
         $this->saveThumbFolder = '/uploads/thumbs/' . $this->getMallFolder() . $dateFolder;
         $this->saveFileName = md5_file($this->file->tempName) . '.' . $this->file->getExtension();
@@ -101,7 +106,7 @@ class AttachmentUpload extends Model
         $attachment->attachment_group_id = $this->attachment_group_id;
         $attachment->type = $this->type;
         $attachment->mall_id = $this->mall_id;
-        if (!$attachment->save()) {
+        if (!$this->exclude && !$attachment->save()) {
             throw new \Exception($this->getErrorMsg($attachment));
         }
         return $attachment;
@@ -135,15 +140,17 @@ class AttachmentUpload extends Model
             }
         }
         $this->url = $baseWebUrl . $this->saveFileFolder . '/' . $this->saveFileName;
-        try {
-            $editor = Grafika::createEditor(get_supported_image_lib());
-            /** @var ImageInterface $image */
-            $editor->open($image, $saveFile);
-            $editor->resizeFit($image, 200, 200);
-            $editor->save($image, $saveThumbFile);
-            $this->thumbUrl = $baseWebUrl . $this->saveThumbFolder . '/' . $this->saveFileName;
-        } catch (\Exception $e) {
-            $this->thumbUrl = '';
+        if(!$this->exclude){
+            try {
+                $editor = Grafika::createEditor(get_supported_image_lib());
+                /** @var ImageInterface $image */
+                $editor->open($image, $saveFile);
+                $editor->resizeFit($image, 200, 200);
+                $editor->save($image, $saveThumbFile);
+                $this->thumbUrl = $baseWebUrl . $this->saveThumbFolder . '/' . $this->saveFileName;
+            } catch (\Exception $e) {
+                $this->thumbUrl = '';
+            }
         }
     }
 

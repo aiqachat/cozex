@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug;
@@ -17,13 +17,22 @@ use yii\web\AssetBundle;
  */
 class DebugAsset extends AssetBundle
 {
+    /**
+     * {@inheritdoc}
+     */
     public $sourcePath = '@yii/debug/assets';
+    /**
+     * {@inheritdoc}
+     */
     public $css = [
-        'main.css',
-        'toolbar.css',
+        'css/main.css',
+        'css/toolbar.css',
     ];
-    public $depends = [
-        'yii\web\YiiAsset',
-        'yii\bootstrap\BootstrapAsset',
+    /**
+     * {@inheritdoc}
+     */
+    public $js = [
+        'js/polyfill.min.js',
+        'js/bs4-native.min.js'
     ];
 }

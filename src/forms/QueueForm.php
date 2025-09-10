@@ -181,6 +181,25 @@ class QueueForm extends Model
         $content .= "else\n";
         $content .= "  echo \"The queue crontab has been add .\"\n";
         $content .= "fi\n";
+
+        // schedule服务
+        $content .= "result=$(crontab -l|grep -i \"* * * * * php " . '$basepath' . "/yii schedule/run --scheduleFile=@app/config/schedule.php\"|grep -v grep)\n";
+        $content .= "if [ ! -n \"" . '$result' . "\" ]\n";
+        $content .= "then\n";
+        $content .= "  echo -e \"\\033[32mCreating queue crontab.\\033[0m\"\n";
+        $content .= "  echo \"Export crontab data\"\n";
+        $content .= "  crontab -l > createcrontemp\n";
+        $content .= "  echo \"Add new crontab line\"\n";
+        $content .= "  echo \"* * * * * php " . '$basepath' . "/yii schedule/run --scheduleFile=@app/config/schedule.php\" >> createcrontemp\n";
+        $content .= "  echo \"Import crontab data\"\n";
+        $content .= "  crontab createcrontemp\n";
+        $content .= "  echo \"Delete temp file\"\n";
+        $content .= "  rm -f createcrontemp\n";
+        $content .= "  echo -e \"\\033[32mCreating queue crontab success.\\033[0m\"\n";
+        $content .= "else\n";
+        $content .= "  echo \"The queue crontab has been add .\"\n";
+        $content .= "fi\n";
+
         file_put_contents($file, $content);
     }
 }

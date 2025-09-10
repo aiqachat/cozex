@@ -9,6 +9,7 @@ namespace app\forms\api\volcengine;
 
 use app\bootstrap\response\ApiCode;
 use app\forms\common\volcengine\data\SubtitleBaseForm;
+use app\forms\mall\setting\ConfigForm;
 use app\models\VolcengineAccount;
 
 class SubtitleForm extends SubtitleBaseForm
@@ -31,13 +32,17 @@ class SubtitleForm extends SubtitleBaseForm
     public function getAccount()
     {
         $this->user_id = \Yii::$app->user->id;
-        $account = VolcengineAccount::findOne(['mall_id' => \Yii::$app->mall->id, 'is_default' => 1, 'is_delete' => 0]);
-        $this->account_id = $account->id ?? 0;
+        $data = (new ConfigForm(['tab' => ConfigForm::TAB_SUBTITLE]))->config();
+        $account = VolcengineAccount::findOne(['mall_id' => \Yii::$app->mall->id, 'id' => $data['account_id'], 'is_delete' => 0]);
+        if(!$account){
+            throw new \Exception('请先设置字幕账号');
+        }
+        $this->account_id = $account->id;
     }
 
     public function save()
     {
-        $this->getAccount ();
+        $this->getAccount();
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
@@ -50,8 +55,8 @@ class SubtitleForm extends SubtitleBaseForm
 
     public function newSave()
     {
-        $this->getAccount ();
-        parent::newSave ();
+        $this->getAccount();
+        parent::newSave();
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'msg' => '成功'

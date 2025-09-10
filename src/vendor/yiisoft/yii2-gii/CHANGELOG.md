@@ -1,10 +1,109 @@
 Yii Framework 2 gii extension Change Log
 ========================================
 
-2.1.0 under development
+2.2.7 February 13, 2025
 -----------------------
 
-- no changes in this release.
+- Bug #531: Fix `yii\gii\console\GenerateAction` to use `stdout()` instead of echoing the output (egmsystems)
+- Bug #532: Return `ExitCode::USAGE` on command input validation error (egmsystems)
+- Bug #545: Fix CRUD for non-relational databases (spzgy)
+- Enh #534: Generating in model ENUM fields value constants, setter and getter methods (uldisn)
+- Enh #537: Generating rules for the fields with default values (manky)
+- Enh #542: Use the table name to create the relation (thiagotalma)
+- Enh #551: Add optional parameter `$formName` to `SearchModel::search()` method (evil1)
+
+
+2.2.6 May 22, 2023
+------------------
+
+- Bug #510: Fix possible XSS (rob006)
+- Bug #511: Fix validation for `messageCategory` in Generator (rob006)
+- Bug #525: Fix of the modal dialog visibility with a preview of generated migration (glodov)
+- Enh #514: Fix compatibility with PHP 8.1 and 8.2 (rob006)
+
+
+2.2.5 September 04, 2022
+------------------------
+
+- Ehn #489: Added support for the `::class` constant in model generator via the `useClassConstant` setting (rhertogh)
+- Bug #500: Fix missing namespace in CRUD index template (mohamed-nazim)
+- Bug #502: Setting `skipOnEmpty` to fix "trim(): Passing null to parameter" in `generators/model/Generator.php` (rhertogh)
+
+
+2.2.4 December 30, 2021
+-----------------------
+
+- Bug #467: Fix view `generators/crud/default/controller` (WinterSilence, cjrf)
+- Bug #476: Fix stucking datalist options in form generator (WinterSilence)
+- Bug #484: Add parent's labels and hints, fix rule for attribute `moduleClass` in module generator (WinterSilence)
+- Bug #486: Update `assets/js/bs4-native.min.js` to the latest version (WinterSilence)
+- Bug #488: Fix `ActionColumn::$urlCreator` in index template of CRUD generator (WinterSilence)
+- Enh #485: Add validation rules for `enableI18N` and `messageCategory` to Generator (WinterSilence)
+
+
+2.2.3 August 09, 2021
+---------------------
+
+- Enh #453: Allow CRUD to work with non-RDBMS ARs (WinterSilence)
+- Enh #458: Add CIDR support for allowedIPs (rhertogh)
+- Enh #462: Add support for viewing file differences on the CLI (rhertogh)
+
+
+2.2.2 May 06, 2021
+------------------
+
+- Bug #433: Fix insufficient category validation (samdark)
+- Bug #439: Replace client-side generation of model class name with an AJAX request and a serverside implementation to take options into account (WinterSilence)
+- Enh #444: Updated reserved keywords in generator (WinterSilence)
+- Enh #450: Add behaviors merging, pagination example, sorting example, loading defaults for a model to CRUD controller (WinterSilence)
+
+
+2.2.1 May 02, 2020
+------------------
+
+- Bug #428: Permit the usage of anonymous generators using dependency injection (aguevaraIL)
+
+
+2.2.0 March 24, 2020
+--------------------
+
+- Enh #424: Added support for `via()` junction relations in model generator (rhertogh)
+
+
+2.1.4 January 17, 2020
+----------------------
+
+- Bug #422: Fix relational query getter documentation style (mikk150)
+- Enh #287: Model generator is now generating relation's phpdoc hints with target ActiveQuery class (bscheshirwork)
+
+
+2.1.3 November 19, 2019
+-----------------------
+
+- Bug #417: Fixed issue where RTL implementation for foreign keys causes problems with LTR tables names (NickvdMeij)
+- Enh #416: Improved generation of model attributes and type annotations (uldisn)
+
+
+2.1.2 October 08, 2019
+----------------------
+
+- Bug #413: Controller Generator produces invalid alias when namespace starts with backslash (cebe)
+
+
+2.1.1 August 13, 2019
+---------------------
+
+- Bug #410: Inserted rows in the diff were not highlighted (albertborsos)
+
+
+2.1.0 March 17, 2019
+--------------------
+
+- Enh #390, Bug #260: Create (bootstrap)-independent version (simialbi)
+- Bug #386: Move "Create" button outside of pjax container to avoid redirect (alexkart)
+- Bug #398, #397: Use strict mode when generating view folder name (machour)
+- Enh #395: Made `yii\gii\CodeFile` independent of controller context, do not apply `$newDirMode` and `$newFileMode` if module is not available (CeBe)
+- Enh #399: Option to allow singularize class names in model generator (alexkart)
 
 
 2.0.8 December 08, 2018

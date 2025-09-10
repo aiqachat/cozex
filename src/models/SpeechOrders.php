@@ -22,6 +22,7 @@ namespace app\models;
  * @property string $deleted_at
  * @property VolcengineAccount $account
  * @property PaymentOrder $paymentOrder
+ * @property User $user
  */
 class SpeechOrders extends ModelActiveRecord
 {
@@ -74,5 +75,10 @@ class SpeechOrders extends ModelActiveRecord
     public function getAccount()
     {
         return $this->hasOne(VolcengineAccount::className(), ['id' => 'account_id']);
+    }
+
+    public function getUser()
+    {
+        return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
 }

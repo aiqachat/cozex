@@ -9,6 +9,9 @@ use app\forms\common\CommonUser;
 
 $url = CommonUser::userWebUrl();
 ?>
+<style type="text/css">
+    @import "<?= \Yii::$app->request->hostInfo . \Yii::$app->request->baseUrl . '/statics/css/table.css' ?>";
+</style>
 <style>
     .table-body {
         padding: 20px 20px 0 20px;
@@ -69,16 +72,16 @@ $url = CommonUser::userWebUrl();
             </div>
         </div>
         <div class="table-body">
-            <el-alert
-                    style="margin-bottom:20px;"
-                    type="info"
-                    title="用户端入口链接："
-                    :closable="false">
-                <template>
-                    <span><?=$url ?></span>
-                    <el-button size="mini" @click="copy">复制链接</el-button>
-                </template>
-            </el-alert>
+<!--            <el-alert-->
+<!--                    style="margin-bottom:20px;"-->
+<!--                    type="info"-->
+<!--                    title="用户端入口链接："-->
+<!--                    :closable="false">-->
+<!--                <template>-->
+<!--                    <span>--><?php //=$url ?><!--</span>-->
+<!--                    <el-button size="mini" @click="copy">复制链接</el-button>-->
+<!--                </template>-->
+<!--            </el-alert>-->
             <div class="input-item">
                 <el-input @keyup.enter.native="search" size="small" placeholder="请输入关键词" v-model="searchData.keyword" clearable @clear="search">
                     <el-select v-model="searchData.field" slot="prepend" placeholder="请选择" style="width: 90px;">
@@ -108,51 +111,82 @@ $url = CommonUser::userWebUrl();
                         type="selection"
                         width="55">
                 </el-table-column>
-                <el-table-column prop="uid" label="UID" width="100" sortable>
+                <el-table-column prop="uid" label="UID" min-width="110" sortable>
                     <template slot-scope="scope">
                         <div>{{scope.row.uid}}</div>
                         <div v-if="scope.row.is_blacklist == 1" style="color: #f56c6c; font-size: 12px; margin-top: 5px;text-align: center;">禁用</div>
+                        <div style="color: #999999; font-size: 12px; text-align: center;">
+                            <span>{{scope.row.remark || '--'}}</span>
+                            <i class="bi bi-pencil-fill" style="font-size: 12px; cursor: pointer;" @click="editRemarkInUid(scope.row)"></i>
+                        </div>
                     </template>
                 </el-table-column>
-                <el-table-column label="头像昵称" width="240">
+                <el-table-column label="头像昵称" width="230">
                     <template slot-scope="scope">
                         <div>
                             <div flex="dir:left cross:center">
                                 <app-image mode="aspectFill" style="margin-right: 8px;flex-shrink: 0" :src="scope.row.avatar"></app-image>
                                 <div style="width: 100%;">
                                     <div>{{scope.row.nickname}}</div>
+                                    <div>推荐人: {{scope.row.parent_nickname}}</div>
                                 </div>
                             </div>
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="mobile" label="手机号" width="120">
-                </el-table-column>
-                <el-table-column prop="email" label="邮箱" width="170">
-                </el-table-column>
-                <el-table-column prop="balance" label="余额" sortable>
+<!--                <el-table-column label="用户权限" min-width="150">-->
+<!--                    <template slot-scope="scope">-->
+<!--                        <div>保存图片：{{scope.row.set_data.del_img_power == '1' ? '开启' : '关闭'}}</div>-->
+<!--                        <div>保存视频：{{scope.row.set_data.del_video_power == '1' ? '开启' : '关闭'}}</div>-->
+<!--                        <div>资源空间：{{scope.row.set_data.attachment_size}}MB</div>-->
+<!--                    </template>-->
+<!--                </el-table-column>-->
+                <el-table-column label="邮箱" min-width="160">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="$navigate({r: 'netb/user/balance-log', user_id:scope.row.user_id})"
-                                   v-text="scope.row.balance"></el-button>
+                        <div>{{scope.row.email}}</div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="integral" label="积分" sortable>
+                <el-table-column label="等级" min-width="180">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="$navigate({r: 'netb/integral/log', user_id:scope.row.user_id})"
-                                   v-text="scope.row.integral"></el-button>
+                        <div>用户等级：{{scope.row.level}}</div>
+                        <div>会员等级：{{scope.row.member_level ?? '--'}}</div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="created_at" label="加入时间" width="150" sortable></el-table-column>
-                <el-table-column prop="remark" label="备注" width="150">
+                <el-table-column label="消费统计" min-width="160">
                     <template slot-scope="scope">
-                        <div class="remark">{{scope.row.remark}}</div>
+                        <div>
+                            <el-button type="text" @click="$navigate({r: 'netb/user/balance-log', user_id:scope.row.user_id})"
+                                       v-text="'充值合计: ' + scope.row.total_balance"></el-button>
+                        </div>
+                        <div>
+                            <el-button type="text" @click="$navigate({r: 'netb/integral/log', user_id:scope.row.user_id})"
+                                       v-text="'积分消耗: ' + scope.row.pay_total_integral"></el-button>
+                        </div>
                     </template>
                 </el-table-column>
-                <el-table-column label="操作" width="140"  fixed="right">
+                <el-table-column label="账户钱包" min-width="160">
+                    <template slot-scope="scope">
+                        <div>
+                            <el-button type="text" @click="$navigate({r: 'netb/user/balance-log', user_id:scope.row.user_id})"
+                                       v-text="'余额：' + scope.row.balance"></el-button>
+                        </div>
+                        <div>
+                            <el-button type="text" @click="$navigate({r: 'netb/integral/log', user_id:scope.row.user_id})"
+                                       v-text="'积分：' + scope.row.integral"></el-button>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="register_time" label="注册时间" width="160" sortable></el-table-column>
+                <el-table-column label="操作" width="170" fixed="right">
                     <template slot-scope="scope">
                         <el-tooltip effect="dark" content="编辑" placement="top">
                             <el-button circle type="text" size="mini" @click="$navigate({r: 'netb/user/edit', id:scope.row.user_id, page: page})">
                                 <i class="bi bi-pencil-square"></i>
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip effect="dark" content="删除" placement="top">
+                            <el-button circle type="text" size="mini" @click="del(scope.row)">
+                                <i class="bi bi-trash"></i>
                             </el-button>
                         </el-tooltip>
                         <el-tooltip effect="dark" content="编辑积分" placement="top">
@@ -223,6 +257,19 @@ $url = CommonUser::userWebUrl();
                 <el-button :loading="btnLoading" type="primary" @click="balanceSubmit">确认</el-button>
             </div>
         </el-dialog>
+        
+        <!-- 备注编辑对话框 -->
+        <el-dialog title="编辑备注" :visible.sync="remarkDialogVisible" width="30%">
+            <el-form :model="remarkForm">
+                <el-form-item label="备注信息">
+                    <el-input type="textarea" :rows="4" placeholder="请输入备注信息" v-model="remarkForm.remark"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="remarkDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateRemark">确 定</el-button>
+            </div>
+        </el-dialog>
     </el-card>
 </div>
 <script>
@@ -241,6 +288,13 @@ $url = CommonUser::userWebUrl();
                 currentPage: null,
                 listLoading: false,
                 btnLoading: false,
+                
+                // 备注编辑相关
+                remarkDialogVisible: false,
+                currentEditUser: null,
+                remarkForm: {
+                    remark: ''
+                },
 
                 //积分
                 dialogIntegral: false,
@@ -283,6 +337,43 @@ $url = CommonUser::userWebUrl();
                     .then(() => this.$message.success('复制成功'))
                     .catch(() => this.$message.error('复制失败'))
             },
+            
+            // 在UID栏目中编辑备注
+            editRemarkInUid(row) {
+                this.currentEditUser = row;
+                this.remarkForm.remark = row.remark || '';
+                this.remarkDialogVisible = true;
+            },
+            
+            // 更新备注
+            updateRemark() {
+                let self = this;
+                request({
+                    params: {
+                        r: 'netb/user/edit-remark',
+                    },
+                    method: 'post',
+                    data: {
+                        id: self.currentEditUser.user_id,
+                        remark: self.remarkForm.remark
+                    }
+                }).then(e => {
+                    if (e.data.code === 0) {
+                        self.$message.success(e.data.msg);
+                        // 更新列表中的备注信息
+                        self.form.forEach(item => {
+                            if (item.user_id === self.currentEditUser.user_id) {
+                                item.remark = self.remarkForm.remark;
+                            }
+                        });
+                        self.remarkDialogVisible = false;
+                    } else {
+                        self.$message.error(e.data.msg);
+                    }
+                }).catch(e => {
+                    console.log(e);
+                });
+            },
             //积分
             integralPicUrl(e) {
                 if (e.length) {
@@ -317,6 +408,26 @@ $url = CommonUser::userWebUrl();
                         });
                     }
                 });
+            },
+            del(row) {
+                this.$confirm('删除该用户, 是否继续?', '提示').then(() => {
+                    request({
+                        params: {
+                            r: 'netb/user/delete',
+                        },
+                        method: 'post',
+                        data: {id: row.user_id},
+                    }).then(e => {
+                        if (e.data.code === 0) {
+                            this.getList();
+                        } else {
+                            this.$message.error(e.data.msg);
+                        }
+                        this.btnLoading = false;
+                    }).catch(e => {
+                        this.btnLoading = false;
+                    });
+                })
             },
 
             //余额

@@ -19,11 +19,14 @@ class PaymentOrder extends Model
     public $amount;
     public $title;
     public $notifyClass;
+    /** @var integer 支付方式：1=微信支付 2=余额支付 3=积分支付 4=stripe支付 */
+    public $pay_type;
 
     public function rules()
     {
         return [
             [['orderNo', 'amount', 'title', 'notifyClass'], 'required',],
+            [['pay_type'], 'integer'],
             [['orderNo'], 'string', 'max' => 32],
             [['title'], 'string', 'max' => 128],
             [['notifyClass'], 'string', 'max' => 512],

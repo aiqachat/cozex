@@ -56,7 +56,7 @@ $url = Yii::$app->request->absoluteUrl;
                 <el-table-column label="操作" width="200" fixed="right">
                     <template slot-scope="scope">
                         <el-dropdown @command="(format) => down(scope.row, format)" v-if="scope.row.status == 2">
-                            <el-button circle type="text" size="mini" :disabled="!!scope.row.is_data_deleted">
+                            <el-button circle type="text" size="mini">
                                 <i class="bi bi-download"></i>
                             </el-button>
                             <el-dropdown-menu slot="dropdown">

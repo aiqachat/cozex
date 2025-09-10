@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\gii;
@@ -19,15 +19,13 @@ class GiiAsset extends AssetBundle
 {
     public $sourcePath = '@yii/gii/assets';
     public $css = [
-        'main.css',
+        'css/main.css',
     ];
     public $js = [
-        'gii.js',
+        'js/bs4-native.min.js',
+        'js/gii.js',
     ];
     public $depends = [
-        'yii\web\YiiAsset',
-        'yii\bootstrap\BootstrapAsset',
-        'yii\bootstrap\BootstrapPluginAsset',
-        'yii\gii\TypeAheadAsset',
+        'yii\web\YiiAsset'
     ];
 }

@@ -96,6 +96,7 @@ class PayNotifyController extends Controller
                     'amount' => (float)$paymentOrder->amount,
                     'title' => $paymentOrder->title,
                     'notifyClass' => $paymentOrder->notify_class,
+                    'pay_type' => $paymentOrder->pay_type,
                 ]);
                 $notify->notify($po);
             } catch (\Exception $e) {
@@ -112,6 +113,7 @@ class PayNotifyController extends Controller
         if(empty($data['data']['object'])){
             return;
         }
+        \Yii::warning($data);
         $form = new StripeNotify();
         $form->attributes = $data['data']['object'];
         $form->handle();

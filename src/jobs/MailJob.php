@@ -21,7 +21,12 @@ class MailJob extends BaseJob implements JobInterface
 
     public function execute($queue)
     {
-        $this->setRequest();
-        $this->class->job($this->view, $this->params);
+        try{
+            $this->setRequest();
+            \Yii::$app->setMall($this->class->mall);
+            $this->class->job($this->view, $this->params);
+        }catch (\Exception $e){
+            \Yii::error($e);
+        }
     }
 }

@@ -49,6 +49,24 @@
         margin: 0;
     }
 
+    .input-item .el-select {
+        width: 100%;
+    }
+
+    .input-item .el-select .el-input__inner {
+        border-right: 1px solid #dcdfe6;
+    }
+
+    .input-item .el-select .el-input__inner:hover {
+        border: 1px solid #dcdfe6;
+        outline: 0;
+    }
+
+    .input-item .el-select .el-input__inner:focus {
+        border: 1px solid #dcdfe6;
+        outline: 0;
+    }
+
     .table-body .el-button {
         padding: 0!important;
         border: 0;
@@ -74,7 +92,7 @@
     <el-card shadow="never" style="border:0" body-style="background-color: #f3f3f3;padding: 10px 0 0;">
         <div slot="header">
             <div>
-                <span>余额收支</span>
+                <span>余额明细</span>
             </div>
         </div>
         <div class="table-body">
@@ -90,12 +108,42 @@
                     <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
                 </el-input>
             </div>
+            <div class="input-item">
+                <el-select v-model="rechargeType" placeholder="请选择资金变动类型" size="small" clearable @change="search" style="width: 100%;">
+                    <el-option label="在线充值" :value="1"></el-option>
+                    <el-option label="后台充值" :value="2"></el-option>
+                </el-select>
+            </div>
             <el-table :data="form" border style="width: 100%" v-loading="listLoading">
-
                 <el-table-column prop="id" label="ID" width="80"></el-table-column>
-
-                <el-table-column prop="user.nickname" label="昵称"></el-table-column>
-
+                <el-table-column label="用户UID" width="120" sortable>
+                    <template slot-scope="scope">
+                        <div>{{scope.row.user.uid}}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="头像昵称" width="230">
+                    <template slot-scope="scope">
+                        <div>
+                            <div flex="dir:left cross:center">
+                                <app-image mode="aspectFill" style="margin-right: 8px;flex-shrink: 0" :src="scope.row.userInfo.avatar"></app-image>
+                                <div style="width: 100%;">
+                                    <div>{{scope.row.user.nickname}}</div>
+                                    <div>推荐人: {{scope.row.parent_nickname}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="邮箱" min-width="160">
+                    <template slot-scope="scope">
+                        <div>{{scope.row.userInfo.email}}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="类型" min-width="80">
+                    <template slot-scope="scope">
+                        <div>{{scope.row.recharge_type==1?'在线充值':'后台充值'}}</div>
+                    </template>
+                </el-table-column>
                 <el-table-column label="收支情况" width="180">
                     <template slot-scope="scope">
                         <div style="font-size: 18px;"
@@ -148,9 +196,11 @@
                     date: '',
                     start_date: '',
                     end_date: '',
+                    recharge_type: '',
                 },
                 date: '',
                 keyword: getQuery('keyword'),
+                rechargeType: '',
                 bigImg: '',
                 form: [],
                 pageCount: 0,
@@ -165,6 +215,7 @@
             exportConfirm() {
                 this.searchData.keyword = this.keyword;
                 this.searchData.date = this.date;
+                this.searchData.recharge_type = this.rechargeType;
             },
             pagination(currentPage) {
                 this.page = currentPage;
@@ -187,6 +238,7 @@
                         date: this.date,
                         user_id: getQuery('user_id'),
                         keyword: this.keyword,
+                        recharge_type: this.rechargeType,
                         start_date: this.searchData.start_date,
                         end_date: this.searchData.end_date,
                     },

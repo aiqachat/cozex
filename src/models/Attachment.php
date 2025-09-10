@@ -21,10 +21,15 @@ use Yii;
  * @property string $updated_at
  * @property string $deleted_at
  * @property int $is_delete
- * @property int $is_recycle;
+ * @property int $is_recycle
+ * @property AttachmentStorage $storage
+ * @property Mall $mall
  */
 class Attachment extends ModelActiveRecord
 {
+    const REDIS_KEY = 'attachmentData';
+    const USER_DIR = "user";
+
     /**
      * {@inheritdoc}
      */
@@ -73,5 +78,13 @@ class Attachment extends ModelActiveRecord
     public function getThumbUrl()
     {
         return $this->thumb_url ? $this->thumb_url : $this->url;
+    }
+
+    public function getStorage(){
+        return $this->hasOne(AttachmentStorage::className(), ['id' => 'storage_id']);
+    }
+
+    public function getMall(){
+        return $this->hasOne(Mall::className(), ['id' => 'mall_id']);
     }
 }

@@ -50,28 +50,28 @@ class SoundReprintForm extends Model
             return $this->getErrorResponse();
         }
         try {
-            $account = VolcengineAccount::findOne (['id' => $this->account_id, 'mall_id' => \Yii::$app->mall->id]);
+            $account = VolcengineAccount::findOne(['id' => $this->account_id, 'mall_id' => \Yii::$app->mall->id]);
             if (!$account) {
                 throw new \Exception('账号不存在');
             }
             $obj = new MegaTtsUpload();
             if ($this->type == 1) {
-                $file = UploadedFile::getInstanceByName ("file");
+                $file = UploadedFile::getInstanceByName("file");
                 $name = $file->tempName;
                 $obj->audio_format = "wav";
             } else {
-                $attachment = Attachment::findOne ($this->file_id);
+                $attachment = Attachment::findOne($this->file_id);
                 if (!$attachment) {
                     throw new \Exception('文件不存在');
                 }
-                $name = (new AvData())->localFile ($attachment->url);
-                $obj->audio_format = pathinfo ($name, PATHINFO_EXTENSION);
+                $name = (new AvData())->localFile($attachment->url);
+                $obj->audio_format = pathinfo($name, PATHINFO_EXTENSION);
             }
-            $obj->audio_bytes = base64_encode (file_get_contents ($name));
+            $obj->audio_bytes = base64_encode(file_get_contents($name));
             $obj->speaker_id = $this->speaker_id;
             $obj->language = MegaTtsUpload::languageList[$this->language] ?? 0;
-            $obj->model_type = intval ($this->model_type);
-            ApiForm::common (['account' => $account, 'object' => $obj])->request ();
+            $obj->model_type = intval($this->model_type);
+            ApiForm::common(['account' => $account, 'object' => $obj])->request();
             $return = [
                 'code' => ApiCode::CODE_SUCCESS,
                 'msg' => '成功',
@@ -79,11 +79,11 @@ class SoundReprintForm extends Model
         }catch (\Exception $e){
             $return = [
                 'code' => ApiCode::CODE_ERROR,
-                'msg' => $e->getMessage ()
+                'msg' => $e->getMessage()
             ];
         }
         if(!empty($attachment) && isset($name)){
-            @unlink ($name);
+            @unlink($name);
             $attachment->delete();
         }
         return $return;

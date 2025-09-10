@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\gii;
@@ -15,9 +15,8 @@ use yii\helpers\Html;
 /**
  * CodeFile represents a code file to be generated.
  *
- * @property string $relativePath The code file path relative to the application base path. This property is
- * read-only.
- * @property string $type The code file extension (e.g. php, txt). This property is read-only.
+ * @property-read string $relativePath The code file path relative to the application base path.
+ * @property-read string $type The code file extension (e.g. php, txt).
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
@@ -81,13 +80,17 @@ class CodeFile extends BaseObject
      */
     public function save()
     {
-        $module = Yii::$app->controller->module;
+        $module = isset(Yii::$app->controller) ? Yii::$app->controller->module : null;
         if ($this->operation === self::OP_CREATE) {
             $dir = dirname($this->path);
             if (!is_dir($dir)) {
-                $mask = @umask(0);
-                $result = @mkdir($dir, $module->newDirMode, true);
-                @umask($mask);
+                if ($module instanceof \yii\gii\Module) {
+                    $mask = @umask(0);
+                    $result = @mkdir($dir, $module->newDirMode, true);
+                    @umask($mask);
+                } else {
+                    $result = @mkdir($dir, 0777, true);
+                }
                 if (!$result) {
                     return "Unable to create the directory '$dir'.";
                 }
@@ -97,9 +100,11 @@ class CodeFile extends BaseObject
             return "Unable to write the file '{$this->path}'.";
         }
 
-        $mask = @umask(0);
-        @chmod($this->path, $module->newFileMode);
-        @umask($mask);
+        if ($module instanceof \yii\gii\Module) {
+            $mask = @umask(0);
+            @chmod($this->path, $module->newFileMode);
+            @umask($mask);
+        }
 
         return true;
     }

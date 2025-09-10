@@ -32,7 +32,7 @@ class MenusForm extends Model
      * 有实际页面且不菜单列表中的路由填写在此处
      */
     const existList = [
-//        'netb/statistic/index',
+        //        'netb/statistic/index',
         'admin/cache/clean',
     ];
 
@@ -112,7 +112,7 @@ class MenusForm extends Model
                     unset($menus[$index]);
                     continue;
                 } else {
-                    if(isset($item['children'][0]['route'])) {
+                    if (isset($item['children'][0]['route'])) {
                         $item['route'] = $item['children'][0]['route'];
                     }
                 }
@@ -136,8 +136,8 @@ class MenusForm extends Model
     private function resetMenus(array $list, &$id = 1, $pid = 0)
     {
         foreach ($list as $key => $item) {
-            $list[$key]['id'] = (string)$id;
-            $list[$key]['pid'] = (string)$pid;
+            $list[$key]['id'] = (string) $id;
+            $list[$key]['pid'] = (string) $pid;
 
             // 前端选中的菜单
             if (isset($list[$key]['route']) && $this->currentRoute === $list[$key]['route']) {
@@ -182,52 +182,127 @@ class MenusForm extends Model
             \Yii::$app->mall->id,
             CommonOption::GROUP_APP
         );
-        if ($database) {
-            $menu = ArrayHelper::index($menu, "name");
-            foreach ($database as $item){
-                if(isset($menu[$item['name']])){
-                    $item['is_show'] = $item['is_show'] == 'true';
-                    if($foreground && !$item['is_show']){
-                        unset($menu[$item['name']]);
-                        continue;
-                    }
-                    if(isset($item['children'])){
-                        foreach ($item['children'] as $k => $child){
-                            $item['children'][$k]['is_show'] = $child['is_show'] == 'true';
-                            if($foreground && !$item['children'][$k]['is_show']){
-                                unset($item['children'][$k], $menu[$item['name']]['children'][$k]);
-                            }
-                        }
-                        if(count($item['children']) == 0){
-                            unset($menu[$item['name']]);
-                            continue;
-                        }
-                    }
-                    $menu[$item['name']] = CommonOption::checkDefault($item, $menu[$item['name']], false);
-                }
-            }
-            $menu = array_values($menu);
-            ArrayHelper::multisort($menu, 'sort', SORT_DESC);
-            foreach ($menu as &$item){
-                if($foreground && isset($item['meta']['title_' . \Yii::$app->language])){
-                    $item['meta']['title'] = $item['meta']['title_' . \Yii::$app->language];
-                    unset($item['meta']['title_' . \Yii::$app->language]);
-                }
-                if(isset($item['children'])){
-                    ArrayHelper::multisort($item['children'], 'sort', SORT_DESC);
-                    if($foreground) {
-                        foreach ($item['children'] as &$child) {
-                            if (isset($child['meta']['title_' . \Yii::$app->language])) {
-                                $child['meta']['title'] = $child['meta']['title_' . \Yii::$app->language];
-                                unset($child['meta']['title_' . \Yii::$app->language]);
-                            }
-                        }
-                        unset($child);
-                    }
-                }
-            }
-            unset($item);
+
+        if (!$database) {
+            return $menu;
         }
+
+        $menu = ArrayHelper::index($menu, "name");
+
+        // 处理一级菜单
+        foreach ($database as $item) {
+            // 跳过不存在的菜单
+            if (!isset($menu[$item['name']])) {
+                continue;
+            }
+
+            // 转换is_show为布尔值
+            $item['is_show'] = $item['is_show'] === 'true';
+
+            // 前台模式下隐藏不显示的菜单
+            if ($foreground && !$item['is_show']) {
+                unset($menu[$item['name']]);
+                continue;
+            }
+
+            // 处理子菜单
+            if (isset($item['children']) && isset($menu[$item['name']]['children'])) {
+                $subMenu = ArrayHelper::index($menu[$item['name']]['children'], "name");
+                $this->processChildrenMenu($item['children'], $subMenu, $foreground);
+
+                // 如果第一个子菜单为空，则移除父菜单
+                if (empty($subMenu)) {
+                    unset($menu[$item['name']]);
+                    continue;
+                }
+            }
+
+            $meta = CommonOption::checkDefault($item['meta'], $menu[$item['name']]['meta'], false);
+            $menu[$item['name']] = CommonOption::checkDefault($item, $menu[$item['name']], false, false);
+            $menu[$item['name']]['meta'] = $meta;
+            if(!empty($subMenu)){
+                // 更新子菜单
+                $menu[$item['name']]['children'] = $subMenu;
+            }else{
+                unset($menu[$item['name']]['children']);
+            }
+        }
+
+        // 转换回数组并排序
+        $menu = array_values($menu);
+        ArrayHelper::multisort($menu, 'sort', SORT_DESC);
+
+        // 处理多语言及子菜单排序
+        foreach ($menu as &$item) {
+            // 处理多语言标题（会递归处理所有子菜单）
+            if ($foreground) {
+                $this->processMenuTitle($item);
+            }
+        }
+        unset($item);
         return $menu;
+    }
+
+    /**
+     * 处理子菜单
+     * @param array $children 配置中的子菜单
+     * @param array &$subMenu 实际子菜单
+     * @param bool $foreground 是否为前台模式
+     */
+    private function processChildrenMenu($children, &$subMenu, $foreground)
+    {
+        foreach ($children as $child) {
+            if (!isset($subMenu[$child['name']])) {
+                continue;
+            }
+
+            $child['is_show'] = $child['is_show'] === 'true';
+            if ($foreground && !$child['is_show']) {
+                unset($subMenu[$child['name']]);
+                continue;
+            }
+
+            // 处理更深层次的子菜单
+            if (isset($child['children']) && isset($subMenu[$child['name']]['children'])) {
+                $nextLevelSubMenu = ArrayHelper::index($subMenu[$child['name']]['children'], "name");
+                $this->processChildrenMenu($child['children'], $nextLevelSubMenu, $foreground);
+            }
+
+            $meta = CommonOption::checkDefault($child['meta'], $subMenu[$child['name']]['meta'], false);
+            $subMenu[$child['name']] = CommonOption::checkDefault($child, $subMenu[$child['name']], false, false);
+            $subMenu[$child['name']]['meta'] = $meta;
+            // 更新子菜单
+            if (!empty($nextLevelSubMenu)) {
+                $subMenu[$child['name']]['children'] = $nextLevelSubMenu;
+            } else {
+                // 如果没有可显示的子菜单，则移除children属性
+                unset($subMenu[$child['name']]['children']);
+            }
+        }
+        $subMenu = array_values($subMenu);
+        if(count($subMenu) > 1) {
+            // 对子菜单排序
+            ArrayHelper::multisort($subMenu, 'sort', SORT_DESC);
+        }
+    }
+
+    /**
+     * 处理菜单多语言标题
+     * @param array &$item 菜单项
+     */
+    private function processMenuTitle(&$item)
+    {
+        if (isset($item['meta']['title_' . \Yii::$app->language])) {
+            $item['meta']['title'] = $item['meta']['title_' . \Yii::$app->language];
+            unset($item['meta']['title_' . \Yii::$app->language]);
+        }
+
+        // 递归处理子菜单的多语言标题
+        if (isset($item['children']) && is_array($item['children'])) {
+            foreach ($item['children'] as &$childItem) {
+                $this->processMenuTitle($childItem);
+            }
+            unset($childItem);
+        }
     }
 }

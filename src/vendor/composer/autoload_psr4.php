@@ -22,8 +22,8 @@ return array(
     'yii\\gii\\' => array($vendorDir . '/yiisoft/yii2-gii/src'),
     'yii\\debug\\' => array($vendorDir . '/yiisoft/yii2-debug/src'),
     'yii\\composer\\' => array($vendorDir . '/yiisoft/yii2-composer'),
-    'yii\\bootstrap\\' => array($vendorDir . '/yiisoft/yii2-bootstrap/src'),
     'yii\\' => array($vendorDir . '/yiisoft/yii2'),
+    'omnilight\\scheduling\\' => array($vendorDir . '/omnilight/yii2-scheduling/src'),
     'cebe\\markdown\\' => array($vendorDir . '/cebe/markdown'),
     'app\\bootstrap\\' => array($baseDir . '/bootstrap'),
     'WeChatPay\\' => array($vendorDir . '/wechatpay/wechatpay/src'),
@@ -60,4 +60,5 @@ return array(
     'Doctrine\\Deprecations\\' => array($vendorDir . '/doctrine/deprecations/src'),
     'Doctrine\\Common\\Lexer\\' => array($vendorDir . '/doctrine/lexer/src'),
     'Doctrine\\Common\\Cache\\' => array($vendorDir . '/doctrine/cache/lib/Doctrine/Common/Cache'),
+    'Cron\\' => array($vendorDir . '/dragonmantank/cron-expression/src/Cron'),
 );

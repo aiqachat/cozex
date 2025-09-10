@@ -9,7 +9,11 @@ namespace app\models;
  * @property int $user_id
  * @property int $is_super_admin 是否为超级管理员
  * @property int $is_admin 是否为管理员
+ * @property int $user_level 用户等级
+ * @property int $member_level 会员等级
  * @property int $is_delete 是否删除
+ * @property UserLevel $level
+ * @property MemberLevel $memberLevel
  */
 class UserIdentity extends ModelActiveRecord
 {
@@ -27,7 +31,7 @@ class UserIdentity extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['is_super_admin', 'is_admin', 'user_id', 'is_delete'], 'integer'],
+            [['is_super_admin', 'is_admin', 'user_id', 'is_delete', 'user_level', 'member_level'], 'integer'],
         ];
     }
 
@@ -41,7 +45,32 @@ class UserIdentity extends ModelActiveRecord
             'user_id' => 'User ID',
             'is_super_admin' => 'Is Super Admin',
             'is_admin' => 'Is Admin',
+            'user_level' => '用户等级',
+            'member_level' => '会员等级',
             'is_delete' => 'Is Delete',
         ];
     }
+
+    public function getLevel()
+    {
+        return $this->hasOne(UserLevel::className(), ['id' => 'user_level']);
+    }
+
+    public function setLevel()
+    {
+        $level = UserLevel::findOne(['is_default' => 1, 'is_delete' => 0, 'mall_id' => \Yii::$app->mall->id]);
+        $this->user_level = $level->id ?? null;
+    }
+
+    public function getMemberLevel()
+    {
+        return $this->hasOne(MemberLevel::className(), ['id' => 'member_level']);
+    }
+
+    public function setMemberLevel()
+    {
+        $memberLevel = MemberLevel::findOne(['is_default' => 1, 'is_delete' => 0, 'mall_id' => \Yii::$app->mall->id]);
+        $this->member_level = $memberLevel->id ?? null;
+    }
+
 }

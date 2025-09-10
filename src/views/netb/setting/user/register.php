@@ -40,7 +40,7 @@ Yii::$app->loadViewComponent('app-rich-text')
             <el-input v-model.trim="form.agreement_title" class="currency-width">
                 <template slot="prepend">中文</template>
             </el-input>
-            <el-input v-model.trim="form.agreement_title" class="currency-width">
+            <el-input v-model.trim="form.agreement_title_en" class="currency-width">
                 <template slot="prepend">英文</template>
             </el-input>
         </el-form-item>

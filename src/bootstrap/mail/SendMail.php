@@ -6,6 +6,8 @@
 
 namespace app\bootstrap\mail;
 
+use app\forms\mall\setting\ConfigForm;
+use app\forms\mall\setting\UserConfigForm;
 use app\jobs\MailJob;
 use app\models\MailSetting;
 use app\models\Mall;
@@ -29,6 +31,7 @@ class SendMail extends Component
      */
     protected function send($view, $params)
     {
+        $params['language'] = \Yii::$app->language;
         \Yii::$app->queue->delay(0)->push(new MailJob([
             'class' => $this,
             'view' => $view,
@@ -38,27 +41,46 @@ class SendMail extends Component
 
     public function job($view, $params)
     {
-        $mailSetting = $this->mailSetting;
+        \Yii::$app->language = $params['language'] ?? 'zh'; // 设置多语言，默认中文
+        $this->mailSetting->switchData();
+        $config = (new ConfigForm())->config();
+        $userConfig = (new UserConfigForm(['tab' => UserConfigForm::TAB_SETTING]))->config();
+        $params = array_merge($params, [
+            'logo' => $config['mall_logo_pic'],
+            'desc' => $this->mailSetting->desc,
+            'title' => $userConfig['title_' . \Yii::$app->language] ?? $userConfig['title'],
+        ]);
         $messages = [];
         $receiveMail = !empty($params['email']) ? (array)$params['email'] : [];
-        /* @var Mailer $mailer */
-        $mailer = \Yii::$app->mailer;
-        $mailer->setTransport([
-            'class' => 'Swift_SmtpTransport',
-            'host' => $mailSetting->send_platform ?: 'smtp.qq.com',
-            'username' => $mailSetting->send_mail,
-            'password' => $mailSetting->send_pwd,
-            'port' => '465',
-            'encryption' => 'ssl',//    tls | ssl
-        ]);
-        foreach ($receiveMail as $mail) {
-            $compose = $mailer->compose($view, $params);
-            $compose->setFrom($mailSetting->send_mail); //要发送给那个人的邮箱
-            $compose->setTo($mail); //要发送给那个人的邮箱
-            $compose->setSubject($mailSetting->send_name); //邮件主题
-            $messages[] = $compose;
+        try {
+            $subject_name = $this->mailSetting->subject_name;
+            if($view == 'code'){
+                $subject_name .= ($subject_name ? ' - ' : '') . sprintf(\Yii::t('common', 'code标题'), $params['code']);
+            }elseif($view == 'test'){
+                $subject_name .= ($subject_name ? ' - ' : '') . "这是一条测试邮件信息";
+            }
+            /* @var Mailer $mailer */
+            $mailer = \Yii::$app->mailer;
+            $mailer->setTransport([
+                'class' => 'Swift_SmtpTransport',
+                'host' => $this->mailSetting->send_platform ?: 'smtp.qq.com',
+                'username' => $this->mailSetting->send_mail,
+                'password' => $this->mailSetting->send_pwd,
+                'port' => '465',
+                'encryption' => 'ssl',//    tls | ssl
+            ]);
+            foreach ($receiveMail as $mail) {
+                $compose = $mailer->compose($view, $params);
+                $compose->setFrom([$this->mailSetting->send_mail => $this->mailSetting->send_name ?: $this->mailSetting->send_mail]);
+                $compose->setTo($mail); //要发送给那个人的邮箱
+                $compose->setSubject($subject_name); //邮件主题
+                $messages[] = $compose;
+            }
+            return $mailer->sendMultiple($messages);
+        }catch (\Exception $e){
+            \Yii::error($e);
+            return null;
         }
-        return $mailer->sendMultiple($messages);
     }
 
     public function test($email)
@@ -69,7 +91,7 @@ class SendMail extends Component
     public function getMailSetting()
     {
         if(!$this->mailSetting) {
-            $this->mailSetting = MailSetting::findOne ([
+            $this->mailSetting = MailSetting::findOne([
                 'mall_id' => $this->mall->id,
                 'is_delete' => 0,
             ]);
@@ -85,6 +107,9 @@ class SendMail extends Component
         try {
             $data = ['email' => $email];
             if(is_array($code)){
+                if(!isset($code['code'])){
+                    throw new \Exception('缺少code验证码');
+                }
                 $data = array_merge($data, $code);
             }else{
                 $data['code'] = $code;

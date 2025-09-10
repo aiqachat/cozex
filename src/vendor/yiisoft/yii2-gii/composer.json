@@ -1,14 +1,19 @@
 {
     "name": "yiisoft/yii2-gii",
     "description": "The Gii extension for the Yii framework",
-    "keywords": ["yii2", "gii", "code generator"],
+    "keywords": [
+        "yii2",
+        "gii",
+        "code generator",
+        "dev"
+    ],
     "type": "yii2-extension",
     "license": "BSD-3-Clause",
     "support": {
         "issues": "https://github.com/yiisoft/yii2-gii/issues",
-        "forum": "http://www.yiiframework.com/forum/",
-        "wiki": "http://www.yiiframework.com/wiki/",
-        "irc": "irc://irc.freenode.net/yii",
+        "forum": "https://www.yiiframework.com/forum/",
+        "wiki": "https://www.yiiframework.com/wiki/",
+        "irc": "ircs://irc.libera.chat:6697/yii",
         "source": "https://github.com/yiisoft/yii2-gii"
     },
     "authors": [
@@ -19,27 +24,51 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "yiisoft/yii2": "~2.0.14",
-        "yiisoft/yii2-bootstrap": "~2.0.0",
-        "phpspec/php-diff": ">=1.0.2",
-        "bower-asset/typeahead.js": "0.10.* | ~0.11.0"
+        "yiisoft/yii2": "~2.0.46",
+        "phpspec/php-diff": "^1.1.0"
+    },
+    "require-dev": {
+        "yiisoft/yii2-coding-standards": "~2.0",
+        "cweagans/composer-patches": "^1.7",
+        "phpunit/phpunit": "4.8.34"
     },
     "autoload": {
         "psr-4": {
             "yii\\gii\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "yiiunit\\gii\\": "tests"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "2.0.x-dev"
+        },
+        "composer-exit-on-patch-failure": true,
+        "patches": {
+            "phpunit/phpunit-mock-objects": {
+                "Fix PHP 7 and 8 compatibility": "https://yiisoft.github.io/phpunit-patches/phpunit_mock_objects.patch"
+            },
+            "phpunit/php-file-iterator": {
+                "Fix PHP 8.1 compatibility": "https://yiisoft.github.io/phpunit-patches/phpunit_path_file_iterator.patch"
+            },
+            "phpunit/phpunit": {
+                "Fix PHP 7 compatibility": "https://yiisoft.github.io/phpunit-patches/phpunit_php7.patch",
+                "Fix PHP 8 compatibility": "https://yiisoft.github.io/phpunit-patches/phpunit_php8.patch",
+                "Fix PHP 8.1 compatibility": "https://yiisoft.github.io/phpunit-patches/phpunit_php81.patch"
+            }
         }
     },
     "config": {
+        "process-timeout": 1800,
         "fxp-asset": {
-            "installer-paths": {
-                "npm-asset-library": "vendor/npm",
-                "bower-asset-library": "vendor/bower"
-            }
+            "enabled": false
+        },
+        "allow-plugins": {
+            "cweagans/composer-patches": true,
+            "yiisoft/yii2-composer": true
         }
     },
     "repositories": [

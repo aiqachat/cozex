@@ -50,4 +50,22 @@ class FinanceController extends ApiController
         $form->attributes = \Yii::$app->request->get();
         return $this->asJson($form->allData());
     }
+
+    public function actionIntegralRecord()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new IntegralForm();
+            $form->attributes = \Yii::$app->request->get();
+            return $this->asJson($form->getList());
+        }
+    }
+
+    public function actionBalanceRecord()
+    {
+        if (\Yii::$app->request->isAjax) {
+            $form = new RechargeForm();
+            $form->attributes = \Yii::$app->request->get();
+            return $this->asJson($form->getList());
+        }
+    }
 }

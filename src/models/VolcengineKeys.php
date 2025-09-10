@@ -8,9 +8,11 @@ namespace app\models;
  * @property int $id
  * @property int $mall_id
  * @property string $name
+ * @property int $account_id
  * @property string $access_id
  * @property string $secret_key
  * @property int $is_delete
+ * @property int $type
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
@@ -34,7 +36,7 @@ class VolcengineKeys extends ModelActiveRecord
     {
         return [
             [['mall_id', 'secret_key', 'created_at', 'updated_at',], 'required'],
-            [['is_delete'], 'integer'],
+            [['is_delete', 'account_id', 'type'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['secret_key', 'name', 'access_id'], 'string'],
         ];

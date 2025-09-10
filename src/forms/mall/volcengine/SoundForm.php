@@ -47,7 +47,8 @@ class SoundForm extends Model
         if($account->key){
             $obj = new BatchListMegaTTSTrainStatus([
                 'AppID' => $account->app_id,
-                'PageNumber' => intval(\Yii::$app->request->get("page", 1))
+                'PageNumber' => intval(\Yii::$app->request->get("page", 1)),
+                'type' => $account->type,
             ]);
             try {
                 $form = new RequestForm(['account' => $account->key, 'object' => $obj]);

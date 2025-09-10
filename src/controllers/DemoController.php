@@ -13,6 +13,11 @@ use app\forms\common\coze\api\ConversationMsgList;
 use app\forms\common\coze\api\CreateConversation;
 use app\forms\common\coze\api\CreateMessage;
 use app\forms\common\coze\ApiForm;
+use app\forms\common\volcengine\ark\ImageGenerate;
+use app\forms\common\volcengine\ark\VideoGenerate;
+use app\forms\common\volcengine\ark\VideoGenerateTask;
+use app\forms\common\volcengine\ArkRequestForm;
+use app\models\AvData;
 use app\models\CozeAccount;
 use app\models\Mall;
 
@@ -21,8 +26,7 @@ class DemoController extends Controller
     public function actionIndex($testCode = 200)
     {
         \Yii::$app->setMall(Mall::findOne(1));
-        \Yii::$app->language = 'en';
-        echo "<pre>";print_r(\Yii::t('menu', 'voice'));die();
+        echo "<pre>";print_r(4);die();
     }
 
     public function actionIndexs($testCode = 200)

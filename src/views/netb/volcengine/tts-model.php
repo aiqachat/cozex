@@ -30,11 +30,12 @@ $url = Yii::$app->request->absoluteUrl;
         height: 240px;
         overflow: auto;
         overflow-x: hidden;
+        padding: 5px;
     }
 
     .model-item {
         background: #fff;
-        border: 1px solid #ebebeb;
+        border: 1px solid #e6f0ff;
         width: 306px;
         height: 112px;
         overflow: hidden;
@@ -42,6 +43,8 @@ $url = Yii::$app->request->absoluteUrl;
         padding: 16px;
         cursor: pointer;
         position: relative;
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .model-icon-bg {
@@ -52,6 +55,7 @@ $url = Yii::$app->request->absoluteUrl;
     .model-icon {
         width: 80px;
         height: 80px;
+        border-radius: 50%;
     }
 
     .model-name,
@@ -62,35 +66,38 @@ $url = Yii::$app->request->absoluteUrl;
     }
 
     .model-name {
-        font-size: 14px;
-        margin-bottom: 4px;
+        font-size: 16px;
+        margin-bottom: 5px;
+        font-weight: 600;
     }
 
     .model-desc {
-        color: #999999;
+        color: #6c87a8;
         font-size: 12px;
     }
 
-    .model-other {
-        margin-top: 15px;
-        color: #848c97
-    }
-
-    .model-other span {
-        background: #f6f8fa;
-        padding: 7px 13px;
-        border-radius: 20px;
-    }
-
-    .model-btn {
+    .listen-btn {
         color: #545454;
-        background: #f2f6fc;
-        border: none;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+
+    .listen-btn:hover {
+        background: linear-gradient(135deg, #5eabfa 0%, #409EFF 100%);
+        color: white;
+        border-color: #409EFF;
+        transform: scale(1.05);
+    }
+
+    .listen-btn i {
+        font-size: 14px;
     }
 
     .choose {
-        border-color: #734CF8;
-        background-color: #F1EFFD;
+        border-color: #b3d1ff;
+        background-color: #f7faff;
+        box-shadow: 0 0 8px rgba(51, 136, 255, 0.2);
     }
 
     .tags {
@@ -186,43 +193,40 @@ $url = Yii::$app->request->absoluteUrl;
                 <span style="border-left: 2px solid #d2d2d2;margin-right: 10px"></span>
                 <el-radio-group v-model="searchData.sex" size="mini" @change="change">
                     <el-radio-button label="">全部性别</el-radio-button>
-                    <el-radio-button label="2">女声</el-radio-button>
-                    <el-radio-button label="1">男声</el-radio-button>
+                    <el-radio-button :label="2">女声</el-radio-button>
+                    <el-radio-button :label="1">男声</el-radio-button>
                 </el-radio-group>
                 <span style="border-left: 2px solid #d2d2d2;margin-right: 10px"></span>
                 <el-radio-group v-model="searchData.age" size="mini" @change="change">
                     <el-radio-button label="">全部年龄</el-radio-button>
-                    <el-radio-button label="5">儿童</el-radio-button>
-                    <el-radio-button label="1">青年</el-radio-button>
-                    <el-radio-button label="2">少年/少女</el-radio-button>
-                    <el-radio-button label="3">中年</el-radio-button>
-                    <el-radio-button label="4">老年</el-radio-button>
+                    <el-radio-button :label="5">儿童</el-radio-button>
+                    <el-radio-button :label="1">青年</el-radio-button>
+                    <el-radio-button :label="2">少年/少女</el-radio-button>
+                    <el-radio-button :label="3">中年</el-radio-button>
+                    <el-radio-button :label="4">老年</el-radio-button>
                 </el-radio-group>
             </div>
         </div>
         <div class="model-list" flex="dir:left">
             <div class="model-item" flex="dir:left box:first" @click.stop="choose(item)" v-for="item in voices"
-                :class="{'choose': data.data.voice_type == item.id}">
-                <div style="z-index: 1">
+                :class="{'choose': rsd.primary_id == item.primary_id}">
+                <div>
                     <div class="model-icon-bg">
                         <img class="model-icon" :src="item.pic">
                     </div>
                 </div>
-                <div flex="dir:top box:last" style="z-index: 1">
-                    <div>
-                        <div class="model-name">{{item.name}}</div>
-                        <div class="model-desc">{{item.desc}}</div>
-                        <div class="model-other" v-if="item.other">
-                            <span>{{item.other}}</span>
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="model-name">{{item.name}}</div>
+                    <div class="model-desc">{{item.desc}}</div>
+                    <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="background: #f5f7fa; border-radius: 12px; padding: 4px 12px; color: #7a8599; font-size: 12px;">
+                            {{item.language || '中文'}}
                         </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <template v-if="item.audition">
-                            <el-button @click.stop="playMusic(item.audition)" class="model-btn" size="mini" type="info"
-                                round>
-                                {{ isPlaying && currentAudioUrl === item.audition ? '暂停' : '试听' }}
-                            </el-button>
-                        </template>
+                        <el-button @click.stop="playMusic(item.audition, item.id)" v-if="item.audition"
+                                   class="listen-btn" type="info" round size="mini">
+                            <i :class="isPlaying && currentAudioUrl === item.audition ? 'el-icon-video-pause' : 'el-icon-video-play'"></i>
+                            试听
+                        </el-button>
                     </div>
                 </div>
             </div>
@@ -297,22 +301,19 @@ $url = Yii::$app->request->absoluteUrl;
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
                 <el-table-column label="操作" width="190" fixed="right">
                     <template slot-scope="scope">
-                        <el-tooltip effect="dark" content="播放" placement="top"
-                            v-if="scope.row.status == 2 && !scope.row.is_data_deleted">
+                        <el-tooltip effect="dark" content="播放" placement="top" v-if="scope.row.status == 2">
                             <el-button circle type="text" size="mini" @click="playMusic(scope.row.result)">
                                 <i
                                     :class="isPlaying && currentAudioUrl === scope.row.result ? 'bi bi-pause-circle' : 'bi bi-play-circle'"></i>
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip effect="dark" :content="scope.row.is_data_deleted ? '文件已删除' : '下载'" placement="top"
+                        <el-tooltip effect="dark" :content="'下载'" placement="top"
                             v-if="scope.row.status == 2">
-                            <el-button circle type="text" size="mini" @click="down(scope.row)"
-                                :disabled="!!scope.row.is_data_deleted">
+                            <el-button circle type="text" size="mini" @click="down(scope.row)">
                                 <i class="bi bi-download"></i>
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip effect="dark" content="重试" placement="top"
-                            v-if="scope.row.status == 3 || scope.row.is_data_deleted == 1">
+                        <el-tooltip effect="dark" content="重试" placement="top" v-if="scope.row.status == 3">
                             <el-button circle type="text" size="mini" @click="refresh(scope.row)">
                                 <i class="bi bi-arrow-repeat"></i>
                             </el-button>
@@ -411,6 +412,7 @@ $url = Yii::$app->request->absoluteUrl;
                     this.data.text = e.target.result;
                     this.formLoading = false;
                 };
+                this.data.file = file.name;
                 reader.readAsText(file.raw);
             },
             changeAccount(val) {
@@ -486,20 +488,20 @@ $url = Yii::$app->request->absoluteUrl;
                 }
                 let check = false;
                 this.voices.forEach(its => {
-                    if (its.age === '1') {
+                    if (its.age === 1) {
                         its.desc = '青年';
-                    } else if (its.age === '2') {
+                    } else if (its.age === 2) {
                         its.desc = '少年/少女';
-                    } else if (its.age === '3') {
+                    } else if (its.age === 3) {
                         its.desc = '中年';
-                    } else if (its.age === '4') {
+                    } else if (its.age === 4) {
                         its.desc = '老年';
-                    } else if (its.age === '5') {
+                    } else if (its.age === 5) {
                         its.desc = '儿童';
                     }
-                    if (its.sex === '1') {
+                    if (its.sex === 1) {
                         its.desc += ' 男声';
-                    } else if (its.sex === '2') {
+                    } else if (its.sex === 2) {
                         its.desc += ' 女声';
                     }
                     its.desc += " " + its.parent_name;

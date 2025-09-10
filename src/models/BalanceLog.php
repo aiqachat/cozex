@@ -10,12 +10,15 @@ use Yii;
  * @property int $id
  * @property int $user_id
  * @property int $type 类型：0=未知,1=收入，2=支出
+ * @property int $recharge_type 充值类型：1=在线充值，2=后台充值
  * @property string $money 变动金额
  * @property string $desc 变动说明
  * @property string $custom_desc 自定义详细说明
  * @property string $order_no 订单号
  * @property string $created_at
  * @property string $mall_id
+ * @property User $user
+ * @property UserInfo $userInfo
  */
 class BalanceLog extends ModelActiveRecord
 {
@@ -33,8 +36,8 @@ class BalanceLog extends ModelActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'mall_id', 'type', 'money', 'desc', 'custom_desc', 'created_at'], 'required'],
-            [['user_id', 'mall_id', 'type'], 'integer'],
+            [['user_id', 'mall_id', 'type', 'recharge_type', 'money', 'desc', 'custom_desc', 'created_at'], 'required'],
+            [['user_id', 'mall_id', 'type', 'recharge_type'], 'integer'],
             [['money'], 'number'],
             [['custom_desc'], 'string'],
             [['created_at'], 'safe'],
@@ -52,6 +55,7 @@ class BalanceLog extends ModelActiveRecord
             'mall_id' => 'Mall ID',
             'user_id' => 'User ID',
             'type' => '类型：1=收入，2=支出',
+            'recharge_type' => '充值类型：1=在线充值，2=后台充值',
             'money' => '变动金额',
             'desc' => '变动说明',
             'custom_desc' => '自定义详细说明',
@@ -64,4 +68,12 @@ class BalanceLog extends ModelActiveRecord
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
+
+    public function getUserInfo()
+    {
+        return $this->hasOne(UserInfo::className(), ['user_id' => 'user_id'])
+            ->alias("userInfo")
+            ->andWhere(['userInfo.is_delete' => 0]);
+    }
+
 }

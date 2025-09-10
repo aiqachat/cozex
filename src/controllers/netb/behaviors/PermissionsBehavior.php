@@ -8,6 +8,7 @@
 namespace app\controllers\netb\behaviors;
 
 use app\forms\common\CommonAuth;
+use app\models\User;
 use app\models\UserIdentity;
 use yii\base\ActionFilter;
 use Yii;
@@ -23,10 +24,6 @@ class PermissionsBehavior extends ActionFilter
     public function beforeAction($action)
     {
         if (!\Yii::$app->user->isGuest) {
-            if (Yii::$app->branch->checkMallUser(Yii::$app->user->identity)) {
-                Yii::$app->response->redirect(Yii::$app->branch->logoutUrl())->send();
-                return false;
-            }
 
             // TODO 异步请求不验证
             if (Yii::$app->request->isAjax) {
@@ -45,9 +42,32 @@ class PermissionsBehavior extends ActionFilter
                 return false;
             }
 
-            // 超级管理员无需验证
             /** @var UserIdentity $userIdentity */
             $userIdentity = \Yii::$app->user->identity->identity;
+
+            if(!$userIdentity->is_admin && !$userIdentity->is_super_admin) {
+                // 判断登录角色再决定
+                $role = $_COOKIE['__login_role'] ?? '';
+                if ($role == User::LOGIN_ADMIN) {
+                    if($token = $_COOKIE['__login_token']){
+                        $user = User::findOne([
+                            'access_token' => $token,
+                            'is_delete' => 0,
+                        ]);
+                        if($user) {
+                            Yii::$app->user->login($user);
+                            $userIdentity = \Yii::$app->user->identity->identity;
+                        }
+                    }
+                }
+            }
+
+            if (Yii::$app->branch->checkMallUser(Yii::$app->user->identity)) {
+                Yii::$app->response->redirect(Yii::$app->branch->logoutUrl())->send();
+                return false;
+            }
+
+            // 超级管理员无需验证
             if ($userIdentity->is_super_admin == 1) {
                 return true;
             }

@@ -91,32 +91,31 @@
                 </el-input>
             </div>
             <el-table :data="form" border style="width: 100%" v-loading="listLoading">
-                <el-table-column prop="id" label="ID" width="80"></el-table-column>
-                <el-table-column prop="user.nickname" label="昵称" min-width="160"></el-table-column>
-                <el-table-column label="收支情况积分" min-width="120">
+                <el-table-column prop="user.nickname" label="昵称" min-width="120"></el-table-column>
+                <el-table-column label="收支情况积分" min-width="110">
                     <template slot-scope="scope">
                         <div style="font-size: 18px;color: #68CF3D" v-if="scope.row.type == 1">+{{scope.row.integral}}</div>
                         <div style="font-size: 18px;color: #F6AA5A" v-if="scope.row.type == 2">-{{scope.row.integral}}</div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="desc" label="说明" min-width="400"></el-table-column>
-                <el-table-column label="订单号" width="240px">
+                <el-table-column prop="desc" label="说明" min-width="200"></el-table-column>
+                <el-table-column label="订单号" min-width="130">
                     <template slot-scope="scope" v-if="scope.row.order_no">
                         {{scope.row.order_no}}
                     </template>
                 </el-table-column>
-                <el-table-column label="备注">
+                <el-table-column label="备注" min-width="100">
                     <template slot-scope="scope">
                         <div flex="box:first" v-if="scope.row.info_desc">
                             <div @click="toLook(scope.row.info_desc.pic_url)" style="padding-right: 10px" v-if="scope.row.info_desc.hasOwnProperty('pic_url') && scope.row.info_desc.pic_url && scope.row.info_desc.pic_url.length > 0">
                                 <app-image mode="aspectFill" :src="scope.row.info_desc.pic_url"></app-image>
                             </div>
-                            <div v-if="scope.row.info_desc.hasOwnProperty('remark')">{{scope.row.info_desc.remark}}
+                            <div v-if="scope.row.info_desc.name">{{scope.row.info_desc.name}}
                             </div>
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="created_at" width="180" label="充值时间"></el-table-column>
+                <el-table-column prop="created_at" width="150" label="充值时间"></el-table-column>
             </el-table>
 
             <!--工具条 批量操作和分页-->
@@ -158,7 +157,6 @@
         },
         methods: {
             toLook(img) {
-                console.log(img)
                 this.bigImg = img;
             },
             exportConfirm() {

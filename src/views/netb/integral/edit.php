@@ -42,15 +42,41 @@ defined('YII_ENV') or exit('Access Denied');
                     <template slot='label'>
                         <span>支付金额</span>
                     </template>
-                    <el-input size="small" type="number"
-                              oninput="this.value = this.value.replace(/^(\-)*(\d+)\.(\d\d).*$/,'$1$2.$3');"
-                              v-model="form.pay_price" autocomplete="off"></el-input>
+                    <el-input size="small" type="text"
+                              @input="handlePriceInput"
+                              v-model="form.pay_price" autocomplete="off" placeholder="请输入金额"></el-input>
+                </el-form-item>
+                <el-form-item prop="serial_num">
+                    <template slot='label'>
+                        <span>排序</span>
+                    </template>
+                    <el-input size="small" type="number" v-model="form.serial_num"></el-input>
                 </el-form-item>
                 <el-form-item prop="send_integral">
                     <template slot='label'>
                         <span>兑换积分数</span>
                     </template>
-                    <el-input size="small" type="number" v-model="form.send_integral"></el-input>
+                    <el-input size="small" type="number" v-model="form.send_integral" placeholder="请输入兑换积分数"></el-input>
+                </el-form-item>
+                <el-form-item prop="give_integral">
+                    <template slot='label'>
+                        <span>赠送积分数</span>
+                    </template>
+                    <el-input size="small" type="number" v-model="form.give_integral" placeholder="请输入赠送积分数"></el-input>
+                </el-form-item>
+                <el-form-item prop="buy_num">
+                    <template slot='label'>
+                        <span>可购买次数</span>
+                    </template>
+                    <el-input size="small" type="number" v-model="form.buy_num" placeholder="请输入可购买次数"></el-input>
+                </el-form-item>
+                <el-form-item prop="period">
+                    <template slot='label'>
+                        <span>有效期</span>
+                    </template>
+                    <el-input size="small" type="number" v-model="form.period" placeholder="请输入有效期">
+                        <template slot="append">天</template>
+                    </el-input>
                 </el-form-item>
             </el-form>
         </div>
@@ -87,6 +113,10 @@ defined('YII_ENV') or exit('Access Denied');
                     name: '',
                     pay_price: '',
                     send_integral: '',
+                    serial_num: 9999,
+                    give_integral: '',
+                    buy_num: '',
+                    period: '',
                     language_data: {en : {}}
                 },
                 loading: false,
@@ -103,10 +133,39 @@ defined('YII_ENV') or exit('Access Denied');
                         {required: true, message: '兑换积分不能为空', trigger: 'change'},
                         { validator: checkAge, trigger: 'change' }
                     ],
+                    give_integral: [
+                        {required: true, message: '赠送积分不能为空', trigger: 'change'},
+                        { validator: checkAge, trigger: 'change' }
+                    ],
+                    buy_num: [
+                        {required: true, message: '可购买次数不能为空', trigger: 'change'},
+                        { validator: checkAge, trigger: 'change' }
+                    ],
+                    period: [
+                        {required: true, message: '有效期不能为空', trigger: 'change'},
+                        { validator: checkAge, trigger: 'change' }
+                    ],
                 },
             };
         },
         methods: {
+            // 处理金额输入
+            handlePriceInput(value) {
+                // 只允许输入数字和小数点
+                let newValue = value.replace(/[^\d.]/g, '');
+                // 确保只有一个小数点
+                let parts = newValue.split('.');
+                if (parts.length > 2) {
+                    newValue = parts[0] + '.' + parts.slice(1).join('');
+                }
+                // 限制小数位数为2位
+                if (parts.length === 2 && parts[1].length > 2) {
+                    newValue = parts[0] + '.' + parts[1].substring(0, 2);
+                }
+                // 更新输入框的值
+                this.form.pay_price = newValue;
+            },
+            
             // 提交数据
             onSubmit() {
                 this.$refs.form.validate((valid) => {

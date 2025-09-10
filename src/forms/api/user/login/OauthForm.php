@@ -29,7 +29,7 @@ class OauthForm extends LoginForm
     {
         return [
             [['type'], 'required'],
-            [['code', 'state', 'type'], 'string'],
+            [['code', 'state', 'type', 'invite'], 'string'],
         ];
     }
 
@@ -48,6 +48,7 @@ class OauthForm extends LoginForm
         }
         /** @var BasicForm $object */
         $object = new $class();
+        $object->invite = $this->invite;
 
         return [
             'code' => ApiCode::CODE_SUCCESS,
@@ -67,6 +68,7 @@ class OauthForm extends LoginForm
         }
         if($this->state){
             $this->state = Json::decode($this->state);
+            $this->invite = $this->state['invite'] ?? '';
         }
         try{
             if(!$this->code){

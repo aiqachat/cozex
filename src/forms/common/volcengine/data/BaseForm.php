@@ -80,12 +80,12 @@ class BaseForm extends Model
     public function textName($type)
     {
         $data = [
-            $this->vc => Yii::t('voice', '音视频转字幕'),
+            $this->vc => Yii::t('voice', '字幕生成'),
             $this->ata => Yii::t('voice', '音频打轴'),
-            $this->auc => Yii::t('voice', '大模型录音文件转字幕'),
+            $this->auc => Yii::t('voice', '大模型语音识别'),
             $this->ttsBig => Yii::t('voice', '大模型语音合成'),
             $this->ttsLong => Yii::t('voice', '语音合成TTS长文本'),
-            $this->ttsMega => Yii::t('voice', '大模型声音复刻-火山引擎'),
+            $this->ttsMega => Yii::t('voice', '大模型声音复刻'),
             $this->tts => Yii::t('voice', '语音合成TTS短文本'),
         ];
         return $data[$type] ?? '';

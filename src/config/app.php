@@ -19,7 +19,7 @@ if (isset($local['queue'])) {
 $config = [
     'id' => 'wstx_mall',
     'basePath' => dirname(__DIR__),
-    'language' => 'zh-CN',
+    'language' => 'zh',
     'timeZone' => 'Asia/Shanghai',
     'bootstrap' => ['log', 'queue', 'queue1'],
     'components' => [
@@ -37,6 +37,7 @@ $config = [
                 // Windows 环境下貌似无效?
                 // PDO::ATTR_EMULATE_PREPARES => false,
                 // PDO::ATTR_STRINGIFY_FETCHES => false,
+                PDO::ATTR_TIMEOUT => 1000, // 连接超时
             ],
             'enableSchemaCache' => $local['enableSchemaCache'] ?? false,
             // Duration of schema cache.

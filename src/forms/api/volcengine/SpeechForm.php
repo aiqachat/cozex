@@ -37,7 +37,11 @@ class SpeechForm extends SpeechBaseForm
     {
         $this->user_id = \Yii::$app->user->id;
         if (!$this->account_id) {
-            $account = VolcengineAccount::findOne(['mall_id' => \Yii::$app->mall->id, 'is_default' => 1, 'is_delete' => 0]);
+            $where = ['mall_id' => \Yii::$app->mall->id, 'is_default' => 1, 'is_delete' => 0, 'type' => 1];
+            if($this->is_home){
+                $where['type'] = $this->is_home;
+            }
+            $account = VolcengineAccount::findOne($where);
             $this->account_id = $account->id ?? 0;
         }
     }
@@ -76,7 +80,7 @@ class SpeechForm extends SpeechBaseForm
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $data = (new VoiceForm())->voiceType($this->type, false);
+        $data = (new VoiceForm(['is_home' => $this->is_home]))->voiceType($this->type, false);
         $voice_data = (new ConfigForm(['tab' => ConfigForm::TAB_CONTENT]))->config();
         $voice_text = $voice_data['voice_text_' . \Yii::$app->language] ?? $voice_data['voice_text'];
         return [

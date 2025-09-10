@@ -1,14 +1,15 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug;
 
 use Yii;
 use yii\base\InvalidConfigException;
+use yii\debug\panels\DbPanel;
 use yii\helpers\FileHelper;
 use yii\log\Target;
 
@@ -44,6 +45,7 @@ class LogTarget extends Target
     /**
      * Exports log messages to a specific destination.
      * Child classes must implement this method.
+     * @throws \yii\base\Exception
      */
     public function export()
     {
@@ -56,7 +58,12 @@ class LogTarget extends Target
         $exceptions = [];
         foreach ($this->module->panels as $id => $panel) {
             try {
-                $data[$id] = serialize($panel->save());
+                $panelData = $panel->save();
+                if ($id === 'profiling') {
+                    $summary['peakMemory'] = $panelData['memory'];
+                    $summary['processingTime'] = $panelData['time'];
+                }
+                $data[$id] = serialize($panelData);
             } catch (\Exception $exception) {
                 $exceptions[$id] = new FlattenException($exception);
             }
@@ -74,6 +81,54 @@ class LogTarget extends Target
     }
 
     /**
+     * @see DefaultController
+     * @return array
+     */
+    public function loadManifest()
+    {
+        $indexFile = $this->module->dataPath . '/index.data';
+
+        $content = '';
+        $fp = @fopen($indexFile, 'r');
+        if ($fp !== false) {
+            @flock($fp, LOCK_SH);
+            $content = fread($fp, filesize($indexFile));
+            @flock($fp, LOCK_UN);
+            fclose($fp);
+        }
+
+        if ($content !== '') {
+            return array_reverse(unserialize($content), true);
+        }
+
+        return [];
+    }
+
+    /**
+     * @see DefaultController
+     * @return array
+     */
+    public function loadTagToPanels($tag)
+    {
+        $dataFile = $this->module->dataPath . "/$tag.data";
+        $data = unserialize(file_get_contents($dataFile));
+        $exceptions = $data['exceptions'];
+        foreach ($this->module->panels as $id => $panel) {
+            if (isset($data[$id])) {
+                $panel->tag = $tag;
+                $panel->load(unserialize($data[$id]));
+            } else {
+                unset($this->module->panels[$id]);
+            }
+            if (isset($exceptions[$id])) {
+                $panel->setError($exceptions[$id]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Updates index file with summary log data
      *
      * @param string $indexFile path to index file
@@ -82,8 +137,7 @@ class LogTarget extends Target
      */
     private function updateIndexFile($indexFile, $summary)
     {
-        touch($indexFile);
-        if (($fp = @fopen($indexFile, 'r+')) === false) {
+        if (!@touch($indexFile) || ($fp = @fopen($indexFile, 'r+')) === false) {
             throw new InvalidConfigException("Unable to open debug data index file: $indexFile");
         }
         @flock($fp, LOCK_EX);
@@ -120,6 +174,7 @@ class LogTarget extends Target
      * @param array $messages log messages to be processed. See [[\yii\log\Logger::messages]] for the structure
      * of each message.
      * @param bool $final whether this method is called at the end of the current application
+     * @throws \yii\base\Exception
      */
     public function collect($messages, $final)
     {
@@ -150,6 +205,30 @@ class LogTarget extends Target
                     break;
                 }
             }
+            $this->removeStaleDataFiles($manifest);
+        }
+    }
+
+    /**
+     * Remove staled data files i.e. files that are not in the current index file
+     * (may happen because of corrupted or rotated index file)
+     *
+     * @param array $manifest
+     * @since 2.0.11
+     */
+    protected function removeStaleDataFiles($manifest)
+    {
+        $storageTags = array_map(
+            function ($file) {
+                return pathinfo($file, PATHINFO_FILENAME);
+            },
+            FileHelper::findFiles($this->module->dataPath, ['except' => ['index.data']])
+        );
+
+        $staledTags = array_diff($storageTags, array_keys($manifest));
+
+        foreach ($staledTags as $tag) {
+            @unlink($this->module->dataPath . "/$tag.data");
         }
     }
 
@@ -160,20 +239,21 @@ class LogTarget extends Target
     protected function collectSummary()
     {
         if (Yii::$app === null) {
-            return '';
+            return [];
         }
 
         $request = Yii::$app->getRequest();
         $response = Yii::$app->getResponse();
         $summary = [
             'tag' => $this->tag,
-            'url' => $request->getAbsoluteUrl(),
-            'ajax' => (int) $request->getIsAjax(),
-            'method' => $request->getMethod(),
-            'ip' => $request->getUserIP(),
+            'url' => $request instanceof yii\console\Request ? "php yii " . implode(' ', $request->getParams()): $request->getAbsoluteUrl(),
+            'ajax' => $request instanceof yii\console\Request ? 0 : (int) $request->getIsAjax(),
+            'method' => $request instanceof yii\console\Request ? 'COMMAND' : $request->getMethod(),
+            'ip' => $request instanceof yii\console\Request ? exec('whoami') : $request->getUserIP(),
             'time' => $_SERVER['REQUEST_TIME_FLOAT'],
-            'statusCode' => $response->statusCode,
+            'statusCode' => $response instanceof yii\console\Response ? $response->exitStatus : $response->statusCode,
             'sqlCount' => $this->getSqlTotalCount(),
+            'excessiveCallersCount' => $this->getExcessiveDbCallersCount(),
         ];
 
         if (isset($this->module->panels['mail'])) {
@@ -200,5 +280,22 @@ class LogTarget extends Target
         # / 2 because messages are in couple (begin/end)
 
         return count($profileLogs) / 2;
+    }
+
+    /**
+     * Get the number of excessive Database caller(s).
+     *
+     * @return int
+     * @since 2.1.23
+     */
+    protected function getExcessiveDbCallersCount()
+    {
+        if (!isset($this->module->panels['db'])) {
+            return 0;
+        }
+        /** @var DbPanel $dbPanel */
+        $dbPanel = $this->module->panels['db'];
+
+        return $dbPanel->getExcessiveCallersCount();
     }
 }

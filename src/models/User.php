@@ -86,6 +86,12 @@ class User extends ModelActiveRecord implements IdentityInterface
         $this->save();
     }
 
+    public function generateName(){
+        $prefix = 'user_';
+        $randomStr = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 6);
+        return $prefix . $randomStr;
+    }
+
     /**
      * 根据给到的ID查询身份。
      *
@@ -163,7 +169,7 @@ class User extends ModelActiveRecord implements IdentityInterface
 
     public function getPlatform()
     {
-        return $this->hasOne(UserPlatform::className(), ['user_id' => 'id']);
+        return $this->hasOne(UserPlatform::className(), ['user_id' => 'id', 'mall_id' => 'mall_id']);
     }
 
     const LOGIN_ADMIN = 'admin'; // 管理员和超管

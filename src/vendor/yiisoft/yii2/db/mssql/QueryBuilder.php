@@ -247,9 +247,11 @@ class QueryBuilder extends \yii\db\QueryBuilder
         $table = $this->db->getTableSchema($tableName);
         if ($table !== null && $table->sequenceName !== null) {
             $tableName = $this->db->quoteTableName($tableName);
+
             if ($value === null) {
                 $key = $this->db->quoteColumnName(reset($table->primaryKey));
-                $value = "(SELECT COALESCE(MAX({$key}),0) FROM {$tableName})+1";
+                $sql = "SELECT COALESCE(MAX({$key}), 0) + 1 FROM {$tableName}";
+                $value = $this->db->createCommand($sql)->queryScalar();
             } else {
                 $value = (int) $value;
             }
@@ -423,7 +425,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
         if (!$modelClass) {
             return null;
         }
-        /* @var $modelClass \yii\db\ActiveRecord */
+        /** @var \yii\db\ActiveRecord $modelClass */
         $schema = $modelClass::getTableSchema();
         return array_keys($schema->columns);
     }
@@ -486,7 +488,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
         $cols = [];
         $outputColumns = [];
         if ($version2005orLater) {
-            /* @var $schema TableSchema */
+            /** @var TableSchema $schema */
             $schema = $this->db->getTableSchema($table);
             foreach ($schema->columns as $column) {
                 if ($column->isComputed) {

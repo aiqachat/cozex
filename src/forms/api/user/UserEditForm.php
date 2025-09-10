@@ -8,6 +8,7 @@
 namespace app\forms\api\user;
 
 use app\bootstrap\response\ApiCode;
+use app\models\AvData;
 use app\models\Model;
 use app\models\User;
 
@@ -52,7 +53,11 @@ class UserEditForm extends Model
 
         $t = \Yii::$app->db->beginTransaction();
         try {
-            $form->userInfo->avatar = $this->avatar;
+            if($form->userInfo->avatar != $this->avatar) {
+                $res = (new AvData())->localFile($form->userInfo->avatar, false);
+                @unlink($res);
+                $form->userInfo->avatar = $this->avatar;
+            }
 //            $form->userInfo->mobile = $this->mobile;
 //            $form->userInfo->email = $this->email;
             $form->nickname = $this->nickname;

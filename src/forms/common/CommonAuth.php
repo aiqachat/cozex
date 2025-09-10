@@ -34,6 +34,10 @@ class CommonAuth
                     'name' => 'voice',
                 ],
                 [
+                    'display_name' => '视觉智能',
+                    'name' => 'visual',
+                ],
+                [
                     'display_name' => '字幕技术',
                     'name' => 'subtitle',
                 ],

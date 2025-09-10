@@ -20,14 +20,15 @@ abstract class Basics
     public function __construct($array = [])
     {
         foreach ($array as $key => $item) {
-            $this->$key = $item;
+            if(property_exists($this, $key)) {
+                $this->$key = $item;
+            }
         }
         $this->setIdent();
     }
 
     public function getHeader($ak, $sk, $body, $path, $query = []): array
     {
-        $contentType = 'application/json';
         $header = [];
         // 初始化签名结果的结构体
         $xDate = gmdate('Ymd\THis\Z');
@@ -37,7 +38,7 @@ abstract class Basics
             'Host' => $this->host,
             'X-Content-Sha256' => $xContentSha256,
             'X-Date' => $xDate,
-            'Content-Type' => $contentType
+            'Content-Type' => $this->content_type
         ];
         // 第四步：计算 Signature 签名。
         $signedHeaderStr = join(';', ['content-type', 'host', 'x-content-sha256', 'x-date']);
@@ -45,7 +46,7 @@ abstract class Basics
             $this->method,
             $path,
             http_build_query($query),
-            join("\n", ['content-type:' . $contentType, 'host:' . $this->host, 'x-content-sha256:' . $xContentSha256, 'x-date:' . $xDate]),
+            join("\n", ['content-type:' . $this->content_type, 'host:' . $this->host, 'x-content-sha256:' . $xContentSha256, 'x-date:' . $xDate]),
             '',
             $signedHeaderStr,
             $xContentSha256

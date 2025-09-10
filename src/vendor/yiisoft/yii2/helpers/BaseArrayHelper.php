@@ -117,8 +117,22 @@ class BaseArrayHelper
      * @param array $b array to be merged from. You can specify additional
      * arrays via third argument, fourth argument etc.
      * @return array the merged array (the original arrays are not changed.)
+     * @phpstan-template TKeyA
+     * @phpstan-template TValueA
+     * @phpstan-template TKeyB
+     * @phpstan-template TValueB
+     * @psalm-template TKeyA
+     * @psalm-template TValueA
+     * @psalm-template TKeyB
+     * @psalm-template TValueB
+     * @phpstan-param array<TKeyA, TValueA> $a
+     * @phpstan-param array<array<TKeyB, TValueB>> ...$b
+     * @psalm-param array<TKeyA, TValueA> $a
+     * @psalm-param array<array<TKeyB, TValueB>> ...$b
+     * @phpstan-return array<TKeyA|TKeyB, TValueA|TValueB>
+     * @psalm-return array<TKeyA|TKeyB, TValueA|TValueB>
      */
-    public static function merge($a, $b)
+    public static function merge($a, ...$b)
     {
         $args = func_get_args();
         $res = array_shift($args);
@@ -423,8 +437,7 @@ class BaseArrayHelper
      * $result = ArrayHelper::index($array, null, 'id');
      * ```
      *
-     * The result will be a multidimensional array grouped by `id` on the first level, by `device` on the second level
-     * and indexed by `data` on the third level:
+     * The result will be a multidimensional array grouped by `id`:
      *
      * ```php
      * [

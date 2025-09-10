@@ -22,11 +22,13 @@ class PriceForm extends BasicConfigForm
     }
 
     const TAB_BASIC = 'one';
+    const TAB_ABROAD = 'two';
 
     public function getList()
     {
         return [
             self::TAB_BASIC => CommonOption::NAME_VOLCENGINE_PRICE,
+            self::TAB_ABROAD => CommonOption::NAME_VOLCENGINE_ABROAD_PRICE,
         ];
     }
 
@@ -39,6 +41,18 @@ class PriceForm extends BasicConfigForm
             'tts_big_exchange' => 1,
             'tts_long_exchange' => 1,
             'tts_exchange' => 1,
+        ];
+    }
+
+    public function two()
+    {
+        return [
+//            'unit_price' => 0,
+//            'renewal_unit_price' => 0,
+//            'tts_mega_exchange' => 1,
+            'tts_big_exchange' => 1,
+//            'tts_long_exchange' => 1,
+//            'tts_exchange' => 1,
         ];
     }
 

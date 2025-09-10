@@ -10,6 +10,7 @@
 
 namespace app\forms\mall\setting;
 
+use app\bootstrap\response\ApiCode;
 use app\forms\common\CommonOption;
 use app\forms\common\payment\stripe\StripePay;
 use app\forms\common\payment\wechat\WechatException;
@@ -32,21 +33,36 @@ class PayConfigForm extends BasicConfigForm
 
     public function save()
     {
-        $form = new ConfigForm();
-        if($this->tab === self::TAB_BASIC){
-            $form->formData = $this->formData;
-            return $form->save();
+        $t = \Yii::$app->db->beginTransaction();
+        try{
+            $form = new ConfigForm();
+            if($this->tab === self::TAB_BASIC){
+                $form->formData = $this->formData;
+                return $form->save();
+            }
+            $config = $form->config();
+            if($this->tab === self::TAB_WX){
+                $config['is_wechat_pay'] = $this->formData['is_wechat_pay'];
+            }
+            if($this->tab === self::TAB_STRIPE){
+                $config['is_stripe_pay'] = $this->formData['is_stripe_pay'];
+                $stripePay = \Yii::$app->stripePay;
+                if($stripePay->api_key != $this->formData['api_key']){
+                    $stripePay->clearData();
+                }
+            }
+            $form->formData = $config;
+            $form->save();
+            $res = parent::save();
+            $t->commit();
+            return $res;
+        }catch (\Exception $e){
+            $t->rollBack();
+            return [
+                'code' => ApiCode::CODE_ERROR,
+                'msg' => $e->getMessage(),
+            ];
         }
-        $config = $form->config();
-        if($this->tab === self::TAB_WX){
-            $config['is_wechat_pay'] = $this->formData['is_wechat_pay'];
-        }
-        if($this->tab === self::TAB_STRIPE){
-            $config['is_stripe_pay'] = $this->formData['is_stripe_pay'];
-        }
-        $form->formData = $config;
-        $form->save();
-        return parent::save();
     }
 
     public function config()
@@ -56,8 +72,8 @@ class PayConfigForm extends BasicConfigForm
             $data = $form->config();
             $data['currency_list'] = ConfigForm::CURRENCY;
         }else {
-            $data = parent::config ();
-            $config = (new ConfigForm())->config ();
+            $data = parent::config();
+            $config = (new ConfigForm())->config();
             if ($this->tab === self::TAB_WX) {
                 $data['is_wechat_pay'] = $config['is_wechat_pay'];
             }

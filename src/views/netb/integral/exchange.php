@@ -79,9 +79,13 @@
             </div>
             <el-table v-loading="loading" border :data="list" style="width: 100%;margin-bottom: 15px">
                 <el-table-column prop="id" label="ID" width="50"></el-table-column>
-                <el-table-column prop="name" label="兑换名称" min-width="100"></el-table-column>
+                <el-table-column prop="name" label="兑换方案" min-width="100"></el-table-column>
                 <el-table-column prop="pay_price" label="支付金额" width="80"></el-table-column>
                 <el-table-column prop="send_integral" label="兑换积分" width="120"></el-table-column>
+                <el-table-column prop="give_integral" label="赠送积分" width="120"></el-table-column>
+                <el-table-column prop="buy_num" label="可购买次数" width="100"></el-table-column>
+                <el-table-column prop="period" label="有效期" width="100"></el-table-column>
+                <el-table-column prop="serial_num" label="排序" width="100"></el-table-column>
                 <el-table-column prop="created_at" label="创建时间" width="150"></el-table-column>
                 <el-table-column label="操作" width="150">
                     <template slot-scope="scope">

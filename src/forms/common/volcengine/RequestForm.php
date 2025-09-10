@@ -51,7 +51,7 @@ class RequestForm extends BaseObject
             $path = '/';
             // 组装请求头
             $header = $this->object->getHeader($this->secretId, $this->secretKey, $httpBody, $path, $queryParams);
-            $res = $this->getClient ($header)
+            $res = $this->getClient($header)
                 ->request($this->object->method, 'https://' . $this->object->host . $path, [
                     'query' => http_build_query($queryParams),
                     'body' => $httpBody
@@ -70,19 +70,82 @@ class RequestForm extends BaseObject
 
     public function response($response){
         if(!empty($response["ResponseMetadata"]["Error"])){
-            \Yii::error("对接火山引擎sdk接口异常结果：");
+            \Yii::error("火山引擎sdk接口异常：");
             $msg = "温馨提示：".$this->errorMessage($response["ResponseMetadata"]["Error"]);
             \Yii::error($response);
             throw new \Exception($msg);
+        }elseif(isset($response['code'])){ // 即梦AI
+            if($response['code'] != 10000) {
+                \Yii::error("火山引擎sdk接口异常：");
+                $msg = "温馨提示：" . $this->errorMessageByAi($response);
+                \Yii::error($response);
+                throw new \Exception($msg);
+            }
+            return $response["data"];
         }else{
             return $response["Result"];
         }
     }
 
+    // https://www.volcengine.com/docs/6369/68677
     public function errorMessage($error){
         $msg = $error['Message'] ?? '';
         $code = $error['Code'] ?? '';
+        switch ($code){
+            case 'ServiceNotFound':
+                $msg = "请求的服务不存在。请参考API文档检查Service是否完全正确";
+                break;
+            case 'InvalidAccessKey':
+                $msg = "请求的Access Key不合法，请检查Access key Id和Secret Access Key是否正确";
+                break;
+            case 'SignatureDoesNotMatch':
+                $msg = "签名结果不正确";
+                break;
+            case 'AccessDenied':
+                $msg = "子用户拥有的权限不支持当前操作";
+                break;
+            case 'InternalError':
+                $msg = "内部错误，系统错误";
+                break;
+            case 'FlowLimitExceeded':
+                $msg = "请求过于频繁，超出了限速";
+                break;
+            case 'InvalidCredential':
+                $msg = "Authorization头中的Credential格式错误，比如 AK 不在合法字符集中检查Credential";
+                break;
+        }
         return $msg;
+    }
+
+    // https://www.volcengine.com/docs/6444/69728
+    public function errorMessageByAi($res){
+        switch ($res['code']){
+            case 50204:
+                $msg = "参数类型错误/参数缺失";
+                break;
+            case 50207:
+                $msg = "图像解码错误，没有获取到图像或图像不存在了";
+                break;
+            case 50511:
+                $msg = "输出图片后审核未通过";
+                break;
+            case 50412:
+                $msg = "输入文本前审核未通过";
+                break;
+            case 50400:
+                $msg = "请检查是否已创建应用并开通服务";
+                break;
+            case 50413:
+                $msg = "输入文本因版权风险等原因拦截";
+                break;
+            case 50429:
+                $msg = "超过调用QPS限制";
+                break;
+            case 50500:
+                $msg = "服务器内部错误";
+                break;
+        }
+        return $msg ?? $res['message'];
     }
 
     private function getClient($header = []): Client

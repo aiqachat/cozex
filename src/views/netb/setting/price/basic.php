@@ -6,7 +6,7 @@ $form = new \app\forms\common\volcengine\data\BaseForm();
         <el-alert
             type="info"
             v-if="form.integral"
-            :description="'1元 = ' + form.integral.integral_rate + '积分，积分可用于兑换各项语音合成服务'"
+            :description="'1<?=$data['currency_name'];?> = ' + form.integral.integral_rate + '积分，积分可用于兑换各项语音合成服务'"
             show-icon
             :closable="false">
             <div slot="title" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
@@ -18,13 +18,13 @@ $form = new \app\forms\common\volcengine\data\BaseForm();
         </el-alert>
         
         <el-divider content-position="left"><?=$form->textName ($form->ttsMega) ?></el-divider>
-        <el-form-item label="单价" prop="unit_price">
+        <el-form-item label="音色单价" prop="unit_price">
             <el-input v-model="form.unit_price" class="currency-width" type="number">
                 <template slot="prepend">第一次收费</template>
                 <template slot="append">元</template>
             </el-input>
         </el-form-item>
-        <el-form-item label="单价" prop="renewal_unit_price">
+        <el-form-item label="音色单价" prop="renewal_unit_price">
             <el-input v-model="form.renewal_unit_price" class="currency-width" type="number">
                 <template slot="prepend">续费收费</template>
                 <template slot="append">元</template>

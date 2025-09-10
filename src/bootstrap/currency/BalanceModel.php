@@ -30,10 +30,11 @@ class BalanceModel extends Model implements BaseCurrency
      * @param $desc
      * @param string $customDesc
      * @param string $orderNo
+     * @param int $rechargeType
      * @return bool
      * @throws Exception
      */
-    public function add($price, $desc, $customDesc = '', $orderNo = '')
+    public function add($price, $desc, $customDesc = '', $orderNo = '', $rechargeType=1)
     {
         $this->mall = \Yii::$app->mall;
         if (!is_float($price) && !is_int($price) && !is_double($price)) {
@@ -45,7 +46,7 @@ class BalanceModel extends Model implements BaseCurrency
         $userInfo->total_balance += $price;
         if ($userInfo->save()) {
             try {
-                $this->createLog(1, $price, $desc, $customDesc, $orderNo);
+                $this->createLog(1, $rechargeType, $price, $desc, $customDesc, $orderNo);
                 $t->commit();
                 return true;
             } catch (Exception $e) {
@@ -63,16 +64,18 @@ class BalanceModel extends Model implements BaseCurrency
      * @param $desc
      * @param string $customDesc
      * @param string $orderNo
+     * @param boolean $isVerify
+     * @param int $rechargeType
      * @return bool
      * @throws Exception
      */
-    public function sub($price, $desc, $customDesc = '', $orderNo = '')
+    public function sub($price, $desc, $customDesc = '', $orderNo = '', $isVerify=true, $rechargeType=1)
     {
         $this->mall = \Yii::$app->mall;
         if (!is_float($price) && !is_int($price) && !is_double($price)) {
             throw new Exception('金额必须为数字类型');
         }
-        if ($this->user->userInfo->balance < $price) {
+        if ($isVerify && $this->user->userInfo->balance < $price) {
             throw new Exception('用户余额不足');
         }
         $userInfo = $this->user->userInfo;
@@ -80,7 +83,7 @@ class BalanceModel extends Model implements BaseCurrency
         $userInfo->balance -= $price;
         if ($userInfo->save()) {
             try {
-                $this->createLog(2, $price, $desc, $customDesc, $orderNo);
+                $this->createLog(2, $rechargeType, $price, $desc, $customDesc, $orderNo);
                 $t->commit();
                 return true;
             } catch (Exception $e) {
@@ -107,10 +110,11 @@ class BalanceModel extends Model implements BaseCurrency
      * @param $desc
      * @param string $customDesc
      * @param string $orderNo
+     * @param int $rechargeType
      * @return bool
      * @throws Exception
      */
-    public function refund($price, $desc, $customDesc = '', $orderNo = '')
+    public function refund($price, $desc, $customDesc = '', $orderNo = '', $rechargeType=1)
     {
         $this->mall = \Yii::$app->mall;
         if (!is_float($price) && !is_int($price) && !is_double($price)) {
@@ -121,7 +125,7 @@ class BalanceModel extends Model implements BaseCurrency
         $userInfo->balance += $price;
         if ($userInfo->save()) {
             try {
-                $this->createLog(1, $price, $desc, $customDesc, $orderNo);
+                $this->createLog(1, $rechargeType, $price, $desc, $customDesc, $orderNo);
                 $t->commit();
                 return true;
             } catch (Exception $e) {
@@ -136,6 +140,7 @@ class BalanceModel extends Model implements BaseCurrency
 
     /**
      * @param $type
+     * @param $rechargeType
      * @param $price
      * @param $desc
      * @param string $customDesc
@@ -143,7 +148,7 @@ class BalanceModel extends Model implements BaseCurrency
      * @return bool
      * @throws \Exception
      */
-    private function createLog($type, $price, $desc, $customDesc, $orderNo)
+    private function createLog($type, $rechargeType, $price, $desc, $customDesc, $orderNo)
     {
         if ($price == 0) {
             \Yii::warning('余额为' . $price . '不记录日志');
@@ -156,6 +161,7 @@ class BalanceModel extends Model implements BaseCurrency
         $form->mall_id = $this->user->mall_id;
         $form->user_id = $this->user->id;
         $form->type = $type;
+        $form->recharge_type = $rechargeType;
         $form->money = $price;
         $form->desc = $desc;
         $form->custom_desc = $customDesc;

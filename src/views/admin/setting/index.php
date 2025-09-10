@@ -185,9 +185,6 @@ Yii::$app->loadViewComponent('app-rich-text');
                         <img class="my-img" style="background-color: #100a46;border-color: #100a46; height: 108px;" v-if="form.passport_bg" :src="form.passport_bg">
                         <div v-else class="preview">建议尺寸：1920*1080</div>
                     </el-form-item>
-                    <el-form-item label="网站版本">
-                        <el-input class="currency-width" v-model="form.edition"></el-input>
-                    </el-form-item>
                 </template>
                 <template v-if="activeName == 'third'">
                     <el-form-item label="开启注册功能" :style="{'margin-bottom': form.open_register == 0 ? '20px' : 0}">

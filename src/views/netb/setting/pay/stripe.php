@@ -12,7 +12,7 @@
             </el-form-item>
             <el-form-item label="Webhook接受端地址" prop="api_public_key">
                 <span>{{ form.webhook_url }}</span>
-                <el-button @click="copy" size="mini">复制密钥</el-button>
+                <el-button @click="copy" size="mini">复制</el-button>
             </el-form-item>
         </template>
     </el-form>

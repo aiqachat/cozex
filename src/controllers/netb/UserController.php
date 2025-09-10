@@ -64,6 +64,14 @@ class UserController extends AdminController
         return $this->asJson($res);
     }
 
+    public function actionDelete()
+    {
+        $form = new UserForm();
+        $form->attributes = \Yii::$app->request->post();
+        $res = $form->delete();
+        return $this->asJson($res);
+    }
+
     public function actionBalance()
     {
         if (\Yii::$app->request->isPost) {
@@ -107,6 +115,21 @@ class UserController extends AdminController
             }
         } else {
             return $this->render('menu');
+        }
+    }
+    
+    /**
+     * 编辑用户备注
+     * @return \yii\web\Response
+     */
+    public function actionEditRemark()
+    {
+        if (\Yii::$app->request->isAjax) {
+            if (\Yii::$app->request->isPost) {
+                $form = new UserEditForm();
+                $form->attributes = \Yii::$app->request->post();
+                return $form->saveRemark();
+            }
         }
     }
 }

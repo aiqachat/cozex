@@ -8,6 +8,7 @@
 namespace app\forms\api\order;
 
 use app\bootstrap\payment\PaymentNotify;
+use app\events\CommissionEvent;
 use app\models\IntegralOrders;
 use yii\helpers\Json;
 
@@ -32,6 +33,13 @@ class IntegralPayNotify extends PaymentNotify
             $orderData = Json::decode($order->order_data);
             \Yii::$app->currency->setUser($order->user)->integral
                 ->add((float)$orderData['send_integral'], "用户发起积分兑换", $order->order_data, $order->order_no);
+
+            if(in_array($paymentOrder->pay_type, [1, 4])) {
+                \Yii::$app->trigger (CommissionEvent::EVENT_COMMISSION, new CommissionEvent([
+                    'user' => $order->user,
+                    'order_money' => $order->total_pay_price
+                ]));
+            }
         } catch (\Exception $e) {
             $t->rollBack();
             \Yii::error($e);

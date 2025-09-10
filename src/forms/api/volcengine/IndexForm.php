@@ -21,13 +21,15 @@ class IndexForm extends Model
     public $page_size;
     public $keyword;
     public $type;
+    public $is_home;
 
     public function rules()
     {
         return [
-            [['id', 'type'], 'integer'],
+            [['id', 'type', 'is_home'], 'integer'],
             [['keyword'], 'string'],
             [['page_size'], 'default', 'value' => 10],
+            [['is_home'], 'default', 'value' => 1],
         ];
     }
 
@@ -55,11 +57,12 @@ class IndexForm extends Model
         }
         $query = AvData::find()->where([
             'type' => $this->type,
+            'is_home' => $this->is_home,
             'is_delete' => 0,
             'mall_id' => \Yii::$app->mall->id,
             'user_id' => \Yii::$app->user->id,
         ]);
-        $data = $query->page($pagination, 10)
+        $data = $query->page($pagination, $this->page_size)
             ->orderBy(['updated_at' => SORT_DESC])
             ->all();
         $list = [];
@@ -72,7 +75,9 @@ class IndexForm extends Model
             if($item->data){
                 $items['data'] = Json::decode($item->data) ?: [];
                 unset($items['data']['app_id'], $items['data']['access_token']);
-                $items['data']['voice_name'] = $item->voice($items['data']['voice_type'] ?? '', $this->type);
+                if(empty($items['data']['voice_name'])) {
+                    $items['data']['voice_name'] = $item->voice($items['data']['voice_type'] ?? '', $this->type);
+                }
             }
             if(!in_array($item->type, [$form->vc, $form->ata, $form->auc])) {
                 if (!$item->text) {
@@ -101,10 +106,6 @@ class IndexForm extends Model
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => '数据不存在'
             ];
-        }
-        $model->is_delete = 1;
-        if(!$model->save()){
-            return $this->getErrorResponse($model);
         }
         $model->isLog = false;
         $model->deleteData();

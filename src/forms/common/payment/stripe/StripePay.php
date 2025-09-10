@@ -26,6 +26,13 @@ class StripePay extends Model
         $this->stripe = new StripeClient($this->api_key);
     }
 
+    public function clearData()
+    {
+        StripeProduct::deleteAll([
+            'mall_id' => \Yii::$app->mall->id,
+        ]);
+    }
+
     public function allPrice()
     {
         return $this->stripe->prices->all();

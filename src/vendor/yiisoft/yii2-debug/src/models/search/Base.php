@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug\models\search;
@@ -28,14 +28,14 @@ class Base extends Model
      */
     public function addCondition(Filter $filter, $attribute, $partial = false)
     {
-        $value = $this->$attribute;
+        $value = (string)$this->$attribute;
 
         if (mb_strpos($value, '>') !== false) {
-            $value = (int) str_replace('>', '', $value);
+            $value = (int)str_replace('>', '', $value);
             $filter->addMatcher($attribute, new matchers\GreaterThan(['value' => $value]));
 
         } elseif (mb_strpos($value, '<') !== false) {
-            $value = (int) str_replace('<', '', $value);
+            $value = (int)str_replace('<', '', $value);
             $filter->addMatcher($attribute, new matchers\LowerThan(['value' => $value]));
         } else {
             $filter->addMatcher($attribute, new matchers\SameAs(['value' => $value, 'partial' => $partial]));

@@ -24,22 +24,20 @@ class SoundReprintForm extends \app\forms\mall\volcengine\SoundReprintForm
 
     public function save()
     {
-        if(!$this->account_id) {
-            $account = VolcengineAccount::findOne (['mall_id' => \Yii::$app->mall->id, 'is_default' => 1, 'is_delete' => 0]);
-            $this->account_id = $account->id ?? 0;
+        $speaker = UserSpeaker::findOne([
+            'speaker_id' => $this->speaker_id,
+            'mall_id' => \Yii::$app->mall->id,
+            'user_id' => \Yii::$app->user->id,
+            'is_delete' => 0,
+        ]);
+        if(!$speaker){
+            throw new \Exception('用户的声音不存在');
         }
+        $this->account_id = $speaker->account->id;
         $res = parent::save();
         if($res['code'] === ApiCode::CODE_SUCCESS){
-            $speaker = UserSpeaker::findOne([
-                'speaker_id' => $this->speaker_id,
-                'mall_id' => \Yii::$app->mall->id,
-                'user_id' => \Yii::$app->user->id,
-                'is_delete' => 0,
-            ]);
-            if($speaker){
-                $speaker->name = $this->name;
-                $speaker->save ();
-            }
+            $speaker->name = $this->name;
+            $speaker->save();
         }
         return $res;
     }

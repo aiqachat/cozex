@@ -68,7 +68,7 @@ class ClientForm extends BasicForm
     {
         $params = [
             'client_id' => $this->client_id,
-            'access_type' => 'offline',    // 离线访问，可获取刷新令牌
+//            'access_type' => 'offline',    // 离线访问，可获取刷新令牌
             'login_hint' => '',            // 可预填登录邮箱
             'prompt' => '',                // 登录提示类型
             'redirect_uri' => $this->redirect_uri,
@@ -77,7 +77,10 @@ class ClientForm extends BasicForm
                 'https://www.googleapis.com/auth/userinfo.profile',
                 'https://www.googleapis.com/auth/userinfo.email'
             ]),
-            'state' => Json::encode(['mall_id' => \Yii::$app->mall->id]),  // 状态参数，防止CSRF攻击
+            'state' => Json::encode([
+                'mall_id' => \Yii::$app->mall->id,
+                'invite' => $this->invite
+            ]),  // 状态参数，防止CSRF攻击
         ];
 
         return self::OAUTH2_AUTH_URL . "?" . Query::build($params);

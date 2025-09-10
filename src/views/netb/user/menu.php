@@ -57,6 +57,16 @@
                     </template>
                 </el-table-column>
             </el-table>
+            <div class="menu-text-switch">
+                <span>菜单文字显示：</span>
+                <el-switch
+                        v-model="is_show_menu_text"
+                        :active-value="1"
+                        :inactive-value="0"
+                        active-text="显示"
+                        inactive-text="隐藏">
+                </el-switch>
+            </div>
             <div class="operation-buttons">
                 <el-button type="primary" @click="handleSave" :loading="saving">保存所有更改</el-button>
                 <el-button type="primary" @click="refreshData">刷新数据</el-button>
@@ -73,7 +83,8 @@
                 menuList: [],
                 originalMenuList: [],
                 loading: false,
-                saving: false
+                saving: false,
+                is_show_menu_text: null,
             };
         },
         methods: {
@@ -97,6 +108,7 @@
 
                         this.menuList = processData(res.data.data.list);
                         this.originalMenuList = JSON.parse(JSON.stringify(processData(res.data.data.original)));
+                        this.is_show_menu_text = res.data.data.is_show_menu_text;
                     } else {
                         this.$message.error(res.data.msg || '获取菜单数据失败');
                     }
@@ -255,7 +267,8 @@
                         },
                         method: 'post',
                         data: {
-                            menu_list: changedData
+                            menu_list: changedData,
+                            is_show_menu_text: this.is_show_menu_text
                         },
                     }).then(res => {
                         if (res.data.code === 0) {
@@ -317,5 +330,29 @@
         min-width: 45px;
         color: #606266;
         font-size: 13px;
+    }
+
+    /* 开关容器样式调整 */
+    .switch-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 8px 0;
+    }
+
+    /* 菜单文字开关样式调整 */
+    .menu-text-switch {
+        margin: 20px 0;
+        padding: 15px 20px;
+        background-color: #f5f7fa;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .menu-text-switch .el-switch {
+        margin-left: 10px;
     }
 </style>

@@ -204,22 +204,19 @@ $form = new SpeechForm();
                 <el-table-column prop="created_at" label="创建时间" width="180" sortable="false"></el-table-column>
                 <el-table-column label="操作" width="190" fixed="right">
                     <template slot-scope="scope">
-                        <el-tooltip effect="dark" content="播放" placement="top"
-                            v-if="scope.row.status == 2 && !scope.row.is_data_deleted">
+                        <el-tooltip effect="dark" content="播放" placement="top" v-if="scope.row.status == 2">
                             <el-button circle type="text" size="mini" @click="playMusic(scope.row.result)">
                                 <i
                                     :class="audioPlaying && currentAudioUrl === scope.row.result ? 'bi bi-pause-circle' : 'bi bi-play-circle'"></i>
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip effect="dark" :content="scope.row.is_data_deleted ? '文件已删除' : '下载'" placement="top"
+                        <el-tooltip effect="dark" :content="'下载'" placement="top"
                             v-if="scope.row.status == 2">
-                            <el-button circle type="text" size="mini" @click="down(scope.row)"
-                                :disabled="!!scope.row.is_data_deleted">
+                            <el-button circle type="text" size="mini" @click="down(scope.row)">
                                 <i class="bi bi-download"></i>
                             </el-button>
                         </el-tooltip>
-                        <el-tooltip effect="dark" content="重试" placement="top"
-                            v-if="scope.row.status == 3 || scope.row.is_data_deleted == 1">
+                        <el-tooltip effect="dark" content="重试" placement="top" v-if="scope.row.status == 3">
                             <el-button circle type="text" size="mini" @click="refresh(scope.row)">
                                 <i class="bi bi-arrow-repeat"></i>
                             </el-button>
@@ -545,6 +542,7 @@ $form = new SpeechForm();
                     this.sdf.text = e.target.result;
                     this.formLoading = false;
                 };
+                this.data.file = file.name;
                 reader.readAsText(file.raw);
             },
             submit() {

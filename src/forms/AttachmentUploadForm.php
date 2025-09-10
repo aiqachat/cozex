@@ -11,6 +11,8 @@ namespace app\forms;
 use app\forms\admin\mall\MallOverrunForm;
 use app\forms\common\attachment\AttachmentUpload;
 use app\forms\common\attachment\CommonAttachment;
+use app\forms\common\RedisTimeQueue;
+use app\forms\mall\setting\ContentForm;
 use app\models\Model;
 use app\models\User;
 use GuzzleHttp\Psr7\MimeType;
@@ -23,6 +25,8 @@ class AttachmentUploadForm extends Model
 
     public $type;
 
+    public $exclude;
+
     public $attachment_group_id;
 
     protected $docExt = ['txt', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'pdf', 'md'];
@@ -33,7 +37,7 @@ class AttachmentUploadForm extends Model
     {
         return [
             [['file'], 'file'],
-            [['attachment_group_id'], 'integer'],
+            [['attachment_group_id', 'exclude'], 'integer'],
             [['type'], 'string'],
             [['file'], 'validateExt'],
         ];
@@ -139,11 +143,17 @@ class AttachmentUploadForm extends Model
                 'mall_id' => $mallId,
                 'type' => $type ?? 0,
                 'attachment_group_id' => $this->attachment_group_id ?: 0,
-                'user_id' => $user_id
+                'user_id' => $user_id,
+                'exclude' => $this->exclude,
             ]);
             $attachment = $attachmentUpload->upload();
             $attachment->thumb_url = $attachment->thumb_url ? $attachment->thumb_url : $attachment->url;
-            $attachment->size = space_unit($attachment->size);
+            if($user_id && $mallId && $attachment->id){
+                $config = (new ContentForm())->config();
+                (new RedisTimeQueue())->push($attachment::REDIS_KEY, [
+                    'id' => $attachment->id,
+                ], time() + $config['attachment_storage_time'] * 3600);
+            }
             return [
                 'code' => 0,
                 'data' => $attachment,

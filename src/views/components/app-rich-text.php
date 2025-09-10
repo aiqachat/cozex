@@ -43,7 +43,11 @@
             isShowInsertImage: {
                 type: Boolean,
                 default: true
-            }
+            },
+            isDark: {
+                type: Boolean,
+                default: true
+            },
         },
         data() {
             return {
@@ -95,8 +99,14 @@
                 }
             },
             loadUe() {
-                const vm = this;
-                this.ue = UE.getEditor(this.id);
+                let self = this;
+                let init = {
+                    autoHeightEnabled: false // 禁用自动高度
+                };
+                if(self.isDark){
+                    init.initialStyle = 'body{background-color:#333333;color:#ffffff}' // 设置内容区背景颜色
+                }
+                this.ue = UE.getEditor(this.id, init);
                 this.ue.addListener('ready', editor => {
                     if (this.tempContent) {
                         this.ue.setContent(this.tempContent);
@@ -110,20 +120,19 @@
                     this.isInputChange = true;
                     this.$emit('input', this.ue.getContent());
                 });
-                let self = this;
                 if (self.isShowInsertImage) {
                     UE.registerUI('appinsertimage', (editor, uiName) => {
-                    return new UE.ui.Button({
-                        name: uiName,
-                        title: vm.labelIcon,
-                        //添加额外样式，指定icon图标，这里默认使用一个重复的icon
-                        cssRules: 'background-position: -381px 0px;',
-                        onclick() {
-                            self.ue = editor
-                            vm.attachmentDialogVisible = true;
-                        },
+                        return new UE.ui.Button({
+                            name: uiName,
+                            title: self.labelIcon,
+                            //添加额外样式，指定icon图标，这里默认使用一个重复的icon
+                            cssRules: 'background-position: -381px 0px;',
+                            onclick() {
+                                self.ue = editor
+                                self.attachmentDialogVisible = true;
+                            },
+                        });
                     });
-                });
                 }
             }
         },

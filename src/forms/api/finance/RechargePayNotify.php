@@ -8,6 +8,7 @@
 namespace app\forms\api\finance;
 
 use app\bootstrap\payment\PaymentNotify;
+use app\events\CommissionEvent;
 use app\models\RechargeOrders;
 use app\models\User;
 
@@ -40,6 +41,10 @@ class RechargePayNotify extends PaymentNotify
 
             $this->sendData($user, $order);
 
+            \Yii::$app->trigger(CommissionEvent::EVENT_COMMISSION, new CommissionEvent([
+                'user' => $user,
+                'order_money' => $order->pay_price
+            ]));
         } catch (\Exception $e) {
             \Yii::error($e);
             throw $e;

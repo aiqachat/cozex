@@ -1,10 +1,10 @@
 <?php
 use yii\helpers\Html;
 
-/* @var $this \yii\web\View */
-/* @var $generators \yii\gii\Generator[] */
-/* @var $activeGenerator \yii\gii\Generator */
-/* @var $content string */
+/** @var \yii\web\View $this */
+/** @var \yii\gii\Generator[] $generators */
+/** @var \yii\gii\Generator $activeGenerator */
+/** @var string $content */
 
 $generators = Yii::$app->controller->module->generators;
 $activeGenerator = Yii::$app->controller->generator;
@@ -14,10 +14,11 @@ $activeGenerator = Yii::$app->controller->generator;
     <div class="col-md-3 col-sm-4">
         <div class="list-group">
             <?php
+            $classes = ['list-group-item', 'd-flex', 'justify-content-between', 'align-items-center'];
             foreach ($generators as $id => $generator) {
-                $label = '<i class="glyphicon glyphicon-chevron-right"></i>' . Html::encode($generator->getName());
+                $label = Html::tag('span', Html::encode($generator->getName())) . '<span class="icon"></span>';
                 echo Html::a($label, ['default/view', 'id' => $id], [
-                    'class' => $generator === $activeGenerator ? 'list-group-item active' : 'list-group-item',
+                    'class' => $generator === $activeGenerator ? array_merge($classes, ['active']) : $classes,
                 ]);
             }
             ?>

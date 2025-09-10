@@ -35,13 +35,13 @@ class VolcengineController extends ApiController
                 $form = new IndexForm();
                 $form->attributes = \Yii::$app->request->get ();
                 $form->type = (new SubtitleForm())->vc;
-                return $this->asJson ($form->getList ());
+                return $this->asJson($form->getList());
             }else{
                 $form = new SubtitleForm();
                 $form->scenario = 'save';
                 $form->attributes = \Yii::$app->request->post();
                 $form->type = $form->vc;
-                return $this->asJson ($form->save());
+                return $this->asJson($form->save());
             }
         }
     }
@@ -53,13 +53,13 @@ class VolcengineController extends ApiController
                 $form = new IndexForm();
                 $form->attributes = \Yii::$app->request->get();
                 $form->type = (new SubtitleForm())->ata;
-                return $this->asJson ($form->getList());
+                return $this->asJson($form->getList());
             }else{
                 $form = new SubtitleForm();
                 $form->scenario = 'save';
                 $form->attributes = \Yii::$app->request->post();
                 $form->type = $form->ata;
-                return $this->asJson ($form->save());
+                return $this->asJson($form->save());
             }
         }
     }
@@ -71,12 +71,12 @@ class VolcengineController extends ApiController
                 $form = new IndexForm();
                 $form->attributes = \Yii::$app->request->get();
                 $form->type = (new SubtitleForm())->auc;
-                return $this->asJson ($form->getList());
+                return $this->asJson($form->getList());
             }else{
                 $form = new SubtitleForm();
                 $form->attributes = \Yii::$app->request->post();
                 $form->type = $form->auc;
-                return $this->asJson ($form->newSave());
+                return $this->asJson($form->newSave());
             }
         }
     }
@@ -105,7 +105,7 @@ class VolcengineController extends ApiController
         if (\Yii::$app->request->isAjax) {
             $form = new SpeechForm();
             $form->attributes = \Yii::$app->request->get();
-            return $this->asJson ($form->config());
+            return $this->asJson($form->config());
         }
     }
 
@@ -116,13 +116,13 @@ class VolcengineController extends ApiController
                 $form = new IndexForm();
                 $form->attributes = \Yii::$app->request->get();
                 $form->type = (new SubtitleForm())->ttsBig;
-                return $this->asJson ($form->getList());
+                return $this->asJson($form->getList());
             }else{
                 $form = new SpeechForm();
                 $form->scenario = 'save';
                 $form->attributes = \Yii::$app->request->post();
                 $form->type = $form->ttsBig;
-                return $this->asJson ($form->save());
+                return $this->asJson($form->save());
             }
         }
     }
@@ -134,13 +134,13 @@ class VolcengineController extends ApiController
                 $form = new IndexForm();
                 $form->attributes = \Yii::$app->request->get();
                 $form->type = (new SubtitleForm())->ttsLong;
-                return $this->asJson ($form->getList());
+                return $this->asJson($form->getList());
             }else{
                 $form = new SpeechForm();
                 $form->scenario = 'save';
                 $form->attributes = \Yii::$app->request->post();
                 $form->type = $form->ttsLong;
-                return $this->asJson ($form->save());
+                return $this->asJson($form->save());
             }
         }
     }
@@ -152,13 +152,13 @@ class VolcengineController extends ApiController
                 $form = new IndexForm();
                 $form->attributes = \Yii::$app->request->get();
                 $form->type = (new SubtitleForm())->tts;
-                return $this->asJson ($form->getList());
+                return $this->asJson($form->getList());
             }else{
                 $form = new SpeechForm();
                 $form->scenario = 'save';
                 $form->attributes = \Yii::$app->request->post();
                 $form->type = $form->tts;
-                return $this->asJson ($form->save());
+                return $this->asJson($form->save());
             }
         }
     }
@@ -173,7 +173,7 @@ class VolcengineController extends ApiController
             }else{
                 $form = new SoundReprintForm();
                 $form->attributes = \Yii::$app->request->post();
-                return $this->asJson ($form->save());
+                return $this->asJson($form->save());
             }
         }
     }
@@ -185,13 +185,13 @@ class VolcengineController extends ApiController
                 $form = new IndexForm();
                 $form->attributes = \Yii::$app->request->get();
                 $form->type = (new SubtitleForm())->ttsMega;
-                return $this->asJson ($form->getList());
+                return $this->asJson($form->getList());
             }else {
                 $form = new SpeechForm();
                 $form->scenario = 'save';
                 $form->attributes = \Yii::$app->request->post();
                 $form->type = $form->ttsMega;
-                return $this->asJson ($form->save ());
+                return $this->asJson($form->save());
             }
         }
     }
@@ -205,11 +205,10 @@ class VolcengineController extends ApiController
 
     public function actionBatch()
     {
-        if(\Yii::$app->request->isPost){
-            $form = new BatchForm();
-            $form->attributes = \Yii::$app->request->post();
-            return $form->save();
-        }
+        $form = new BatchForm();
+        $form->attributes = \Yii::$app->request->post();
+        $form->attributes = \Yii::$app->request->get();
+        return $form->save();
     }
 
     public function actionRefresh()

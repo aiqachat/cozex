@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug\models\search;
@@ -52,6 +52,7 @@ class Log extends Base
             'level' => 'Level',
             'category' => 'Category',
             'message' => 'Message',
+            'time_since_previous' => 'Since previous',
         ];
     }
 
@@ -68,7 +69,15 @@ class Log extends Base
             'allModels' => $models,
             'pagination' => false,
             'sort' => [
-                'attributes' => ['time', 'level', 'category', 'message'],
+                'attributes' => [
+                    'time',
+                    'time_since_previous' => [
+                        'default' => SORT_DESC,
+                    ],
+                    'level',
+                    'category',
+                    'message'
+                ],
                 'defaultOrder' => [
                     'time' => SORT_ASC,
                 ],

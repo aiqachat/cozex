@@ -29,4 +29,9 @@ class ApiCode
      * 状态码：商城禁用
      */
     const CODE_STORE_DISABLED = -2;
+
+    /**
+     * 状态码：账号禁用
+     */
+    const CODE_ACCOUNT_DISABLED = -3;
 }

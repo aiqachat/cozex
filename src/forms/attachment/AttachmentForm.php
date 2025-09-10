@@ -8,11 +8,11 @@ namespace app\forms\attachment;
 
 use app\bootstrap\response\ApiCode;
 use app\forms\admin\mall\MallOverrunForm;
+use app\forms\common\attachment\AttachmentRemove;
+use app\forms\mall\setting\ContentForm;
 use app\models\Attachment;
 use app\models\Mall;
 use app\models\Model;
-use app\models\User;
-use app\models\UserIdentity;
 
 class AttachmentForm extends Model
 {
@@ -105,6 +105,8 @@ class AttachmentForm extends Model
             }else{
                 $overrun = $option['is_video_overrun'] ? \Yii::t('common', '无限制') : "{$option['video_overrun']}MB";
             }
+            $config = (new ContentForm())->config();
+            $config['attachment_storage_time'] .= \Yii::t('common', '小时');
         }
 
         return [
@@ -112,7 +114,8 @@ class AttachmentForm extends Model
             'data' => [
                 'list' => $list,
                 'pagination' => $pagination,
-                'overrun' => $overrun ?? ''
+                'overrun' => $overrun ?? '',
+                'storage_time' => $config['attachment_storage_time'] ?? ''
             ],
         ];
     }
@@ -165,10 +168,20 @@ class AttachmentForm extends Model
                 $edit = [];
                 break;
         }
-        Attachment::updateAll($edit, [
-            'id' => $this->ids,
-            'mall_id' => $this->mall->id,
-        ]);
+        if($edit) {
+            Attachment::updateAll($edit, [
+                'id' => $this->ids,
+                'mall_id' => $this->mall->id,
+            ]);
+        }else{
+            $list = Attachment::findAll([
+                'id' => $this->ids,
+                'mall_id' => $this->mall->id,
+            ]);
+            foreach ($list as $attachment) {
+                AttachmentRemove::getCommon($attachment)->handle();
+            }
+        }
         return [
             'code' => ApiCode::CODE_SUCCESS,
             'msg' => '操作成功。',

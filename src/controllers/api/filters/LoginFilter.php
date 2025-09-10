@@ -30,7 +30,7 @@ class LoginFilter extends ActionFilter
         if (is_array($this->only) && !in_array($id, $this->only)) {
             return true;
         }
-        if (!\Yii::$app->user->isGuest) {
+        if (!\Yii::$app->user->isGuest && \Yii::$app->user->identity->mall_id > 0) {
             return true;
         }
         \Yii::$app->response->data = [

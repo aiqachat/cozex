@@ -9,16 +9,14 @@
 namespace app\jobs;
 
 use app\forms\api\order\SpeechPayNotify;
-use app\forms\common\CommonOption;
 use app\forms\common\volcengine\data\SpeechBaseForm;
 use app\forms\common\volcengine\data\SubtitleBaseForm;
+use app\forms\common\volcengine\data\VisualImgForm;
+use app\forms\common\volcengine\data\VisualVideoForm;
 use app\forms\mall\setting\CozeForm;
 use app\models\AvData;
-use app\models\CoreActionLog;
-use app\models\CoreExceptionLog;
 use app\models\Mall;
 use app\models\ModelActiveRecord;
-use yii\helpers\FileHelper;
 use yii\queue\RetryableJobInterface;
 
 /**
@@ -46,6 +44,12 @@ class CommonJob extends BaseJob implements RetryableJobInterface
             if($this->type == 'handle_speech'){
                 $this->handleSpeech();
             }
+            if($this->type == 'listen_visual_video'){
+                $this->handleVisualVideo();
+            }
+            if($this->type == 'listen_visual_image'){
+                $this->handleVisualImage();
+            }
             if($this->type == 'delete_avData'){
                 $this->deleteAv();
             }
@@ -58,69 +62,19 @@ class CommonJob extends BaseJob implements RetryableJobInterface
             if($this->type == 'del_data_log'){
                 $this->delDataLog();
             }
+            if($this->type == 'delete_visual_video'){
+                $this->delVisualVideo();
+            }
+            if($this->type == 'delete_visual_img'){
+                $this->delVisualImg();
+            }
         } catch (\Exception $exception) {
             \Yii::error($exception);
         }
     }
 
     public function delDataLog(){
-        ModelActiveRecord::$log = false;
 
-        $delay = strtotime(date("Y-m-d 23:59:59")) + 60 - time();
-        $sql = sprintf(
-            'select * from %s where `created_at` <= "%s" ORDER BY id desc limit 1',
-            CoreActionLog::tableName(),
-            mysql_timestamp(strtotime("-6 months"))
-        );
-        $log = \Yii::$app->db->createCommand($sql)->queryOne();
-        if($log){
-            $time = strtotime($log['created_at']);
-            $end = date("Y-m-d 23:59:59", $time);
-            CoreActionLog::deleteAll(['<=', "created_at", $end]);
-            CoreExceptionLog::deleteAll(['<=', "created_at", $end]);
-
-            foreach (['/console_log', "/logs"] as $dir){
-                $res = FileHelper::findDirectories(\Yii::$app->runtimePath . $dir, ['recursive' => false]);
-                sort($res);
-                foreach ($res as $item) {
-                    if(basename($item) == date("Ym", $time)){
-                        FileHelper::removeDirectory($item . "/" . date("d", $time));
-                    }elseif(basename($item) < date("Ym", $time)){
-                        FileHelper::removeDirectory($item);
-                    }else{
-                        break;
-                    }
-                }
-            }
-        }else{
-            $delay = $delay + 86400 * 2;
-        }
-
-        $modelList = AvData::find()->where([
-            'and',
-            ['<=', "updated_at", date("Y-m-d 00:00:00",  strtotime("-3 day"))],
-            ['is_data_deleted' => 0]
-        ])->all();
-        foreach ($modelList as $model){
-            $model->deleteData();
-        }
-        if($modelList) {
-            // 把空目录删除了
-            $fileRes = file_uri ('/web/uploads/av_file/');
-            $dirList = FileHelper::findDirectories ($fileRes['local_uri'], ['recursive' => false]);
-            foreach ($dirList as $dir) {
-                if (empty(FileHelper::findFiles ($dir))) {
-                    FileHelper::removeDirectory ($dir);
-                }
-            }
-        }
-
-        $option = CommonOption::get("delAction");
-        if(!empty($option['time']) && $option['time'] > mysql_timestamp()){
-            return;
-        }
-        \Yii::$app->queue1->delay($delay)->push(new CommonJob(['type' => "del_data_log"]));
-        CommonOption::set("delAction", ['time' => mysql_timestamp(time() + $delay)]);
     }
 
     private function handleSubtitle()
@@ -128,6 +82,7 @@ class CommonJob extends BaseJob implements RetryableJobInterface
         ModelActiveRecord::$log = false;
         $model = new SubtitleBaseForm();
         $model->id = $this->data['id'] ?? 0;
+        $model->duration = $this->data['duration'] ?? null;
         $res = $model->handle();
         if($res['code'] != 0){
             \Yii::error($res['msg']);
@@ -145,9 +100,34 @@ class CommonJob extends BaseJob implements RetryableJobInterface
         }
     }
 
+    private function handleVisualVideo()
+    {
+        $model = new VisualVideoForm();
+        $model->job($this->data);
+    }
+
+    private function handleVisualImage()
+    {
+        $model = new VisualImgForm();
+        $model->job($this->data);
+    }
+
+    private function delVisualVideo()
+    {
+        // 删除会记录日志
+        $model = new VisualVideoForm();
+        $model->del($this->data['id'] ?? 0);
+    }
+
+    private function delVisualImg()
+    {
+        // 删除会记录日志
+        $model = new VisualImgForm();
+        $model->del($this->data['id'] ?? 0);
+    }
+
     private function deleteAv()
     {
-        ModelActiveRecord::$log = false;
         try {
             $model = AvData::findOne(['id' => $this->data['id'] ?? 0, 'mall_id' => \Yii::$app->mall->id]);
             if (!$model) {

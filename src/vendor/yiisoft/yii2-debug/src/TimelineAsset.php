@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\debug;
@@ -17,11 +17,26 @@ use yii\web\AssetBundle;
  */
 class TimelineAsset extends AssetBundle
 {
+    /**
+     * {@inheritdoc}
+     */
     public $sourcePath = '@yii/debug/assets';
+    /**
+     * {@inheritdoc}
+     */
     public $css = [
-        'timeline.css',
+        'css/timeline.css',
     ];
+    /**
+     * {@inheritdoc}
+     */
     public $js = [
-        'timeline.js',
+        'js/timeline.js',
+    ];
+    /**
+     * {@inheritdoc}
+     */
+    public $depends = [
+        'yii\debug\DebugAsset'
     ];
 }

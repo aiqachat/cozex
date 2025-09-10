@@ -87,7 +87,7 @@ class Base
 
     public function errorMsg($response)
     {
-        \Yii::error(explode("?", $this->getMethodName())[0] . " = 对接火山引擎接口异常：");
+        \Yii::error($this->api->getUrl() . $this->getMethodName() . " = 对接火山引擎接口异常：");
         \Yii::error($response);
         $res = [
             2000 => '任务处理中。',
@@ -126,6 +126,16 @@ class Base
         ];
         if(strpos($response['message'], 'resource not granted') !== false){
             throw new \Exception('无权限，请开通服务');
+        }
+        if(strpos($response['message'], 'quota exceeded for types') !== false){
+            if(strpos($response['message'], 'text_words_lifetime') !== false){
+                throw new \Exception('试用版用量用完了，需要开通正式版才能继续使用');
+            }
+            throw new \Exception('并发超过了限定值，需要减少并发调用情况或者增购并发');
+        }
+        if($response['message'] == 'extract request resource id: get resource id: access denied'){
+//            throw new \Exception('语音合成未拥有当前音色授权，需要在控制台购买该音色才能调用');
+            throw new \Exception(\Yii::t('voice', '音色维护中'));
         }
         throw new \Exception($res[$response['code'] ?? ''] ?? $response['message']);
     }

@@ -48,7 +48,7 @@ class PassportController extends ApiController
         \Yii::$app->user->logout();
         return $this->asJson([
             'code' => 0,
-            'msg' => '退出成功',
+            'msg' => \Yii::t('common', '退出成功'),
         ]);
     }
 }

@@ -23,11 +23,15 @@ class IndexForm extends Model
     public $pay_price;
     public $send_integral;
     public $language_data;
+    public $give_integral;
+    public $buy_num;
+    public $period;
+    public $serial_num;
 
     public function rules()
     {
         return [
-            [['id', 'send_integral'], 'integer'],
+            [['id', 'send_integral', 'give_integral', 'buy_num', 'period', 'serial_num'], 'integer'],
             [['name'], 'string'],
             [['language_data'], 'safe'],
             [['pay_price'], 'number'],
@@ -39,8 +43,8 @@ class IndexForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = IntegralExchange::findOne (['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0, 'id' => $this->id]);
-        if(!$model){
+        $model = IntegralExchange::findOne(['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0, 'id' => $this->id]);
+        if (!$model) {
             return [
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => '数据不存在'
@@ -59,15 +63,15 @@ class IndexForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        $model = IntegralExchange::findOne (['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0, 'id' => $this->id]);
-        if(!$model){
+        $model = IntegralExchange::findOne(['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0, 'id' => $this->id]);
+        if (!$model) {
             return [
                 'code' => ApiCode::CODE_ERROR,
                 'msg' => '数据不存在'
             ];
         }
         $model->is_delete = 1;
-        if(!$model->save()){
+        if (!$model->save()) {
             return $this->getErrorResponse($model);
         }
 
@@ -82,21 +86,21 @@ class IndexForm extends Model
         if (!$this->validate()) {
             return $this->getErrorResponse();
         }
-        if($this->id){
-            $model = IntegralExchange::findOne (['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0, 'id' => $this->id]);
-            if(!$model){
+        if ($this->id) {
+            $model = IntegralExchange::findOne(['mall_id' => \Yii::$app->mall->id, 'is_delete' => 0, 'id' => $this->id]);
+            if (!$model) {
                 return [
                     'code' => ApiCode::CODE_ERROR,
                     'msg' => '数据不存在'
                 ];
             }
-        }else{
+        } else {
             $model = new IntegralExchange();
             $model->mall_id = \Yii::$app->mall->id;
         }
         $model->attributes = $this->attributes;
         $model->language_data = json_encode($this->language_data, JSON_UNESCAPED_UNICODE);
-        if(!$model->save()){
+        if (!$model->save()) {
             return $this->getErrorResponse($model);
         }
         return [
