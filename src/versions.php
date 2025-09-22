@@ -452,7 +452,7 @@ EOF;
     },
     '1.0.13' => function () {
         $sql = <<<EOF
-update wstx_admin_info set permissions = '["attachment","voice","subtitle","coze"]' where permissions != '[]'               
+update wstx_admin_info set permissions = '["attachment","voice","subtitle","coze"]' where permissions != '[]';
 CREATE TABLE `wstx_stripe_product` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `mall_id` int(11) NOT NULL,
@@ -551,6 +551,8 @@ CREATE TABLE `wstx_voice_list` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='音色列表';
 alter table wstx_voice_list add `status` tinyint(1) DEFAULT 1 COMMENT '1:启用，0:禁用';
+alter table wstx_voice_list modify column `updated_at` varchar(25) NOT NULL DEFAULT '0000-00-00 00:00:00';
+alter table wstx_voice_list add `emotion` varchar(250) DEFAULT '' COMMENT '情感列表';
 $v
 CREATE TABLE `wstx_visual_image` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -604,8 +606,6 @@ EOF;
     '1.0.20' => function () {
         $sql = <<<EOF
 alter table wstx_visual_image add `seed` int(10) DEFAULT -1 COMMENT '随机种子';
-alter table wstx_voice_list modify column `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00';
-alter table wstx_voice_list add `emotion` varchar(250) DEFAULT '' COMMENT '情感列表';
 EOF;
         sql_execute($sql);
     },
@@ -803,8 +803,8 @@ CREATE TABLE `wstx_member_level_permission` (
   KEY `permission_id` (`permission_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员等级权限关联表';
 
-alter table `wstx_user_identity` add `member_level` int(10) DEFAULT '0' COMMENT '会员等级';
 alter table `wstx_user_identity` CHANGE column `member_level` `user_level` int(10) DEFAULT 0 COMMENT '用户等级';
+alter table `wstx_user_identity` add `member_level` int(10) DEFAULT '0' COMMENT '会员等级';
 EOF;
         sql_execute($sql);
     },
